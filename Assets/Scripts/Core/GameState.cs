@@ -1,9 +1,18 @@
 public enum GameState
 {
-    Waiting,
-    Playing,
-    Revealing,
+    WaitingForPlayerXPlacement,
+    WaitingForPlayerXDirection,
+
+    WaitingForPlayerYPlacement,
+    WaitingForPlayerYDirection,
+
+    RevealingDirections,
+
     Moving,
+
+    CheckingResult,
+
     Won,
+
     Draw
 }
