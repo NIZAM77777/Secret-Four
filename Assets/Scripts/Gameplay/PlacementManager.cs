@@ -159,4 +159,17 @@ public class PlacementManager : MonoBehaviour
             PlayerYCoin = coin;
         }
     }
+
+    public void ClearAllCoins()
+    {
+        for (int i = coinParent.childCount - 1; i >= 0; i--)
+        {
+            Destroy(
+                coinParent.GetChild(i).gameObject
+            );
+        }
+
+        PlayerXCoin = null;
+        PlayerYCoin = null;
+    }
 }

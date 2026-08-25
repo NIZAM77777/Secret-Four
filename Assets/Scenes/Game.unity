@@ -420,11 +420,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc73af7c56dea7844a1f83d605a752f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
-  gameResultManager: {fileID: 276811465}
   panel: {fileID: 466721190}
   resultTitle: {fileID: 1862017366}
   resultSubtitle: {fileID: 1282940397}
-  gameOverUI: {fileID: 484708348}
+  matchManager: {fileID: 1014258761}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -949,7 +948,6 @@ MonoBehaviour:
   gameConfig: {fileID: 11400000, guid: fc8c4af12398dbe4bb7986e1e2a092ae, type: 2}
   revealDelay: 2
   movementDuration: 0.3
-  collisionMoveDuration: 0.25
   collisionPauseDuration: 0.08
   collisionReturnDuration: 0.16
 --- !u!4 &868001401
@@ -1146,6 +1144,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 966488158}
   m_CullTransparentMesh: 1
+--- !u!1 &1014258760
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1014258762}
+  - component: {fileID: 1014258761}
+  m_Layer: 0
+  m_Name: MatchManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1014258761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014258760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b25ed831d1ff8a746ae086aa82fcf8af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MatchManager
+  boardManager: {fileID: 591312822}
+  placementManager: {fileID: 1282425387}
+  turnManager: {fileID: 1228661221}
+  gameResultManager: {fileID: 276811465}
+--- !u!4 &1014258762
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014258760}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368414253}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1016789051
 GameObject:
   m_ObjectHideFlags: 0
@@ -1654,6 +1700,7 @@ Transform:
   - {fileID: 1554806498}
   - {fileID: 276811466}
   - {fileID: 484708347}
+  - {fileID: 1014258762}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1445640425
@@ -1915,7 +1962,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1593809718}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 484708346}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1593809718
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2521,7 +2580,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1993228180}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 484708348}
+        m_TargetAssemblyTypeName: GameOverUI, Assembly-CSharp
+        m_MethodName: OnPlayAgainPressed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1993228180
 MonoBehaviour:
   m_ObjectHideFlags: 0

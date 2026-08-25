@@ -1,13 +1,9 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class GameOverUI : MonoBehaviour
 {
     [Header("References")]
-
-    [SerializeField]
-    private GameResultManager gameResultManager;
 
     [SerializeField]
     private GameObject panel;
@@ -19,7 +15,7 @@ public class GameOverUI : MonoBehaviour
     private TMP_Text resultSubtitle;
 
     [SerializeField]
-    private GameOverUI gameOverUI;
+    private MatchManager matchManager;
 
     private void Start()
     {
@@ -52,5 +48,10 @@ public class GameOverUI : MonoBehaviour
     public void Hide()
     {
         panel.SetActive(false);
+    }
+
+    public void OnPlayAgainPressed()
+    {
+        matchManager.StartNewMatch();
     }
 }

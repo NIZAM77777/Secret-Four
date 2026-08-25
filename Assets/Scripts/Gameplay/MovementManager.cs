@@ -37,9 +37,6 @@ public class MovementManager : MonoBehaviour
     [Header("Collision Animation")]
 
     [SerializeField]
-    private float collisionMoveDuration = 0.25f;
-
-    [SerializeField]
     private float collisionPauseDuration = 0.08f;
 
     [SerializeField]

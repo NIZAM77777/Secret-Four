@@ -16,4 +16,4 @@ MonoBehaviour:
   boardHeight: 4
   winLength: 4
   movementRevealDelay: 2
-  collisionDrawCount: 10
+  collisionDrawCount: 5
