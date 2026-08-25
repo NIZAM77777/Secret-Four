@@ -5,7 +5,6 @@ public class MovementResult
     public PlayerType playerType;
 
     public Vector2Int startPosition;
-
     public Vector2Int destination;
 
     public MoveDirection direction;

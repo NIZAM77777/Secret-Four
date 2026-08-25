@@ -31,9 +31,16 @@ public class DirectionSelector : MonoBehaviour
         SelectDirection(MoveDirection.Right);
     }
 
-    private void SelectDirection(MoveDirection direction)
+    public void SelectStay()
     {
-        PlayerType player = GetCurrentDirectionPlayer();
+        SelectDirection(MoveDirection.Stay);
+    }
+
+    private void SelectDirection(
+        MoveDirection direction)
+    {
+        PlayerType player =
+            GetCurrentDirectionPlayer();
 
         if (!turnManager.CanChooseDirection(player))
         {
@@ -47,17 +54,27 @@ public class DirectionSelector : MonoBehaviour
         PlayerAction action =
             turnManager.GetAction(player);
 
-        action.direction = direction;
-        action.hasChosenDirection = true;
+        action.direction =
+            direction;
+
+        action.hasChosenDirection =
+            true;
 
         Debug.Log(
             $"{player} secretly selected {direction}"
         );
 
-        turnManager.DirectionChosen(player);
+        turnManager.DirectionChosen(
+            player
+        );
+
+        // --------------------------------
+        // Both players have selected.
+        // Start movement.
+        // --------------------------------
 
         if (turnManager.CurrentState ==
-    GameState.RevealingDirections)
+            GameState.RevealingDirections)
         {
             movementManager.StartMovementSequence(
                 placementManager.PlayerXCoin,

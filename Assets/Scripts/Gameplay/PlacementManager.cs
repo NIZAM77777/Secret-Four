@@ -34,6 +34,10 @@ public class PlacementManager : MonoBehaviour
 
     public void TryPlaceCoin(int x, int y)
     {
+        Debug.Log(
+    $"PLACE ATTEMPT ({x},{y}) | " +
+    $"State = {turnManager.CurrentState}"
+);
         PlayerType player =
             GetCurrentPlacementPlayer();
 
@@ -61,7 +65,8 @@ public class PlacementManager : MonoBehaviour
         if (!board.IsEmpty(x, y))
         {
             Debug.Log(
-                "Cell is already occupied."
+                $"CELL REJECTED ({x},{y}) — " +
+                $"already occupied."
             );
 
             return;

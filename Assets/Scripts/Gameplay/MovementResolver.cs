@@ -18,6 +18,8 @@ public class MovementResolver : MonoBehaviour
         Board board =
             boardManager.CurrentBoard;
 
+        // Outside board:
+        // coin stays in original position.
         if (!board.IsInsideBoard(
             destination.x,
             destination.y))
@@ -44,6 +46,9 @@ public class MovementResolver : MonoBehaviour
 
             case MoveDirection.Right:
                 return new Vector2Int(1, 0);
+
+            case MoveDirection.Stay:
+                return Vector2Int.zero;
 
             default:
                 return Vector2Int.zero;

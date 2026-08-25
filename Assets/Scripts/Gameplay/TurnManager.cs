@@ -8,52 +8,88 @@ public class TurnManager : MonoBehaviour
     public GameState CurrentState => currentState;
 
     public PlayerAction PlayerXAction { get; private set; }
-
     public PlayerAction PlayerYAction { get; private set; }
+
+    public int CollisionCount { get; private set; }
 
     private void Awake()
     {
-        PlayerXAction = new PlayerAction(PlayerType.X);
-        PlayerYAction = new PlayerAction(PlayerType.Y);
+        PlayerXAction =
+            new PlayerAction(PlayerType.X);
 
-        currentState = GameState.WaitingForPlayerXPlacement;
+        PlayerYAction =
+            new PlayerAction(PlayerType.Y);
+
+        CollisionCount = 0;
+
+        SetState(
+            GameState.WaitingForPlayerXPlacement
+        );
     }
 
     public bool CanPlaceCoin(PlayerType player)
     {
+        bool canPlace;
+
         if (player == PlayerType.X)
         {
-            return currentState ==
+            canPlace =
+                currentState ==
                 GameState.WaitingForPlayerXPlacement;
         }
+        else
+        {
+            canPlace =
+                currentState ==
+                GameState.WaitingForPlayerYPlacement;
+        }
 
-        return currentState ==
-            GameState.WaitingForPlayerYPlacement;
+        Debug.Log(
+            $"CanPlaceCoin({player}) = {canPlace} | " +
+            $"State = {currentState}"
+        );
+
+        return canPlace;
     }
 
     public bool CanChooseDirection(PlayerType player)
     {
+        bool canChoose;
+
         if (player == PlayerType.X)
         {
-            return currentState ==
+            canChoose =
+                currentState ==
                 GameState.WaitingForPlayerXDirection;
         }
+        else
+        {
+            canChoose =
+                currentState ==
+                GameState.WaitingForPlayerYDirection;
+        }
 
-        return currentState ==
-            GameState.WaitingForPlayerYDirection;
+        Debug.Log(
+            $"CanChooseDirection({player}) = {canChoose} | " +
+            $"State = {currentState}"
+        );
+
+        return canChoose;
     }
 
     public void PlayerPlaced(PlayerType player)
     {
         if (player == PlayerType.X)
         {
-            currentState =
-                GameState.WaitingForPlayerXDirection;
+            SetState(
+                GameState.WaitingForPlayerXDirection
+            );
         }
         else
         {
-            currentState =
-                GameState.WaitingForPlayerYDirection;
+            SetState(
+                GameState.WaitingForPlayerYDirection
+            );
         }
     }
 
@@ -61,13 +97,15 @@ public class TurnManager : MonoBehaviour
     {
         if (player == PlayerType.X)
         {
-            currentState =
-                GameState.WaitingForPlayerYPlacement;
+            SetState(
+                GameState.WaitingForPlayerYPlacement
+            );
         }
         else
         {
-            currentState =
-                GameState.RevealingDirections;
+            SetState(
+                GameState.RevealingDirections
+            );
         }
     }
 
@@ -78,17 +116,52 @@ public class TurnManager : MonoBehaviour
             : PlayerYAction;
     }
 
-    public void ResetActions()
+    public void SetState(GameState newState)
+    {
+        Debug.Log(
+            $"GAME STATE: " +
+            $"{currentState} → {newState}"
+        );
+
+        currentState = newState;
+    }
+
+    public void RegisterCollision()
+    {
+        CollisionCount++;
+
+        Debug.Log(
+            $"COLLISION COUNT = {CollisionCount}"
+        );
+    }
+
+    public void StartNextRound()
     {
         PlayerXAction.Reset();
         PlayerYAction.Reset();
 
-        currentState =
-            GameState.WaitingForPlayerXPlacement;
+        SetState(
+            GameState.WaitingForPlayerXPlacement
+        );
+
+        Debug.Log(
+            "===== NEXT ROUND ====="
+        );
+
+        Debug.Log(
+            "Waiting for Player X placement."
+        );
     }
 
-    public void SetState(GameState newState)
+    public void ResetMatch()
     {
-        currentState = newState;
+        PlayerXAction.Reset();
+        PlayerYAction.Reset();
+
+        CollisionCount = 0;
+
+        SetState(
+            GameState.WaitingForPlayerXPlacement
+        );
     }
 }
