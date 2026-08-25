@@ -20,6 +20,10 @@ public class PlacementManager : MonoBehaviour
     [SerializeField]
     private TurnManager turnManager;
 
+    public GameObject PlayerXCoin { get; private set; }
+
+    public GameObject PlayerYCoin { get; private set; }
+
     private void Start()
     {
         if (coinParent == null)
@@ -133,14 +137,21 @@ public class PlacementManager : MonoBehaviour
         if (coinView != null)
         {
             Sprite sprite =
-                coinConfig.GetSprite(
-                    playerType
-                );
+                coinConfig.GetSprite(playerType);
 
             coinView.Setup(
                 playerType,
                 sprite
             );
+        }
+
+        if (playerType == PlayerType.X)
+        {
+            PlayerXCoin = coin;
+        }
+        else
+        {
+            PlayerYCoin = coin;
         }
     }
 }

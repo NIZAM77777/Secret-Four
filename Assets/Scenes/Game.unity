@@ -465,6 +465,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DirectionSelector
   turnManager: {fileID: 1228661221}
+  movementManager: {fileID: 868001400}
+  placementManager: {fileID: 1282425387}
 --- !u!4 &579568602
 Transform:
   m_ObjectHideFlags: 0
@@ -688,6 +690,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 734035266}
   m_CullTransparentMesh: 1
+--- !u!1 &868001399
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 868001401}
+  - component: {fileID: 868001400}
+  m_Layer: 0
+  m_Name: MovementManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &868001400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 868001399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9142edfb8e852643903a85ed2c90baa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MovementManager
+  turnManager: {fileID: 1228661221}
+  movementResolver: {fileID: 2033245339}
+  boardManager: {fileID: 591312822}
+  boardView: {fileID: 894722789}
+  coinPrefab: {fileID: 5299371833497249065, guid: 2fb54d47ea57ca74c89126b45204c0ad, type: 3}
+  coinConfig: {fileID: 11400000, guid: f6bdd82f16b49e646933d8c1200ae75d, type: 2}
+  coinParent: {fileID: 0}
+  revealDelay: 2
+  movementDuration: 0.3
+--- !u!4 &868001401
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 868001399}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1158.8636, y: 506.82962, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &894722788
 GameObject:
   m_ObjectHideFlags: 0
@@ -1407,6 +1462,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1992029633}
   m_CullTransparentMesh: 1
+--- !u!1 &2033245338
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2033245340}
+  - component: {fileID: 2033245339}
+  m_Layer: 0
+  m_Name: MovementResolver
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2033245339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033245338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51d9c59d4a6ce446954ff12d9802374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MovementResolver
+  boardManager: {fileID: 591312822}
+--- !u!4 &2033245340
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033245338}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1158.8636, y: 506.82962, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1420,4 +1520,6 @@ SceneRoots:
   - {fileID: 545440958}
   - {fileID: 579568602}
   - {fileID: 1228661222}
+  - {fileID: 868001401}
+  - {fileID: 2033245340}
   - {fileID: 1368259263}

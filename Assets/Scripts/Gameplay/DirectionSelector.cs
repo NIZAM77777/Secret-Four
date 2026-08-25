@@ -5,6 +5,12 @@ public class DirectionSelector : MonoBehaviour
     [SerializeField]
     private TurnManager turnManager;
 
+    [SerializeField]
+    private MovementManager movementManager;
+
+    [SerializeField]
+    private PlacementManager placementManager;
+
     public void SelectUp()
     {
         SelectDirection(MoveDirection.Up);
@@ -49,6 +55,15 @@ public class DirectionSelector : MonoBehaviour
         );
 
         turnManager.DirectionChosen(player);
+
+        if (turnManager.CurrentState ==
+    GameState.RevealingDirections)
+        {
+            movementManager.StartMovementSequence(
+                placementManager.PlayerXCoin,
+                placementManager.PlayerYCoin
+            );
+        }
     }
 
     private PlayerType GetCurrentDirectionPlayer()

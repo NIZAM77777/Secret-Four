@@ -86,4 +86,9 @@ public class TurnManager : MonoBehaviour
         currentState =
             GameState.WaitingForPlayerXPlacement;
     }
+
+    public void SetState(GameState newState)
+    {
+        currentState = newState;
+    }
 }
