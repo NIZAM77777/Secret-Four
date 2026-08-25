@@ -9,6 +9,12 @@ public class MovementManager : MonoBehaviour
     private TurnManager turnManager;
 
     [SerializeField]
+    private GameResultManager gameResultManager;
+
+    [SerializeField]
+    private WinConditionChecker winConditionChecker;
+
+    [SerializeField]
     private MovementRuleResolver movementRuleResolver;
 
     [SerializeField]
@@ -38,13 +44,20 @@ public class MovementManager : MonoBehaviour
 
     [SerializeField]
     private float collisionReturnDuration = 0.16f;
+
     private bool movementInProgress;
+
     private GameObject playerXCoin;
     private GameObject playerYCoin;
 
+
+    // =========================================================
+    // START MOVEMENT
+    // =========================================================
+
     public void StartMovementSequence(
-    GameObject xCoin,
-    GameObject yCoin)
+        GameObject xCoin,
+        GameObject yCoin)
     {
         if (movementInProgress)
         {
@@ -65,16 +78,21 @@ public class MovementManager : MonoBehaviour
         );
     }
 
+
+    // =========================================================
+    // REVEAL AND RESOLVE
+    // =========================================================
+
     private IEnumerator RevealAndResolve()
     {
         // --------------------------------
-        // Reveal
+        // Reveal directions
         // --------------------------------
 
         RevealDirections();
 
         // --------------------------------
-        // Wait 2 seconds
+        // Wait before movement
         // --------------------------------
 
         yield return new WaitForSeconds(
@@ -115,8 +133,10 @@ public class MovementManager : MonoBehaviour
                 )
             );
         }
+
         movementInProgress = false;
     }
+
 
     // =========================================================
     // REVEAL
@@ -138,6 +158,7 @@ public class MovementManager : MonoBehaviour
             $"{turnManager.PlayerYAction.direction}"
         );
     }
+
 
     // =========================================================
     // DEBUG
@@ -164,6 +185,7 @@ public class MovementManager : MonoBehaviour
             $"{resolution.playerYCollision}"
         );
     }
+
 
     // =========================================================
     // SUCCESSFUL MOVEMENT
@@ -201,7 +223,7 @@ public class MovementManager : MonoBehaviour
             );
 
         // --------------------------------
-        // Animate both simultaneously
+        // Move both coins simultaneously
         // --------------------------------
 
         yield return StartCoroutine(
@@ -215,8 +237,7 @@ public class MovementManager : MonoBehaviour
         );
 
         // --------------------------------
-        // Save their new positions
-        // permanently on the board.
+        // Save new positions permanently
         // --------------------------------
 
         ApplySuccessfulBoardMovement(
@@ -232,15 +253,29 @@ public class MovementManager : MonoBehaviour
             .DebugPrintBoard();
 
         // --------------------------------
-        // Next round
+        // Check Win / Draw
         // --------------------------------
 
         turnManager.SetState(
             GameState.CheckingResult
         );
 
+        if (CheckGameResult())
+        {
+            yield break;
+        }
+
+        // --------------------------------
+        // Continue game
+        // --------------------------------
+
         turnManager.StartNextRound();
     }
+
+
+    // =========================================================
+    // APPLY SUCCESSFUL MOVEMENT
+    // =========================================================
 
     private void ApplySuccessfulBoardMovement(
         MovementResolution resolution)
@@ -254,12 +289,13 @@ public class MovementManager : MonoBehaviour
         );
     }
 
+
     // =========================================================
     // COLLISION
     // =========================================================
 
     private IEnumerator HandleCollision(
-    MovementResolution resolution)
+        MovementResolution resolution)
     {
         turnManager.RegisterCollision();
 
@@ -268,24 +304,28 @@ public class MovementManager : MonoBehaviour
             $"{turnManager.CollisionCount}"
         );
 
+        // --------------------------------
+        // Animate collision / movement
+        // --------------------------------
+
         yield return StartCoroutine(
-            AnimateMovementResults(resolution)
+            AnimateMovementResults(
+                resolution
+            )
         );
 
         // --------------------------------
-        // Check collision draw
+        // Collision draw
         // --------------------------------
 
         if (turnManager.CollisionCount >=
-            gameConfig.collisionDrawCount)
+    gameConfig.collisionDrawCount)
         {
             Debug.Log(
                 "DRAW — Collision limit reached."
             );
 
-            turnManager.SetState(
-                GameState.Draw
-            );
+            gameResultManager.SetDraw();
 
             yield break;
         }
@@ -293,21 +333,48 @@ public class MovementManager : MonoBehaviour
         // --------------------------------
         // Apply successful movements.
         //
-        // Coins that collided stay at their
+        // Collided coins remain at their
         // original positions.
-        // Coins that succeeded become permanent.
+        //
+        // Successful coins become permanent.
         // --------------------------------
 
-        ApplyResolvedMovement(resolution);
+        ApplyResolvedMovement(
+            resolution
+        );
 
         boardManager.CurrentBoard
             .DebugPrintBoard();
 
+        // --------------------------------
+        // IMPORTANT:
+        // Check Win / Draw AFTER the successful
+        // coin has been saved.
+        // --------------------------------
+
+        turnManager.SetState(
+            GameState.CheckingResult
+        );
+
+        if (CheckGameResult())
+        {
+            yield break;
+        }
+
+        // --------------------------------
+        // Continue game
+        // --------------------------------
+
         turnManager.StartNextRound();
     }
 
+
+    // =========================================================
+    // APPLY COLLISION RESULT
+    // =========================================================
+
     private void ApplyResolvedMovement(
-    MovementResolution resolution)
+        MovementResolution resolution)
     {
         MovementResult xResult =
             resolution.playerXResult;
@@ -315,16 +382,15 @@ public class MovementManager : MonoBehaviour
         MovementResult yResult =
             resolution.playerYResult;
 
-        // -------------------------------------------------
-        // If a coin collided, make its destination equal
-        // to its starting position for board resolution.
-        // -------------------------------------------------
-
         MovementResult xFinal =
             xResult;
 
         MovementResult yFinal =
             yResult;
+
+        // --------------------------------
+        // X collided
+        // --------------------------------
 
         if (resolution.playerXCollision !=
             MovementCollisionType.None)
@@ -338,6 +404,10 @@ public class MovementManager : MonoBehaviour
                 );
         }
 
+        // --------------------------------
+        // Y collided
+        // --------------------------------
+
         if (resolution.playerYCollision !=
             MovementCollisionType.None)
         {
@@ -350,18 +420,24 @@ public class MovementManager : MonoBehaviour
                 );
         }
 
+        // --------------------------------
+        // Apply both results simultaneously
+        // --------------------------------
+
         boardManager.CurrentBoard
             .ApplySuccessfulMovement(
                 xFinal,
                 yFinal
             );
     }
+
+
     // =========================================================
-    // COLLISION ANIMATION
+    // COLLISION / MOVEMENT ANIMATION
     // =========================================================
 
     private IEnumerator AnimateMovementResults(
-    MovementResolution resolution)
+        MovementResolution resolution)
     {
         turnManager.SetState(
             GameState.Moving
@@ -391,9 +467,9 @@ public class MovementManager : MonoBehaviour
                 resolution.playerYResult.destination.y
             );
 
-        // -------------------------------------------------
-        // Determine what each coin actually does
-        // -------------------------------------------------
+        // --------------------------------
+        // Determine collisions
+        // --------------------------------
 
         bool xCollides =
             resolution.playerXCollision !=
@@ -403,11 +479,9 @@ public class MovementManager : MonoBehaviour
             resolution.playerYCollision !=
             MovementCollisionType.None;
 
-        // -------------------------------------------------
-        // Phase 1
-        //
-        // Both coins move toward their targets.
-        // -------------------------------------------------
+        // --------------------------------
+        // Move both toward their targets
+        // --------------------------------
 
         yield return StartCoroutine(
             AnimateTwoCoins(
@@ -419,9 +493,9 @@ public class MovementManager : MonoBehaviour
             )
         );
 
-        // -------------------------------------------------
-        // If there was a collision, pause at impact.
-        // -------------------------------------------------
+        // --------------------------------
+        // Impact pause
+        // --------------------------------
 
         if (xCollides || yCollides)
         {
@@ -430,13 +504,9 @@ public class MovementManager : MonoBehaviour
             );
         }
 
-        // -------------------------------------------------
-        // Phase 2
-        //
-        // ONLY collided coins return.
-        //
-        // Successful coins remain at destination.
-        // -------------------------------------------------
+        // --------------------------------
+        // Only collided coins return
+        // --------------------------------
 
         if (xCollides || yCollides)
         {
@@ -461,9 +531,9 @@ public class MovementManager : MonoBehaviour
             );
         }
 
-        // -------------------------------------------------
-        // Guarantee final visual positions
-        // -------------------------------------------------
+        // --------------------------------
+        // Guarantee final positions
+        // --------------------------------
 
         if (playerXCoin != null)
         {
@@ -481,6 +551,7 @@ public class MovementManager : MonoBehaviour
                     : yTarget;
         }
     }
+
 
     // =========================================================
     // SHARED ANIMATION
@@ -544,5 +615,48 @@ public class MovementManager : MonoBehaviour
             playerYCoin.transform.position =
                 yEnd;
         }
+    }
+
+
+    // =========================================================
+    // GAME RESULT
+    // =========================================================
+
+    private bool CheckGameResult()
+    {
+        // --------------------------------
+        // WIN
+        // --------------------------------
+
+        if (winConditionChecker.HasWinner(
+            out PlayerType winner))
+        {
+            Debug.Log(
+                $"WINNER → {winner}"
+            );
+
+            gameResultManager.SetWinner(
+                winner
+            );
+
+            return true;
+        }
+
+        // --------------------------------
+        // BOARD FULL → DRAW
+        // --------------------------------
+
+        if (winConditionChecker.IsBoardFull())
+        {
+            Debug.Log(
+                "DRAW → Board is full."
+            );
+
+            gameResultManager.SetDraw();
+
+            return true;
+        }
+
+        return false;
     }
 }
