@@ -480,7 +480,7 @@ public class GameHUD : MonoBehaviour
             default:
 
                 botDifficultyText.text =
-                    "🤖 Bot";
+                    "Bot";
 
                 break;
         }

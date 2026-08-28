@@ -16,22 +16,43 @@ public class MatchManager : MonoBehaviour
     [SerializeField]
     private GameResultManager gameResultManager;
 
+
     public void StartNewMatch()
     {
         Debug.Log(
             "========== NEW MATCH =========="
         );
 
-        placementManager.ClearAllCoins();
-
-        boardManager.CurrentBoard.ClearBoard();
+        // --------------------------------
+        // 1. Reset Game Result
+        // --------------------------------
 
         gameResultManager.ResetResult();
 
+
+        // --------------------------------
+        // 2. Clear Coin Visuals
+        // --------------------------------
+
+        placementManager.ClearAllCoins();
+
+
+        // --------------------------------
+        // 3. Clear Logical Board
+        // --------------------------------
+
+        boardManager.CurrentBoard.ClearBoard();
+
+
+        // --------------------------------
+        // 4. Reset Turn System
+        // --------------------------------
+
         turnManager.ResetMatch();
 
+
         Debug.Log(
-            "New match ready."
+            "New match ready. Player X starts."
         );
     }
 }

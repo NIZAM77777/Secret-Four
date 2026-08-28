@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class GameOverUI : MonoBehaviour
 {
@@ -17,8 +18,13 @@ public class GameOverUI : MonoBehaviour
     [SerializeField]
     private MatchManager matchManager;
 
+    [Header("Winner Visual")]
+
     [SerializeField]
-    private GamePlayerInfo gamePlayerInfo;
+    private Image winnerImage;
+
+    [SerializeField]
+    private CoinConfig coinConfig;
 
 
     private void Start()
@@ -27,48 +33,127 @@ public class GameOverUI : MonoBehaviour
     }
 
 
+    // ==========================================
+    // SHOW WINNER
+    // ==========================================
+
     public void ShowWinner(
         PlayerType winner)
     {
-        panel.SetActive(true);
+        if (panel != null)
+        {
+            panel.SetActive(true);
+        }
 
         string winnerName =
-            gamePlayerInfo.GetPlayerName(
-                winner
-            );
+            GetPlayerName(winner);
 
-        resultTitle.text =
-            $"{winnerName.ToUpper()} WINS!";
-
-        if (gamePlayerInfo.IsBot(winner))
+        if (resultTitle != null)
         {
-            resultSubtitle.text =
-                "Better luck next time!";
+            resultTitle.text =
+                $"{winnerName} WINS!";
         }
-        else
+
+        if (resultSubtitle != null)
         {
             resultSubtitle.text =
                 "Four in a row!";
         }
+
+        SetupWinnerImage(winner);
     }
 
+
+    // ==========================================
+    // SHOW DRAW
+    // ==========================================
 
     public void ShowDraw()
     {
-        panel.SetActive(true);
+        if (panel != null)
+        {
+            panel.SetActive(true);
+        }
 
-        resultTitle.text = "DRAW!";
+        if (resultTitle != null)
+        {
+            resultTitle.text =
+                "DRAW!";
+        }
 
-        resultSubtitle.text =
-            "No winner this time.";
+        if (resultSubtitle != null)
+        {
+            resultSubtitle.text =
+                "No winner this time.";
+        }
+
+        // Hide winner image during draw
+        if (winnerImage != null)
+        {
+            winnerImage.gameObject.SetActive(false);
+        }
     }
 
+
+    // ==========================================
+    // GET PLAYER NAME
+    // ==========================================
+
+    private string GetPlayerName(
+        PlayerType player)
+    {
+        if (GameSession.Instance == null)
+        {
+            return player == PlayerType.X
+                ? "Player 1"
+                : "Player 2";
+        }
+
+        if (player == PlayerType.X)
+        {
+            return GameSession.Instance.Player1Name;
+        }
+
+        return GameSession.Instance.Player2Name;
+    }
+
+
+    // ==========================================
+    // SETUP WINNER IMAGE
+    // ==========================================
+
+    private void SetupWinnerImage(
+        PlayerType winner)
+    {
+        if (winnerImage == null)
+            return;
+
+        if (coinConfig == null)
+            return;
+
+        winnerImage.gameObject.SetActive(true);
+
+        winnerImage.sprite =
+            coinConfig.GetSprite(winner);
+    }
+
+
+    // ==========================================
+    // HIDE
+    // ==========================================
 
     public void Hide()
     {
-        panel.SetActive(false);
+        if (panel != null)
+        {
+            panel.SetActive(false);
+        }
     }
 
+
+    // ==========================================
+    // PLAY AGAIN
+    // ==========================================
 
     public void OnPlayAgainPressed()
     {
