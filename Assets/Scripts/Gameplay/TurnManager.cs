@@ -10,8 +10,6 @@ public class TurnManager : MonoBehaviour
     public PlayerAction PlayerXAction { get; private set; }
     public PlayerAction PlayerYAction { get; private set; }
 
-    public int CollisionCount { get; private set; }
-
     private void Awake()
     {
         PlayerXAction =
@@ -20,8 +18,6 @@ public class TurnManager : MonoBehaviour
         PlayerYAction =
             new PlayerAction(PlayerType.Y);
 
-        CollisionCount = 0;
-
         SetState(
             GameState.WaitingForPlayerXPlacement
         );
@@ -29,52 +25,26 @@ public class TurnManager : MonoBehaviour
 
     public bool CanPlaceCoin(PlayerType player)
     {
-        bool canPlace;
-
         if (player == PlayerType.X)
         {
-            canPlace =
-                currentState ==
+            return currentState ==
                 GameState.WaitingForPlayerXPlacement;
         }
-        else
-        {
-            canPlace =
-                currentState ==
-                GameState.WaitingForPlayerYPlacement;
-        }
 
-        Debug.Log(
-            $"CanPlaceCoin({player}) = {canPlace} | " +
-            $"State = {currentState}"
-        );
-
-        return canPlace;
+        return currentState ==
+            GameState.WaitingForPlayerYPlacement;
     }
 
     public bool CanChooseDirection(PlayerType player)
     {
-        bool canChoose;
-
         if (player == PlayerType.X)
         {
-            canChoose =
-                currentState ==
+            return currentState ==
                 GameState.WaitingForPlayerXDirection;
         }
-        else
-        {
-            canChoose =
-                currentState ==
-                GameState.WaitingForPlayerYDirection;
-        }
 
-        Debug.Log(
-            $"CanChooseDirection({player}) = {canChoose} | " +
-            $"State = {currentState}"
-        );
-
-        return canChoose;
+        return currentState ==
+            GameState.WaitingForPlayerYDirection;
     }
 
     public void PlayerPlaced(PlayerType player)
@@ -119,20 +89,10 @@ public class TurnManager : MonoBehaviour
     public void SetState(GameState newState)
     {
         Debug.Log(
-            $"GAME STATE: " +
-            $"{currentState} → {newState}"
+            $"GAME STATE: {currentState} → {newState}"
         );
 
         currentState = newState;
-    }
-
-    public void RegisterCollision()
-    {
-        CollisionCount++;
-
-        Debug.Log(
-            $"COLLISION COUNT = {CollisionCount}"
-        );
     }
 
     public void StartNextRound()
@@ -147,18 +107,12 @@ public class TurnManager : MonoBehaviour
         Debug.Log(
             "===== NEXT ROUND ====="
         );
-
-        Debug.Log(
-            "Waiting for Player X placement."
-        );
     }
 
     public void ResetMatch()
     {
         PlayerXAction.Reset();
         PlayerYAction.Reset();
-
-        CollisionCount = 0;
 
         SetState(
             GameState.WaitingForPlayerXPlacement

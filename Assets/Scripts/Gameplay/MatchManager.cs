@@ -22,27 +22,11 @@ public class MatchManager : MonoBehaviour
             "========== NEW MATCH =========="
         );
 
-        // --------------------------------
-        // Clear visual coins
-        // --------------------------------
-
         placementManager.ClearAllCoins();
-
-        // --------------------------------
-        // Clear logical board
-        // --------------------------------
 
         boardManager.CurrentBoard.ClearBoard();
 
-        // --------------------------------
-        // Reset result
-        // --------------------------------
-
         gameResultManager.ResetResult();
-
-        // --------------------------------
-        // Reset turn / actions / collisions
-        // --------------------------------
 
         turnManager.ResetMatch();
 

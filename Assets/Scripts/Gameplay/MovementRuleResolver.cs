@@ -27,14 +27,17 @@ public class MovementRuleResolver : MonoBehaviour
         Board board =
             boardManager.CurrentBoard;
 
-        // =================================================
-        // 1. Both actively move to the same destination
-        // =================================================
+        // ==========================================
+        // BOTH COINS TARGET SAME DESTINATION
+        // Both move visually, then both return.
+        // ==========================================
 
-        if (xResult.IsMoving &&
+        if (
+            xResult.IsMoving &&
             yResult.IsMoving &&
             xResult.destination ==
-            yResult.destination)
+            yResult.destination
+        )
         {
             resolution.playerXCollision =
                 MovementCollisionType.SameDestination;
@@ -45,9 +48,9 @@ public class MovementRuleResolver : MonoBehaviour
             return resolution;
         }
 
-        // =================================================
-        // 2. Check X
-        // =================================================
+        // ==========================================
+        // CHECK X
+        // ==========================================
 
         if (xResult.IsMoving)
         {
@@ -61,9 +64,9 @@ public class MovementRuleResolver : MonoBehaviour
             }
         }
 
-        // =================================================
-        // 3. Check Y
-        // =================================================
+        // ==========================================
+        // CHECK Y
+        // ==========================================
 
         if (yResult.IsMoving)
         {
@@ -77,44 +80,48 @@ public class MovementRuleResolver : MonoBehaviour
             }
         }
 
-        // =================================================
-        // 4. Dependency check
+        // ==========================================
+        // DEPENDENCY CHECK
         //
-        // If one coin is returning/staying at its
-        // starting cell, the other cannot enter it.
-        // =================================================
+        // If a player cannot leave their starting
+        // position, the other player cannot enter it.
+        // ==========================================
 
-        bool xCollides =
+        bool xBlocked =
             resolution.playerXCollision !=
             MovementCollisionType.None;
 
-        bool yCollides =
+        bool yBlocked =
             resolution.playerYCollision !=
             MovementCollisionType.None;
 
-        // Y wants X's starting cell,
-        // but X is not successfully leaving it.
-        if (yResult.IsMoving &&
+        // Y wants X's position,
+        // but X will remain there.
+        if (
+            yResult.IsMoving &&
             yResult.destination ==
             xResult.startPosition &&
             (
                 !xResult.IsMoving ||
-                xCollides
-            ))
+                xBlocked
+            )
+        )
         {
             resolution.playerYCollision =
                 MovementCollisionType.OccupiedCell;
         }
 
-        // X wants Y's starting cell,
-        // but Y is not successfully leaving it.
-        if (xResult.IsMoving &&
+        // X wants Y's position,
+        // but Y will remain there.
+        if (
+            xResult.IsMoving &&
             xResult.destination ==
             yResult.startPosition &&
             (
                 !yResult.IsMoving ||
-                yCollides
-            ))
+                yBlocked
+            )
+        )
         {
             resolution.playerXCollision =
                 MovementCollisionType.OccupiedCell;
@@ -140,10 +147,6 @@ public class MovementRuleResolver : MonoBehaviour
         );
     }
 
-    // =========================================================
-    // X
-    // =========================================================
-
     private bool IsBlockedForX(
         Board board,
         MovementResult xResult,
@@ -155,40 +158,32 @@ public class MovementRuleResolver : MonoBehaviour
                 xResult.destination.y
             );
 
-        if (cell == null)
+        if (cell == null || cell.IsEmpty)
         {
             return false;
         }
 
-        if (cell.IsEmpty)
+        // X targets Y's starting position.
+        // Allow it if Y successfully leaves.
+        if (
+            xResult.destination ==
+            yResult.startPosition
+        )
+        {
+            return !yResult.IsMoving;
+        }
+
+        // X staying in its own position.
+        if (
+            xResult.destination ==
+            xResult.startPosition
+        )
         {
             return false;
         }
 
-        // X is targeting Y's starting position.
-        // Allowed only if Y successfully leaves.
-        if (xResult.destination ==
-            yResult.startPosition)
-        {
-            return !CanSuccessfullyLeave(
-                yResult
-            );
-        }
-
-        // X is targeting its own starting position.
-        if (xResult.destination ==
-            xResult.startPosition)
-        {
-            return false;
-        }
-
-        // Any other occupied cell is permanent.
         return true;
     }
-
-    // =========================================================
-    // Y
-    // =========================================================
 
     private bool IsBlockedForY(
         Board board,
@@ -201,40 +196,30 @@ public class MovementRuleResolver : MonoBehaviour
                 yResult.destination.y
             );
 
-        if (cell == null)
+        if (cell == null || cell.IsEmpty)
         {
             return false;
         }
 
-        if (cell.IsEmpty)
+        // Y targets X's starting position.
+        // Allow it if X successfully leaves.
+        if (
+            yResult.destination ==
+            xResult.startPosition
+        )
+        {
+            return !xResult.IsMoving;
+        }
+
+        // Y staying in its own position.
+        if (
+            yResult.destination ==
+            yResult.startPosition
+        )
         {
             return false;
         }
 
-        // Y is targeting X's starting position.
-        // Allowed only if X successfully leaves.
-        if (yResult.destination ==
-            xResult.startPosition)
-        {
-            return !CanSuccessfullyLeave(
-                xResult
-            );
-        }
-
-        // Y is targeting its own starting position.
-        if (yResult.destination ==
-            yResult.startPosition)
-        {
-            return false;
-        }
-
-        // Any other occupied cell is permanent.
         return true;
-    }
-
-    private bool CanSuccessfullyLeave(
-        MovementResult result)
-    {
-        return result.IsMoving;
     }
 }

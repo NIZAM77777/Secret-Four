@@ -23,9 +23,6 @@ public class MovementManager : MonoBehaviour
     [SerializeField]
     private BoardView boardView;
 
-    [SerializeField]
-    private GameConfig gameConfig;
-
     [Header("Timing")]
 
     [SerializeField]
@@ -34,13 +31,11 @@ public class MovementManager : MonoBehaviour
     [SerializeField]
     private float movementDuration = 0.3f;
 
-    [Header("Collision Animation")]
+    [SerializeField]
+    private float blockedPauseDuration = 0.08f;
 
     [SerializeField]
-    private float collisionPauseDuration = 0.08f;
-
-    [SerializeField]
-    private float collisionReturnDuration = 0.16f;
+    private float returnDuration = 0.16f;
 
     private bool movementInProgress;
 
@@ -48,9 +43,9 @@ public class MovementManager : MonoBehaviour
     private GameObject playerYCoin;
 
 
-    // =========================================================
-    // START MOVEMENT
-    // =========================================================
+    // =====================================================
+    // START
+    // =====================================================
 
     public void StartMovementSequence(
         GameObject xCoin,
@@ -76,29 +71,17 @@ public class MovementManager : MonoBehaviour
     }
 
 
-    // =========================================================
+    // =====================================================
     // REVEAL AND RESOLVE
-    // =========================================================
+    // =====================================================
 
     private IEnumerator RevealAndResolve()
     {
-        // --------------------------------
-        // Reveal directions
-        // --------------------------------
-
         RevealDirections();
-
-        // --------------------------------
-        // Wait before movement
-        // --------------------------------
 
         yield return new WaitForSeconds(
             revealDelay
         );
-
-        // --------------------------------
-        // Calculate BOTH destinations
-        // --------------------------------
 
         MovementResolution resolution =
             movementRuleResolver.Resolve(
@@ -106,18 +89,12 @@ public class MovementManager : MonoBehaviour
                 turnManager.PlayerYAction
             );
 
-        LogResolution(
-            resolution
-        );
-
-        // --------------------------------
-        // Resolve movement
-        // --------------------------------
+        LogResolution(resolution);
 
         if (resolution.AnyCollision)
         {
             yield return StartCoroutine(
-                HandleCollision(
+                HandleBlockedMovement(
                     resolution
                 )
             );
@@ -135,9 +112,9 @@ public class MovementManager : MonoBehaviour
     }
 
 
-    // =========================================================
+    // =====================================================
     // REVEAL
-    // =========================================================
+    // =====================================================
 
     private void RevealDirections()
     {
@@ -157,36 +134,48 @@ public class MovementManager : MonoBehaviour
     }
 
 
-    // =========================================================
-    // DEBUG
-    // =========================================================
+    // =====================================================
+    // BLOCKED MOVEMENT
+    // =====================================================
 
-    private void LogResolution(
+    private IEnumerator HandleBlockedMovement(
         MovementResolution resolution)
     {
-        Debug.Log(
-            $"X: " +
-            $"{resolution.playerXResult.startPosition}" +
-            " → " +
-            $"{resolution.playerXResult.destination}" +
-            $" | Collision: " +
-            $"{resolution.playerXCollision}"
+        turnManager.SetState(
+            GameState.Moving
         );
 
-        Debug.Log(
-            $"Y: " +
-            $"{resolution.playerYResult.startPosition}" +
-            " → " +
-            $"{resolution.playerYResult.destination}" +
-            $" | Collision: " +
-            $"{resolution.playerYCollision}"
+        yield return StartCoroutine(
+            AnimateMovementResults(
+                resolution
+            )
         );
+
+        // Save only successful movements.
+        ApplyResolvedMovement(
+            resolution
+        );
+
+        boardManager.CurrentBoard
+            .DebugPrintBoard();
+
+        turnManager.SetState(
+            GameState.CheckingResult
+        );
+
+        if (CheckGameResult())
+        {
+            yield break;
+        }
+
+        // Continue forever until win/draw.
+        turnManager.StartNextRound();
     }
 
 
-    // =========================================================
+    // =====================================================
     // SUCCESSFUL MOVEMENT
-    // =========================================================
+    // =====================================================
 
     private IEnumerator HandleSuccessfulMovement(
         MovementResolution resolution)
@@ -196,32 +185,24 @@ public class MovementManager : MonoBehaviour
         );
 
         Vector3 xStart =
-            boardView.GetCellWorldPosition(
-                resolution.playerXResult.startPosition.x,
-                resolution.playerXResult.startPosition.y
+            GetWorldPosition(
+                resolution.playerXResult.startPosition
             );
 
         Vector3 xEnd =
-            boardView.GetCellWorldPosition(
-                resolution.playerXResult.destination.x,
-                resolution.playerXResult.destination.y
+            GetWorldPosition(
+                resolution.playerXResult.destination
             );
 
         Vector3 yStart =
-            boardView.GetCellWorldPosition(
-                resolution.playerYResult.startPosition.x,
-                resolution.playerYResult.startPosition.y
+            GetWorldPosition(
+                resolution.playerYResult.startPosition
             );
 
         Vector3 yEnd =
-            boardView.GetCellWorldPosition(
-                resolution.playerYResult.destination.x,
-                resolution.playerYResult.destination.y
+            GetWorldPosition(
+                resolution.playerYResult.destination
             );
-
-        // --------------------------------
-        // Move both coins simultaneously
-        // --------------------------------
 
         yield return StartCoroutine(
             AnimateTwoCoins(
@@ -233,25 +214,12 @@ public class MovementManager : MonoBehaviour
             )
         );
 
-        // --------------------------------
-        // Save new positions permanently
-        // --------------------------------
-
         ApplySuccessfulBoardMovement(
             resolution
         );
 
-        Debug.Log(
-            "Movement successful. " +
-            "New positions saved."
-        );
-
         boardManager.CurrentBoard
             .DebugPrintBoard();
-
-        // --------------------------------
-        // Check Win / Draw
-        // --------------------------------
 
         turnManager.SetState(
             GameState.CheckingResult
@@ -262,113 +230,28 @@ public class MovementManager : MonoBehaviour
             yield break;
         }
 
-        // --------------------------------
-        // Continue game
-        // --------------------------------
-
         turnManager.StartNextRound();
     }
 
 
-    // =========================================================
+    // =====================================================
     // APPLY SUCCESSFUL MOVEMENT
-    // =========================================================
+    // =====================================================
 
     private void ApplySuccessfulBoardMovement(
         MovementResolution resolution)
     {
-        Board board =
-            boardManager.CurrentBoard;
-
-        board.ApplySuccessfulMovement(
-            resolution.playerXResult,
-            resolution.playerYResult
-        );
-    }
-
-
-    // =========================================================
-    // COLLISION
-    // =========================================================
-
-    private IEnumerator HandleCollision(
-        MovementResolution resolution)
-    {
-        turnManager.RegisterCollision();
-
-        Debug.Log(
-            $"COLLISION! Count = " +
-            $"{turnManager.CollisionCount}"
-        );
-
-        // --------------------------------
-        // Animate collision / movement
-        // --------------------------------
-
-        yield return StartCoroutine(
-            AnimateMovementResults(
-                resolution
-            )
-        );
-
-        // --------------------------------
-        // Collision draw
-        // --------------------------------
-
-        if (turnManager.CollisionCount >=
-    gameConfig.collisionDrawCount)
-        {
-            Debug.Log(
-                "DRAW — Collision limit reached."
-            );
-
-            gameResultManager.SetDraw();
-
-            yield break;
-        }
-
-        // --------------------------------
-        // Apply successful movements.
-        //
-        // Collided coins remain at their
-        // original positions.
-        //
-        // Successful coins become permanent.
-        // --------------------------------
-
-        ApplyResolvedMovement(
-            resolution
-        );
-
         boardManager.CurrentBoard
-            .DebugPrintBoard();
-
-        // --------------------------------
-        // IMPORTANT:
-        // Check Win / Draw AFTER the successful
-        // coin has been saved.
-        // --------------------------------
-
-        turnManager.SetState(
-            GameState.CheckingResult
-        );
-
-        if (CheckGameResult())
-        {
-            yield break;
-        }
-
-        // --------------------------------
-        // Continue game
-        // --------------------------------
-
-        turnManager.StartNextRound();
+            .ApplySuccessfulMovement(
+                resolution.playerXResult,
+                resolution.playerYResult
+            );
     }
 
 
-    // =========================================================
-    // APPLY COLLISION RESULT
-    // =========================================================
+    // =====================================================
+    // APPLY BLOCKED RESULT
+    // =====================================================
 
     private void ApplyResolvedMovement(
         MovementResolution resolution)
@@ -385,12 +268,11 @@ public class MovementManager : MonoBehaviour
         MovementResult yFinal =
             yResult;
 
-        // --------------------------------
-        // X collided
-        // --------------------------------
-
-        if (resolution.playerXCollision !=
-            MovementCollisionType.None)
+        // X was blocked → stay.
+        if (
+            resolution.playerXCollision !=
+            MovementCollisionType.None
+        )
         {
             xFinal =
                 new MovementResult(
@@ -401,12 +283,11 @@ public class MovementManager : MonoBehaviour
                 );
         }
 
-        // --------------------------------
-        // Y collided
-        // --------------------------------
-
-        if (resolution.playerYCollision !=
-            MovementCollisionType.None)
+        // Y was blocked → stay.
+        if (
+            resolution.playerYCollision !=
+            MovementCollisionType.None
+        )
         {
             yFinal =
                 new MovementResult(
@@ -417,10 +298,7 @@ public class MovementManager : MonoBehaviour
                 );
         }
 
-        // --------------------------------
-        // Apply both results simultaneously
-        // --------------------------------
-
+        // Apply both simultaneously.
         boardManager.CurrentBoard
             .ApplySuccessfulMovement(
                 xFinal,
@@ -429,57 +307,42 @@ public class MovementManager : MonoBehaviour
     }
 
 
-    // =========================================================
-    // COLLISION / MOVEMENT ANIMATION
-    // =========================================================
+    // =====================================================
+    // ANIMATE RESULTS
+    // =====================================================
 
     private IEnumerator AnimateMovementResults(
         MovementResolution resolution)
     {
-        turnManager.SetState(
-            GameState.Moving
-        );
-
         Vector3 xStart =
-            boardView.GetCellWorldPosition(
-                resolution.playerXResult.startPosition.x,
-                resolution.playerXResult.startPosition.y
+            GetWorldPosition(
+                resolution.playerXResult.startPosition
             );
 
         Vector3 xTarget =
-            boardView.GetCellWorldPosition(
-                resolution.playerXResult.destination.x,
-                resolution.playerXResult.destination.y
+            GetWorldPosition(
+                resolution.playerXResult.destination
             );
 
         Vector3 yStart =
-            boardView.GetCellWorldPosition(
-                resolution.playerYResult.startPosition.x,
-                resolution.playerYResult.startPosition.y
+            GetWorldPosition(
+                resolution.playerYResult.startPosition
             );
 
         Vector3 yTarget =
-            boardView.GetCellWorldPosition(
-                resolution.playerYResult.destination.x,
-                resolution.playerYResult.destination.y
+            GetWorldPosition(
+                resolution.playerYResult.destination
             );
 
-        // --------------------------------
-        // Determine collisions
-        // --------------------------------
-
-        bool xCollides =
+        bool xBlocked =
             resolution.playerXCollision !=
             MovementCollisionType.None;
 
-        bool yCollides =
+        bool yBlocked =
             resolution.playerYCollision !=
             MovementCollisionType.None;
 
-        // --------------------------------
-        // Move both toward their targets
-        // --------------------------------
-
+        // Both visually move toward destination.
         yield return StartCoroutine(
             AnimateTwoCoins(
                 xStart,
@@ -490,69 +353,49 @@ public class MovementManager : MonoBehaviour
             )
         );
 
-        // --------------------------------
-        // Impact pause
-        // --------------------------------
+        yield return new WaitForSeconds(
+            blockedPauseDuration
+        );
 
-        if (xCollides || yCollides)
-        {
-            yield return new WaitForSeconds(
-                collisionPauseDuration
-            );
-        }
+        // Only blocked coins return.
+        Vector3 xFinal =
+            xBlocked
+                ? xStart
+                : xTarget;
 
-        // --------------------------------
-        // Only collided coins return
-        // --------------------------------
+        Vector3 yFinal =
+            yBlocked
+                ? yStart
+                : yTarget;
 
-        if (xCollides || yCollides)
-        {
-            Vector3 xReturn =
-                xCollides
-                    ? xStart
-                    : xTarget;
+        yield return StartCoroutine(
+            AnimateTwoCoins(
+                xTarget,
+                xFinal,
+                yTarget,
+                yFinal,
+                returnDuration
+            )
+        );
 
-            Vector3 yReturn =
-                yCollides
-                    ? yStart
-                    : yTarget;
-
-            yield return StartCoroutine(
-                AnimateTwoCoins(
-                    xTarget,
-                    xReturn,
-                    yTarget,
-                    yReturn,
-                    collisionReturnDuration
-                )
-            );
-        }
-
-        // --------------------------------
-        // Guarantee final positions
-        // --------------------------------
-
+        // Guarantee exact positions.
         if (playerXCoin != null)
         {
             playerXCoin.transform.position =
-                xCollides
-                    ? xStart
-                    : xTarget;
+                xFinal;
         }
 
         if (playerYCoin != null)
         {
             playerYCoin.transform.position =
-                yCollides
-                    ? yStart
-                    : yTarget;
+                yFinal;
         }
     }
 
 
-    // =========================================================
-    // SHARED ANIMATION
-    // =========================================================
+    // =====================================================
+    // ANIMATE TWO COINS
+    // =====================================================
 
     private IEnumerator AnimateTwoCoins(
         Vector3 xStart,
@@ -615,23 +458,32 @@ public class MovementManager : MonoBehaviour
     }
 
 
-    // =========================================================
+    // =====================================================
+    // WORLD POSITION
+    // =====================================================
+
+    private Vector3 GetWorldPosition(
+        Vector2Int position)
+    {
+        return boardView.GetCellWorldPosition(
+            position.x,
+            position.y
+        );
+    }
+
+
+    // =====================================================
     // GAME RESULT
-    // =========================================================
+    // =====================================================
 
     private bool CheckGameResult()
     {
-        // --------------------------------
-        // WIN
-        // --------------------------------
-
-        if (winConditionChecker.HasWinner(
-            out PlayerType winner))
+        if (
+            winConditionChecker.HasWinner(
+                out PlayerType winner
+            )
+        )
         {
-            Debug.Log(
-                $"WINNER → {winner}"
-            );
-
             gameResultManager.SetWinner(
                 winner
             );
@@ -639,21 +491,40 @@ public class MovementManager : MonoBehaviour
             return true;
         }
 
-        // --------------------------------
-        // BOARD FULL → DRAW
-        // --------------------------------
-
         if (winConditionChecker.IsBoardFull())
         {
-            Debug.Log(
-                "DRAW → Board is full."
-            );
-
             gameResultManager.SetDraw();
 
             return true;
         }
 
         return false;
+    }
+
+
+    // =====================================================
+    // DEBUG
+    // =====================================================
+
+    private void LogResolution(
+        MovementResolution resolution)
+    {
+        Debug.Log(
+            $"X: " +
+            $"{resolution.playerXResult.startPosition}" +
+            $" → " +
+            $"{resolution.playerXResult.destination}" +
+            $" | Blocked: " +
+            $"{resolution.playerXCollision}"
+        );
+
+        Debug.Log(
+            $"Y: " +
+            $"{resolution.playerYResult.startPosition}" +
+            $" → " +
+            $"{resolution.playerYResult.destination}" +
+            $" | Blocked: " +
+            $"{resolution.playerYCollision}"
+        );
     }
 }

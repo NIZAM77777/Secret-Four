@@ -10,6 +10,9 @@ public class BoardInput : MonoBehaviour
     private BoardView boardView;
 
     [SerializeField]
+    private PauseManager pauseManager;
+
+    [SerializeField]
     private PlacementManager placementManager;
 
     private void Awake()
@@ -22,6 +25,19 @@ public class BoardInput : MonoBehaviour
 
     private void Update()
     {
+        // ---------------------------------
+        // FIRST: Block input if paused
+        // ---------------------------------
+
+        if (pauseManager != null)
+        {
+            if (pauseManager.IsPaused() ||
+                pauseManager.IsInputBlocked())
+            {
+                return;
+            }
+        }
+
         if (Mouse.current == null)
             return;
 
@@ -47,8 +63,21 @@ public class BoardInput : MonoBehaviour
 
     private void TrySelectCell(Vector3 worldPosition)
     {
-        if (boardView == null || placementManager == null)
+        if (boardView == null ||
+            placementManager == null)
+        {
             return;
+        }
+
+        // Safety check again
+        if (pauseManager != null)
+        {
+            if (pauseManager.IsPaused() ||
+                pauseManager.IsInputBlocked())
+            {
+                return;
+            }
+        }
 
         if (!boardView.TryGetCellCoordinates(
             worldPosition,

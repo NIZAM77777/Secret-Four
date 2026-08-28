@@ -12,10 +12,6 @@ public class MovementResolution
         playerXCollision != MovementCollisionType.None ||
         playerYCollision != MovementCollisionType.None;
 
-    public bool SameDestinationCollision =>
-        playerXResult.destination ==
-        playerYResult.destination;
-
     public MovementResolution(
         MovementResult playerXResult,
         MovementResult playerYResult)

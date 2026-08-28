@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class GameHUD : MonoBehaviour
@@ -11,35 +12,39 @@ public class GameHUD : MonoBehaviour
     [SerializeField]
     private TMP_Text playerYNameText;
 
-    [Header("Player Labels")]
+    [Header("Player Images")]
 
     [SerializeField]
-    private TMP_Text playerXLabelText;
+    private Image playerXImage;
 
     [SerializeField]
-    private TMP_Text playerYLabelText;
+    private Image playerYImage;
 
     [Header("Turn Information")]
 
     [SerializeField]
     private TMP_Text turnText;
 
-    [Header("Collision")]
-
-    [SerializeField]
-    private TMP_Text collisionText;
-
-    [SerializeField]
-    private GameConfig gameConfig;
-
     [Header("References")]
 
     [SerializeField]
     private TurnManager turnManager;
 
+    [SerializeField]
+    private CoinConfig coinConfig;
+
+    [Header("Visual Settings")]
+
+    [SerializeField]
+    private float activeAlpha = 1f;
+
+    [SerializeField]
+    private float inactiveAlpha = 0.35f;
+
     private void Start()
     {
         SetupPlayers();
+        SetupPlayerImages();
 
         Refresh();
     }
@@ -48,6 +53,10 @@ public class GameHUD : MonoBehaviour
     {
         Refresh();
     }
+
+    // =========================
+    // PLAYER SETUP
+    // =========================
 
     private void SetupPlayers()
     {
@@ -64,10 +73,39 @@ public class GameHUD : MonoBehaviour
 
         playerYNameText.text =
             GameSession.Instance.Player2Name;
-
-        playerXLabelText.text = "X";
-        playerYLabelText.text = "Y";
     }
+
+    // =========================
+    // PLAYER IMAGES
+    // =========================
+
+    private void SetupPlayerImages()
+    {
+        if (coinConfig == null)
+        {
+            Debug.LogWarning(
+                "CoinConfig is missing in GameHUD."
+            );
+
+            return;
+        }
+
+        if (playerXImage != null)
+        {
+            playerXImage.sprite =
+                coinConfig.GetSprite(PlayerType.X);
+        }
+
+        if (playerYImage != null)
+        {
+            playerYImage.sprite =
+                coinConfig.GetSprite(PlayerType.Y);
+        }
+    }
+
+    // =========================
+    // HUD REFRESH
+    // =========================
 
     private void Refresh()
     {
@@ -77,8 +115,12 @@ public class GameHUD : MonoBehaviour
         }
 
         UpdateTurnText();
-        UpdateCollisionText();
+        UpdatePlayerHighlight();
     }
+
+    // =========================
+    // TURN TEXT
+    // =========================
 
     private void UpdateTurnText()
     {
@@ -129,7 +171,7 @@ public class GameHUD : MonoBehaviour
             case GameState.CheckingResult:
 
                 turnText.text =
-                    "Checking...";
+                    "Checking Result...";
 
                 break;
 
@@ -149,19 +191,98 @@ public class GameHUD : MonoBehaviour
 
             default:
 
-                turnText.text =
-                    "";
+                turnText.text = "";
 
                 break;
         }
     }
 
-    private void UpdateCollisionText()
+    // =========================
+    // ACTIVE PLAYER VISUAL
+    // =========================
+
+    private void UpdatePlayerHighlight()
     {
-        collisionText.text =
-            $"Collisions  {turnManager.CollisionCount} / " +
-            $"{gameConfig.collisionDrawCount}";
+        GameState state =
+            turnManager.CurrentState;
+
+        bool xActive =
+            state ==
+                GameState.WaitingForPlayerXPlacement
+            ||
+            state ==
+                GameState.WaitingForPlayerXDirection;
+
+        bool yActive =
+            state ==
+                GameState.WaitingForPlayerYPlacement
+            ||
+            state ==
+                GameState.WaitingForPlayerYDirection;
+
+        if (xActive)
+        {
+            SetImageAlpha(
+                playerXImage,
+                activeAlpha
+            );
+
+            SetImageAlpha(
+                playerYImage,
+                inactiveAlpha
+            );
+        }
+        else if (yActive)
+        {
+            SetImageAlpha(
+                playerXImage,
+                inactiveAlpha
+            );
+
+            SetImageAlpha(
+                playerYImage,
+                activeAlpha
+            );
+        }
+        else
+        {
+            // During reveal/movement:
+            // both players visible normally.
+
+            SetImageAlpha(
+                playerXImage,
+                activeAlpha
+            );
+
+            SetImageAlpha(
+                playerYImage,
+                activeAlpha
+            );
+        }
     }
+
+    // =========================
+    // IMAGE ALPHA
+    // =========================
+
+    private void SetImageAlpha(
+        Image image,
+        float alpha)
+    {
+        if (image == null)
+            return;
+
+        Color color =
+            image.color;
+
+        color.a = alpha;
+
+        image.color = color;
+    }
+
+    // =========================
+    // PLAYER NAMES
+    // =========================
 
     private string GetPlayerXName()
     {

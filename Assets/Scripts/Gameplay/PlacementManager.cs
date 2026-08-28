@@ -12,6 +12,9 @@ public class PlacementManager : MonoBehaviour
     private CoinConfig coinConfig;
 
     [SerializeField]
+    private DirectionButtonController directionButtonController;
+
+    [SerializeField]
     private GameObject coinPrefab;
 
     [SerializeField]
@@ -101,6 +104,10 @@ public class PlacementManager : MonoBehaviour
         );
 
         turnManager.PlayerPlaced(player);
+
+        directionButtonController.UpdateDirectionButtons(
+            player
+        );
     }
 
     private PlayerType GetCurrentPlacementPlayer()
