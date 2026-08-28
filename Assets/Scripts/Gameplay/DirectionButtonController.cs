@@ -38,58 +38,154 @@ public class DirectionButtonController : MonoBehaviour
         Vector2Int position =
             action.position;
 
+        // Up
+        UpdateButton(
+            upButton,
+            player,
+            new Vector2Int(
+                position.x,
+                position.y + 1
+            )
+        );
+
+        // Down
+        UpdateButton(
+            downButton,
+            player,
+            new Vector2Int(
+                position.x,
+                position.y - 1
+            )
+        );
+
+        // Left
+        UpdateButton(
+            leftButton,
+            player,
+            new Vector2Int(
+                position.x - 1,
+                position.y
+            )
+        );
+
+        // Right
+        UpdateButton(
+            rightButton,
+            player,
+            new Vector2Int(
+                position.x + 1,
+                position.y
+            )
+        );
+
+        // Stay is always possible
+        stayButton.interactable = true;
+    }
+
+
+    private void UpdateButton(
+        Button button,
+        PlayerType currentPlayer,
+        Vector2Int destination)
+    {
+        if (button == null)
+            return;
+
+        button.interactable =
+            CanMoveToDestination(
+                currentPlayer,
+                destination
+            );
+    }
+
+
+    private bool CanMoveToDestination(
+        PlayerType currentPlayer,
+        Vector2Int destination)
+    {
         Board board =
             boardManager.CurrentBoard;
 
-        // Check each direction.
+        // =====================================
+        // 1. Outside board
+        // =====================================
 
-        bool canMoveUp =
-            board.IsInsideBoard(
-                position.x,
-                position.y + 1
-            );
+        if (!board.IsInsideBoard(
+            destination.x,
+            destination.y))
+        {
+            return false;
+        }
 
-        bool canMoveDown =
-            board.IsInsideBoard(
-                position.x,
-                position.y - 1
-            );
 
-        bool canMoveLeft =
-            board.IsInsideBoard(
-                position.x - 1,
-                position.y
-            );
+        // =====================================
+        // 2. Empty cell
+        // =====================================
 
-        bool canMoveRight =
-            board.IsInsideBoard(
-                position.x + 1,
-                position.y
-            );
+        if (board.IsEmpty(
+            destination.x,
+            destination.y))
+        {
+            return true;
+        }
 
-        upButton.interactable =
-            canMoveUp;
 
-        downButton.interactable =
-            canMoveDown;
+        // =====================================
+        // 3. Check the OTHER current-round coin
+        // =====================================
 
-        leftButton.interactable =
-            canMoveLeft;
+        PlayerType otherPlayer =
+            currentPlayer == PlayerType.X
+                ? PlayerType.Y
+                : PlayerType.X;
 
-        rightButton.interactable =
-            canMoveRight;
+        PlayerAction otherAction =
+            turnManager.GetAction(otherPlayer);
 
-        // Stay is always available.
-        stayButton.interactable = true;
+
+        // If the occupied cell belongs to the
+        // coin placed during THIS round,
+        // allow movement.
+        //
+        // This allows:
+        // - swapping
+        // - simultaneous movement
+        // - same destination logic
+        //
+        if (otherAction.hasPlaced &&
+            destination ==
+            otherAction.position)
+        {
+            return true;
+        }
+
+
+        // =====================================
+        // 4. Any other occupied cell
+        // =====================================
+        //
+        // This is a permanent / previous coin.
+        // Do not allow selecting this direction.
+
+        return false;
     }
 
 
     public void ResetButtons()
     {
-        upButton.interactable = true;
-        downButton.interactable = true;
-        leftButton.interactable = true;
-        rightButton.interactable = true;
-        stayButton.interactable = true;
+        if (upButton != null)
+            upButton.interactable = true;
+
+        if (downButton != null)
+            downButton.interactable = true;
+
+        if (leftButton != null)
+            leftButton.interactable = true;
+
+        if (rightButton != null)
+            rightButton.interactable = true;
+
+        if (stayButton != null)
+            stayButton.interactable = true;
     }
 }

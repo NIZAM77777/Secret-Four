@@ -10,6 +10,12 @@ public class GameSession : MonoBehaviour
         private set;
     }
 
+    public BotDifficulty CurrentBotDifficulty
+    {
+        get;
+        private set;
+    }
+
     public string Player1Name
     {
         get;
@@ -46,15 +52,23 @@ public class GameSession : MonoBehaviour
             PlayerNameManager.GetPlayerName();
     }
 
-    public void StartBotGame()
+    public void StartBotGame(
+    BotDifficulty difficulty)
     {
         CurrentGameMode =
             GameMode.Bot;
+
+        CurrentBotDifficulty =
+            difficulty;
 
         Player1Name =
             PlayerNameManager.GetPlayerName();
 
         Player2Name = "Bot";
+
+        Debug.Log(
+            $"Bot Game Started: {difficulty}"
+        );
     }
 
     public void StartLocalHumanGame(

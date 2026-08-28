@@ -36,7 +36,7 @@ public class DirectionSelector : MonoBehaviour
         SelectDirection(MoveDirection.Stay);
     }
 
-    private void SelectDirection(
+    public void SelectDirection(
         MoveDirection direction)
     {
         PlayerType player =

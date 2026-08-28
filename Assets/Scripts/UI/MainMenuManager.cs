@@ -16,19 +16,74 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private GameObject humanSetupPanel;
 
-    public void PlayWithBot()
+    [SerializeField]
+    private GameObject botPanel;
+
+    [Header("Human Setup")]
+
+    [SerializeField]
+    private HumanSetupManager humanSetupManager;
+
+    public void OpenBotPanel()
     {
-        GameSession.Instance.StartBotGame();
+        mainMenuPanel.SetActive(false);
+
+        humanSetupPanel.SetActive(false);
+
+        botPanel.SetActive(true);
+    }
+
+    public void BackFromBotPanel()
+    {
+        botPanel.SetActive(false);
+
+        mainMenuPanel.SetActive(true);
+    }
+
+    public void PlayEasyBot()
+    {
+        StartBotGame(
+            BotDifficulty.Easy
+        );
+    }
+
+    public void PlayMediumBot()
+    {
+        StartBotGame(
+            BotDifficulty.Medium
+        );
+    }
+
+    public void PlayHardBot()
+    {
+        StartBotGame(
+            BotDifficulty.Hard
+        );
+    }
+
+    private void StartBotGame(
+        BotDifficulty difficulty)
+    {
+        GameSession.Instance.StartBotGame(
+            difficulty
+        );
 
         LoadGameScene();
     }
+
 
     public void OpenHumanSetup()
     {
         mainMenuPanel.SetActive(false);
 
         humanSetupPanel.SetActive(true);
+
+        if (humanSetupManager != null)
+        {
+            humanSetupManager.ResetPlayerNames();
+        }
     }
+
 
     public void StartHumanGame(
         string player1Name,
@@ -42,12 +97,14 @@ public class MainMenuManager : MonoBehaviour
         LoadGameScene();
     }
 
+
     public void BackToMainMenu()
     {
         humanSetupPanel.SetActive(false);
 
         mainMenuPanel.SetActive(true);
     }
+
 
     public void PlayInRoom()
     {
@@ -58,14 +115,14 @@ public class MainMenuManager : MonoBehaviour
         );
     }
 
+
     public void ExitGame()
     {
-        Debug.Log(
-            "Exit Game"
-        );
+        Debug.Log("Exit Game");
 
         Application.Quit();
     }
+
 
     private void LoadGameScene()
     {
