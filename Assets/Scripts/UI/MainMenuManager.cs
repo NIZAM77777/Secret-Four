@@ -8,6 +8,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private string gameSceneName = "GameScene";
 
+
     [Header("Panels")]
 
     [SerializeField]
@@ -19,10 +20,19 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private GameObject botPanel;
 
+    [SerializeField]
+    private GameObject playInRoomMenuPanel;
+
+
     [Header("Human Setup")]
 
     [SerializeField]
     private HumanSetupManager humanSetupManager;
+
+
+    // =========================
+    // BOT
+    // =========================
 
     public void OpenBotPanel()
     {
@@ -33,12 +43,14 @@ public class MainMenuManager : MonoBehaviour
         botPanel.SetActive(true);
     }
 
+
     public void BackFromBotPanel()
     {
         botPanel.SetActive(false);
 
         mainMenuPanel.SetActive(true);
     }
+
 
     public void PlayEasyBot()
     {
@@ -47,6 +59,7 @@ public class MainMenuManager : MonoBehaviour
         );
     }
 
+
     public void PlayMediumBot()
     {
         StartBotGame(
@@ -54,12 +67,14 @@ public class MainMenuManager : MonoBehaviour
         );
     }
 
+
     public void PlayHardBot()
     {
         StartBotGame(
             BotDifficulty.Hard
         );
     }
+
 
     private void StartBotGame(
         BotDifficulty difficulty)
@@ -71,6 +86,10 @@ public class MainMenuManager : MonoBehaviour
         LoadGameScene();
     }
 
+
+    // =========================
+    // LOCAL HUMAN
+    // =========================
 
     public void OpenHumanSetup()
     {
@@ -106,15 +125,37 @@ public class MainMenuManager : MonoBehaviour
     }
 
 
+    // =========================
+    // PLAY IN ROOM
+    // =========================
+
     public void PlayInRoom()
     {
-        GameSession.Instance.StartOnlineRoomGame();
+        mainMenuPanel.SetActive(false);
+
+        playInRoomMenuPanel.SetActive(true);
 
         Debug.Log(
-            "Online Room mode selected."
+            "Play In Room menu opened."
         );
     }
 
+
+    public void BackFromPlayInRoom()
+    {
+        playInRoomMenuPanel.SetActive(false);
+
+        mainMenuPanel.SetActive(true);
+
+        Debug.Log(
+            "Returned to Main Menu."
+        );
+    }
+
+
+    // =========================
+    // EXIT
+    // =========================
 
     public void ExitGame()
     {
@@ -123,6 +164,10 @@ public class MainMenuManager : MonoBehaviour
         Application.Quit();
     }
 
+
+    // =========================
+    // SCENE LOADING
+    // =========================
 
     private void LoadGameScene()
     {
