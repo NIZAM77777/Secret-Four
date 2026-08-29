@@ -27,6 +27,9 @@ public class MovementManager : MonoBehaviour
     [SerializeField]
     private NetworkMovementManager networkMovementManager;
 
+    [SerializeField]
+    private NetworkGameResultManager networkGameResultManager;
+
 
     [Header("Timing")]
 
@@ -303,7 +306,7 @@ public class MovementManager : MonoBehaviour
         }
 
 
-        turnManager.StartNextRound();
+        StartNextRoundCorrectly();
     }
 
 
@@ -374,7 +377,7 @@ public class MovementManager : MonoBehaviour
         }
 
 
-        turnManager.StartNextRound();
+        StartNextRoundCorrectly();
     }
 
 
@@ -635,6 +638,42 @@ public class MovementManager : MonoBehaviour
 
     private bool CheckGameResult()
     {
+        // =============================================
+        // ONLINE GAME
+        // =============================================
+
+        if (IsOnlineGame())
+        {
+            if (networkGameResultManager == null)
+            {
+                Debug.LogError(
+                    "NetworkGameResultManager is missing."
+                );
+
+                return false;
+            }
+
+
+            // Only Host decides the result.
+
+            if (NetworkManager.Singleton.IsServer)
+            {
+                return networkGameResultManager
+                    .CheckGameResultOnHost();
+            }
+
+
+            // Client does not independently
+            // decide WIN or DRAW.
+
+            return false;
+        }
+
+
+        // =============================================
+        // LOCAL GAME
+        // =============================================
+
         if (
             winConditionChecker.HasWinner(
                 out PlayerType winner
@@ -697,5 +736,36 @@ public class MovementManager : MonoBehaviour
             $" | Blocked: " +
             $"{resolution.playerYCollision}"
         );
+    }
+
+    private void StartNextRoundCorrectly()
+    {
+        // =============================================
+        // ONLINE GAME
+        // =============================================
+
+        if (IsOnlineGame())
+        {
+            if (!NetworkManager.Singleton.IsServer)
+            {
+                return;
+            }
+
+
+            if (networkGameResultManager != null)
+            {
+                networkGameResultManager
+                    .StartNextRoundOnHost();
+
+                return;
+            }
+        }
+
+
+        // =============================================
+        // LOCAL GAME
+        // =============================================
+
+        turnManager.StartNextRound();
     }
 }
