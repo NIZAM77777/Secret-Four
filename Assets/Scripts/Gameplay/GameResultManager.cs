@@ -14,12 +14,23 @@ public class GameResultManager : MonoBehaviour
 
     public bool IsDraw { get; private set; }
 
+
+    // =====================================================
+    // SET WINNER
+    // =====================================================
+
     public void SetWinner(
         PlayerType player)
     {
+        if (HasResult)
+        {
+            return;
+        }
+
         Winner = player;
 
         HasResult = true;
+
         IsDraw = false;
 
         turnManager.SetState(
@@ -35,9 +46,20 @@ public class GameResultManager : MonoBehaviour
         );
     }
 
+
+    // =====================================================
+    // SET DRAW
+    // =====================================================
+
     public void SetDraw()
     {
+        if (HasResult)
+        {
+            return;
+        }
+
         HasResult = true;
+
         IsDraw = true;
 
         turnManager.SetState(
@@ -51,13 +73,23 @@ public class GameResultManager : MonoBehaviour
         gameOverUI.ShowDraw();
     }
 
+
+    // =====================================================
+    // RESET RESULT
+    // =====================================================
+
     public void ResetResult()
     {
         Winner = default;
 
         HasResult = false;
+
         IsDraw = false;
 
         gameOverUI.Hide();
+
+        Debug.Log(
+            "Game result reset."
+        );
     }
 }

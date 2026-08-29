@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 using TMPro;
 using UnityEngine.UI;
 
@@ -18,6 +19,11 @@ public class GameOverUI : MonoBehaviour
     [SerializeField]
     private MatchManager matchManager;
 
+    [Header("Online Multiplayer")]
+
+    [SerializeField]
+    private NetworkPlayAgainManager networkPlayAgainManager;
+
     [Header("Winner Visual")]
 
     [SerializeField]
@@ -27,15 +33,19 @@ public class GameOverUI : MonoBehaviour
     private CoinConfig coinConfig;
 
 
+    // =====================================================
+    // START
+    // =====================================================
+
     private void Start()
     {
         Hide();
     }
 
 
-    // ==========================================
+    // =====================================================
     // SHOW WINNER
-    // ==========================================
+    // =====================================================
 
     public void ShowWinner(
         PlayerType winner)
@@ -64,9 +74,9 @@ public class GameOverUI : MonoBehaviour
     }
 
 
-    // ==========================================
+    // =====================================================
     // SHOW DRAW
-    // ==========================================
+    // =====================================================
 
     public void ShowDraw()
     {
@@ -87,7 +97,6 @@ public class GameOverUI : MonoBehaviour
                 "No winner this time.";
         }
 
-        // Hide winner image during draw
         if (winnerImage != null)
         {
             winnerImage.gameObject.SetActive(false);
@@ -95,9 +104,9 @@ public class GameOverUI : MonoBehaviour
     }
 
 
-    // ==========================================
+    // =====================================================
     // GET PLAYER NAME
-    // ==========================================
+    // =====================================================
 
     private string GetPlayerName(
         PlayerType player)
@@ -118,9 +127,9 @@ public class GameOverUI : MonoBehaviour
     }
 
 
-    // ==========================================
+    // =====================================================
     // SETUP WINNER IMAGE
-    // ==========================================
+    // =====================================================
 
     private void SetupWinnerImage(
         PlayerType winner)
@@ -138,9 +147,9 @@ public class GameOverUI : MonoBehaviour
     }
 
 
-    // ==========================================
+    // =====================================================
     // HIDE
-    // ==========================================
+    // =====================================================
 
     public void Hide()
     {
@@ -151,12 +160,60 @@ public class GameOverUI : MonoBehaviour
     }
 
 
-    // ==========================================
+    // =====================================================
     // PLAY AGAIN
-    // ==========================================
+    // =====================================================
 
     public void OnPlayAgainPressed()
     {
-        matchManager.StartNewMatch();
+        // =============================================
+        // ONLINE GAME
+        // =============================================
+
+        if (IsOnlineGame())
+        {
+            if (networkPlayAgainManager == null)
+            {
+                Debug.LogError(
+                    "NetworkPlayAgainManager is missing."
+                );
+
+                return;
+            }
+
+            Debug.Log(
+                "ONLINE → PLAY AGAIN REQUESTED"
+            );
+
+            networkPlayAgainManager
+                .RequestPlayAgain();
+
+            return;
+        }
+
+
+        // =============================================
+        // LOCAL / BOT GAME
+        // =============================================
+
+        if (matchManager != null)
+        {
+            Debug.Log(
+                "LOCAL → STARTING NEW MATCH"
+            );
+
+            matchManager.StartNewMatch();
+        }
+    }
+
+
+    // =====================================================
+    // ONLINE CHECK
+    // =====================================================
+
+    private bool IsOnlineGame()
+    {
+        return NetworkManager.Singleton != null &&
+               NetworkManager.Singleton.IsListening;
     }
 }

@@ -9,16 +9,25 @@ public class BoardManager : MonoBehaviour
 
     public Board CurrentBoard => board;
 
+
     private void Awake()
     {
         InitializeBoard();
     }
 
+
+    // =====================================================
+    // INITIALIZE BOARD
+    // =====================================================
+
     public void InitializeBoard()
     {
         if (gameConfig == null)
         {
-            Debug.LogError("BoardManager: GameConfig is not assigned.");
+            Debug.LogError(
+                "BoardManager: GameConfig is not assigned."
+            );
+
             return;
         }
 
@@ -28,8 +37,28 @@ public class BoardManager : MonoBehaviour
         );
 
         Debug.Log(
-            $"Board initialized: {board.Width} x {board.Height}"
+            $"Board initialized: " +
+            $"{board.Width} x {board.Height}"
         );
     }
 
+
+    // =====================================================
+    // RESET BOARD
+    // =====================================================
+
+    public void ResetBoard()
+    {
+        if (board == null)
+        {
+            InitializeBoard();
+            return;
+        }
+
+        board.ClearBoard();
+
+        Debug.Log(
+            "Board reset for new match."
+        );
+    }
 }

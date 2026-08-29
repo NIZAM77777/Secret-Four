@@ -1350,6 +1350,7 @@ MonoBehaviour:
   resultTitle: {fileID: 1862017366}
   resultSubtitle: {fileID: 1282940397}
   matchManager: {fileID: 1014258761}
+  networkPlayAgainManager: {fileID: 1745291624}
   winnerImage: {fileID: 2021368237}
   coinConfig: {fileID: 11400000, guid: f6bdd82f16b49e646933d8c1200ae75d, type: 2}
 --- !u!1 &519420028
@@ -4101,6 +4102,7 @@ Transform:
   - {fileID: 689930980}
   - {fileID: 422456082}
   - {fileID: 425535884}
+  - {fileID: 1745291623}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1445640425
@@ -4865,6 +4867,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1722969408}
   m_CullTransparentMesh: 1
+--- !u!1 &1745291622
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1745291623}
+  - component: {fileID: 1745291624}
+  m_Layer: 0
+  m_Name: NetworkPlayAgainManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1745291623
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1745291622}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368414253}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1745291624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1745291622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f9876527e252f745b0c831137d78958, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkPlayAgainManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  gameResultManager: {fileID: 276811465}
+  turnManager: {fileID: 1228661221}
+  boardManager: {fileID: 591312822}
+  placementManager: {fileID: 1282425387}
+  directionButtonController: {fileID: 734035270}
 --- !u!1 &1778498750
 GameObject:
   m_ObjectHideFlags: 0
