@@ -33,6 +33,11 @@ public class RoomUIController : MonoBehaviour
     [SerializeField]
     private RelayManager relayManager;
 
+    [SerializeField]
+    private GameObject creatingRoomPanel;
+
+    private bool isCreatingRoom;
+
 
     // =========================================
     // CREATE ROOM
@@ -40,9 +45,20 @@ public class RoomUIController : MonoBehaviour
 
     public async void CreateRoom()
     {
-        Debug.Log(
-            "Creating Room..."
-        );
+        // Prevent multiple button presses
+        if (isCreatingRoom)
+        {
+            return;
+        }
+
+        isCreatingRoom = true;
+
+
+        // Show Creating Room panel
+        if (creatingRoomPanel != null)
+        {
+            creatingRoomPanel.SetActive(true);
+        }
 
 
         string joinCode =
@@ -55,7 +71,25 @@ public class RoomUIController : MonoBehaviour
                 "Failed to create room."
             );
 
+
+            // Hide loading panel
+            if (creatingRoomPanel != null)
+            {
+                creatingRoomPanel.SetActive(false);
+            }
+
+
+            // Allow trying again
+            isCreatingRoom = false;
+
             return;
+        }
+
+
+        // Hide Creating Room panel
+        if (creatingRoomPanel != null)
+        {
+            creatingRoomPanel.SetActive(false);
         }
 
 
@@ -67,10 +101,7 @@ public class RoomUIController : MonoBehaviour
         roomCodeText.text = joinCode;
 
 
-        Debug.Log(
-            "Room Code Displayed: " +
-            joinCode
-        );
+        isCreatingRoom = false;
     }
 
 
@@ -145,8 +176,10 @@ public class RoomUIController : MonoBehaviour
     // BACK FROM CREATE ROOM
     // =========================================
 
-    public void BackFromCreateRoom()
+    public async void BackFromCreateRoom()
     {
+        await relayManager.CancelRelayRoom();
+
         createRoomPanel.SetActive(false);
 
         playInRoomMenuPanel.SetActive(true);

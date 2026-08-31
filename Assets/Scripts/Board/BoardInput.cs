@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class BoardInput : MonoBehaviour
 {
+    [Header("References")]
+
     [SerializeField]
     private Camera mainCamera;
 
@@ -15,6 +17,7 @@ public class BoardInput : MonoBehaviour
     [SerializeField]
     private PlacementManager placementManager;
 
+
     private void Awake()
     {
         if (mainCamera == null)
@@ -23,29 +26,112 @@ public class BoardInput : MonoBehaviour
         }
     }
 
+
     private void Update()
     {
-        // ---------------------------------
-        // FIRST: Block input if paused
-        // ---------------------------------
+        // ==========================================
+        // BLOCK INPUT WHEN PAUSED
+        // ==========================================
 
         if (pauseManager != null)
         {
-            if (pauseManager.IsPaused() ||
-                pauseManager.IsInputBlocked())
+            if (
+                pauseManager.IsPaused() ||
+                pauseManager.IsInputBlocked()
+            )
             {
                 return;
             }
         }
 
-        if (Mouse.current == null)
-            return;
 
-        if (!Mouse.current.leftButton.wasPressedThisFrame)
-            return;
+        // ==========================================
+        // ANDROID TOUCH
+        // ==========================================
 
-        Vector2 screenPosition =
-            Mouse.current.position.ReadValue();
+        if (
+            Touchscreen.current != null &&
+            Touchscreen.current.primaryTouch.press
+                .wasPressedThisFrame
+        )
+        {
+            Vector2 touchPosition =
+                Touchscreen.current.primaryTouch.position
+                    .ReadValue();
+
+            TrySelectBoardCell(
+                touchPosition
+            );
+
+            return;
+        }
+
+
+        // ==========================================
+        // UNITY EDITOR MOUSE
+        // ==========================================
+
+#if UNITY_EDITOR
+
+        if (
+            Mouse.current != null &&
+            Mouse.current.leftButton
+                .wasPressedThisFrame
+        )
+        {
+            Vector2 mousePosition =
+                Mouse.current.position
+                    .ReadValue();
+
+            TrySelectBoardCell(
+                mousePosition
+            );
+        }
+
+#endif
+    }
+
+
+    // ==========================================
+    // SELECT BOARD CELL
+    // ==========================================
+
+    private void TrySelectBoardCell(
+        Vector2 screenPosition)
+    {
+        if (
+            mainCamera == null ||
+            boardView == null ||
+            placementManager == null
+        )
+        {
+            Debug.LogError(
+                "BoardInput: Missing references."
+            );
+
+            return;
+        }
+
+
+        // ==========================================
+        // SAFETY CHECK
+        // ==========================================
+
+        if (pauseManager != null)
+        {
+            if (
+                pauseManager.IsPaused() ||
+                pauseManager.IsInputBlocked()
+            )
+            {
+                return;
+            }
+        }
+
+
+        // ==========================================
+        // SCREEN → WORLD
+        // ==========================================
 
         Vector3 worldPosition =
             mainCamera.ScreenToWorldPoint(
@@ -58,35 +144,34 @@ public class BoardInput : MonoBehaviour
 
         worldPosition.z = 0f;
 
-        TrySelectCell(worldPosition);
-    }
 
-    private void TrySelectCell(Vector3 worldPosition)
-    {
-        if (boardView == null ||
-            placementManager == null)
+        // ==========================================
+        // WORLD → BOARD CELL
+        // ==========================================
+
+        if (
+            !boardView.TryGetCellCoordinates(
+                worldPosition,
+                out int x,
+                out int y
+            )
+        )
         {
             return;
         }
 
-        // Safety check again
-        if (pauseManager != null)
-        {
-            if (pauseManager.IsPaused() ||
-                pauseManager.IsInputBlocked())
-            {
-                return;
-            }
-        }
+        Debug.Log(
+            $"BOARD TOUCH → Cell ({x}, {y})"
+        );
 
-        if (!boardView.TryGetCellCoordinates(
-            worldPosition,
-            out int x,
-            out int y))
-        {
-            return;
-        }
 
-        placementManager.TryPlaceCoin(x, y);
+        // ==========================================
+        // PLACE COIN
+        // ==========================================
+
+        placementManager.TryPlaceCoin(
+            x,
+            y
+        );
     }
 }

@@ -235,4 +235,27 @@ public class RelayManager : MonoBehaviour
             return false;
         }
     }
+
+    public async Task CancelRelayRoom()
+    {
+        if (NetworkManager.Singleton == null)
+            return;
+
+        if (NetworkManager.Singleton.IsListening)
+        {
+            Debug.Log("Closing Relay Room...");
+
+            NetworkManager.Singleton.Shutdown(true);
+
+            // Wait until shutdown is completely finished
+            while (NetworkManager.Singleton != null &&
+                   (NetworkManager.Singleton.IsListening ||
+                    NetworkManager.Singleton.ShutdownInProgress))
+            {
+                await Task.Yield();
+            }
+
+            Debug.Log("Relay Room Closed Successfully!");
+        }
+    }
 }
