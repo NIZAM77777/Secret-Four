@@ -19,8 +19,4 @@ public class GameConfig : ScriptableObject
     [Header("Movement")]
     [Min(0f)]
     public float movementRevealDelay = 2f;
-
-    [Header("Collision")]
-    [Min(1)]
-    public int collisionDrawCount = 3;
 }

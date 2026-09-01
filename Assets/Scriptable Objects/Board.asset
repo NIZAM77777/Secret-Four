@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbb5a9a5de9286b46b10307fe38bfb80, type: 3}
   m_Name: Board
   m_EditorClassIdentifier: Assembly-CSharp::GameSettings
-  boardWidth: 4
-  boardHeight: 4
+  boardWidth: 6
+  boardHeight: 7
   winLength: 4
   movementRevealDelay: 2
-  collisionDrawCount: 5

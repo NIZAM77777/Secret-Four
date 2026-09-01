@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameOverUI : MonoBehaviour
 {
@@ -215,5 +216,16 @@ public class GameOverUI : MonoBehaviour
     {
         return NetworkManager.Singleton != null &&
                NetworkManager.Singleton.IsListening;
+    }
+
+    // =====================================================
+    // MAIN MENU
+    // =====================================================
+
+    public void OnMainMenuPressed()
+    {
+        Debug.Log("MAIN MENU BUTTON PRESSED");
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Mainmenu");
     }
 }
