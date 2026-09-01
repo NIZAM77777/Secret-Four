@@ -167,6 +167,9 @@ MonoBehaviour:
   boardManager: {fileID: 591312822}
   placementManager: {fileID: 1282425387}
   directionSelector: {fileID: 579568601}
+  easyBot: {fileID: 1649476075}
+  mediumBot: {fileID: 1182242682}
+  hardBot: {fileID: 586857709}
   thinkingDelay: 0.8
 --- !u!1 &41714993
 GameObject:
@@ -1749,6 +1752,7 @@ MonoBehaviour:
   turnManager: {fileID: 1228661221}
   movementManager: {fileID: 868001400}
   placementManager: {fileID: 1282425387}
+  boardManager: {fileID: 591312822}
   networkDirectionManager: {fileID: 2137090513}
 --- !u!4 &579568602
 Transform:
@@ -1979,6 +1983,53 @@ MonoBehaviour:
   movementManager: {fileID: 868001400}
   movementRuleResolver: {fileID: 533094709}
   placementManager: {fileID: 1282425387}
+--- !u!1 &586857707
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 586857708}
+  - component: {fileID: 586857709}
+  m_Layer: 0
+  m_Name: HardBot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &586857708
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 586857707}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368414253}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &586857709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 586857707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4da0554eba1467c4fb508a5de19142b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HardBot
+  boardManager: {fileID: 591312822}
+  turnManager: {fileID: 1228661221}
+  movementRuleResolver: {fileID: 533094709}
 --- !u!1 &591312819
 GameObject:
   m_ObjectHideFlags: 0
@@ -3314,6 +3365,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1104386527}
   m_CullTransparentMesh: 1
+--- !u!1 &1182242680
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1182242681}
+  - component: {fileID: 1182242682}
+  m_Layer: 0
+  m_Name: MediumBot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1182242681
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1182242680}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368414253}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1182242682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1182242680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 539bce19dfb88a5449f27cba4ff73e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MediumBot
 --- !u!1 &1216541080
 GameObject:
   m_ObjectHideFlags: 0
@@ -4095,6 +4190,9 @@ Transform:
   - {fileID: 1778498751}
   - {fileID: 1314873295}
   - {fileID: 15017904}
+  - {fileID: 1649476074}
+  - {fileID: 1182242681}
+  - {fileID: 586857708}
   - {fileID: 705826833}
   - {fileID: 989886931}
   - {fileID: 2137090511}
@@ -4461,6 +4559,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1593809715}
   m_CullTransparentMesh: 1
+--- !u!1 &1649476073
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1649476074}
+  - component: {fileID: 1649476075}
+  m_Layer: 0
+  m_Name: EasyBot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1649476074
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1649476073}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368414253}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1649476075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1649476073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d63c0ede7c88d6146b5ad2d79270bbfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EasyBot
 --- !u!1 &1672126183
 GameObject:
   m_ObjectHideFlags: 0
@@ -6271,6 +6413,7 @@ MonoBehaviour:
   directionSelector: {fileID: 579568601}
   turnManager: {fileID: 1228661221}
   networkMovementManager: {fileID: 585514129}
+  boardManager: {fileID: 591312822}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -14,6 +14,9 @@ public class NetworkDirectionManager
     [SerializeField]
     private NetworkMovementManager networkMovementManager;
 
+    [SerializeField]
+    private BoardManager boardManager;
+
 
     // =========================================
     // LOCAL REQUEST
@@ -93,6 +96,23 @@ public class NetworkDirectionManager
         {
             Debug.Log(
                 "Direction rejected."
+            );
+
+            return;
+        }
+
+        // -------------------------------------
+        // DIRECTION VALIDATION
+        // -------------------------------------
+
+        if (!IsDirectionValid(
+            player,
+            direction
+        ))
+        {
+            Debug.LogWarning(
+                $"HOST rejected invalid direction: " +
+                $"{player} → {direction}"
             );
 
             return;
@@ -252,6 +272,223 @@ public class NetworkDirectionManager
         }
     }
 
+    // =========================================
+    // VALIDATE DIRECTION
+    // =========================================
+
+    private bool IsDirectionValid(
+        PlayerType player,
+        MoveDirection direction)
+    {
+        if (boardManager == null)
+        {
+            Debug.LogError(
+                "BoardManager is missing."
+            );
+
+            return false;
+        }
+
+
+        Board board =
+            boardManager.CurrentBoard;
+
+
+        if (board == null)
+        {
+            return false;
+        }
+
+
+        PlayerAction action =
+            turnManager.GetAction(player);
+
+
+        Vector2Int position =
+            action.position;
+
+
+        // =====================================
+        // STAY
+        // =====================================
+
+        if (direction == MoveDirection.Stay)
+        {
+            // Stay is allowed ONLY when
+            // no movement direction exists.
+
+            return !HasAnyValidMovement(
+                board,
+                position,
+                player
+            );
+        }
+
+
+        // =====================================
+        // NORMAL MOVEMENT
+        // =====================================
+
+        Vector2Int destination =
+            GetDestination(
+                position,
+                direction
+            );
+
+
+        return CanMoveTo(
+            board,
+            destination,
+            player
+        );
+    }
+
+    // =========================================
+    // CHECK AVAILABLE MOVEMENTS
+    // =========================================
+
+    private bool HasAnyValidMovement(
+        Board board,
+        Vector2Int position,
+        PlayerType player)
+    {
+        MoveDirection[] directions =
+        {
+        MoveDirection.Up,
+        MoveDirection.Down,
+        MoveDirection.Left,
+        MoveDirection.Right
+    };
+
+
+        foreach (MoveDirection direction
+            in directions)
+        {
+            Vector2Int destination =
+                GetDestination(
+                    position,
+                    direction
+                );
+
+
+            if (CanMoveTo(
+                board,
+                destination,
+                player
+            ))
+            {
+                return true;
+            }
+        }
+
+
+        return false;
+    }
+
+    // =========================================
+    // CHECK DESTINATION
+    // =========================================
+
+    private bool CanMoveTo(
+        Board board,
+        Vector2Int destination,
+        PlayerType player)
+    {
+        // Outside board
+
+        if (!board.IsInsideBoard(
+            destination.x,
+            destination.y
+        ))
+        {
+            return false;
+        }
+
+
+        // Empty cell
+
+        if (board.IsEmpty(
+            destination.x,
+            destination.y
+        ))
+        {
+            return true;
+        }
+
+
+        // =====================================
+        // OTHER PLAYER'S CURRENT ROUND COIN
+        // =====================================
+
+        PlayerType otherPlayer =
+            player == PlayerType.X
+                ? PlayerType.Y
+                : PlayerType.X;
+
+
+        PlayerAction otherAction =
+            turnManager.GetAction(
+                otherPlayer
+            );
+
+
+        if (otherAction.hasPlaced &&
+            destination == otherAction.position)
+        {
+            return true;
+        }
+
+
+        return false;
+    }
+
+    // =========================================
+    // GET DESTINATION
+    // =========================================
+
+    private Vector2Int GetDestination(
+        Vector2Int position,
+        MoveDirection direction)
+    {
+        switch (direction)
+        {
+            case MoveDirection.Up:
+
+                return new Vector2Int(
+                    position.x,
+                    position.y + 1
+                );
+
+
+            case MoveDirection.Down:
+
+                return new Vector2Int(
+                    position.x,
+                    position.y - 1
+                );
+
+
+            case MoveDirection.Left:
+
+                return new Vector2Int(
+                    position.x - 1,
+                    position.y
+                );
+
+
+            case MoveDirection.Right:
+
+                return new Vector2Int(
+                    position.x + 1,
+                    position.y
+                );
+
+
+            default:
+
+                return position;
+        }
+    }
 
     // =========================================
     // CURRENT PLAYER

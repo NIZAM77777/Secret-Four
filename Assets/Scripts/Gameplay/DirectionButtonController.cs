@@ -30,7 +30,7 @@ public class DirectionButtonController : MonoBehaviour
 
 
     public void UpdateDirectionButtons(
-        PlayerType player)
+    PlayerType player)
     {
         PlayerAction action =
             turnManager.GetAction(player);
@@ -38,48 +38,83 @@ public class DirectionButtonController : MonoBehaviour
         Vector2Int position =
             action.position;
 
-        // Up
-        UpdateButton(
-            upButton,
-            player,
-            new Vector2Int(
-                position.x,
-                position.y + 1
-            )
-        );
 
-        // Down
-        UpdateButton(
-            downButton,
-            player,
-            new Vector2Int(
-                position.x,
-                position.y - 1
-            )
-        );
+        // =====================================
+        // CHECK ALL DIRECTIONS
+        // =====================================
 
-        // Left
-        UpdateButton(
-            leftButton,
-            player,
-            new Vector2Int(
-                position.x - 1,
-                position.y
-            )
-        );
+        bool canMoveUp =
+            CanMoveToDestination(
+                player,
+                new Vector2Int(
+                    position.x,
+                    position.y + 1
+                )
+            );
 
-        // Right
-        UpdateButton(
-            rightButton,
-            player,
-            new Vector2Int(
-                position.x + 1,
-                position.y
-            )
-        );
+        bool canMoveDown =
+            CanMoveToDestination(
+                player,
+                new Vector2Int(
+                    position.x,
+                    position.y - 1
+                )
+            );
 
-        // Stay is always possible
-        stayButton.interactable = true;
+        bool canMoveLeft =
+            CanMoveToDestination(
+                player,
+                new Vector2Int(
+                    position.x - 1,
+                    position.y
+                )
+            );
+
+        bool canMoveRight =
+            CanMoveToDestination(
+                player,
+                new Vector2Int(
+                    position.x + 1,
+                    position.y
+                )
+            );
+
+
+        // =====================================
+        // UPDATE DIRECTION BUTTONS
+        // =====================================
+
+        if (upButton != null)
+            upButton.interactable = canMoveUp;
+
+        if (downButton != null)
+            downButton.interactable = canMoveDown;
+
+        if (leftButton != null)
+            leftButton.interactable = canMoveLeft;
+
+        if (rightButton != null)
+            rightButton.interactable = canMoveRight;
+
+
+        // =====================================
+        // STAY RULE
+        //
+        // Stay is allowed ONLY when there are
+        // NO available movement directions.
+        // =====================================
+
+        bool hasAvailableMovement =
+            canMoveUp ||
+            canMoveDown ||
+            canMoveLeft ||
+            canMoveRight;
+
+        if (stayButton != null)
+        {
+            stayButton.interactable =
+                !hasAvailableMovement;
+        }
     }
 
 
