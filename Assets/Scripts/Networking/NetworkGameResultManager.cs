@@ -14,6 +14,9 @@ public class NetworkGameResultManager : NetworkBehaviour
     [SerializeField]
     private TurnManager turnManager;
 
+    [SerializeField]
+    private WinGlowManager winGlowManager;
+
 
     // =====================================================
     // HOST CHECKS GAME RESULT
@@ -30,6 +33,11 @@ public class NetworkGameResultManager : NetworkBehaviour
             return false;
         }
 
+
+        // =============================================
+        // CHECK WINNER
+        // =============================================
+
         if (
             winConditionChecker.HasWinner(
                 out PlayerType winner
@@ -40,12 +48,33 @@ public class NetworkGameResultManager : NetworkBehaviour
                 $"HOST: Winner is {winner}"
             );
 
+
+            // =========================================
+            // GLOW WINNING COINS ON HOST
+            // =========================================
+
+            if (winGlowManager != null)
+            {
+                winGlowManager.GlowWinningCoins();
+            }
+
+
+            // =========================================
+            // SEND WINNER TO EVERY CLIENT
+            // =========================================
+
             SendWinnerClientRpc(
                 (int)winner
             );
 
+
             return true;
         }
+
+
+        // =============================================
+        // CHECK DRAW
+        // =============================================
 
         if (winConditionChecker.IsBoardFull())
         {
@@ -57,6 +86,7 @@ public class NetworkGameResultManager : NetworkBehaviour
 
             return true;
         }
+
 
         return false;
     }
@@ -73,9 +103,25 @@ public class NetworkGameResultManager : NetworkBehaviour
         PlayerType winner =
             (PlayerType)winnerValue;
 
+
         Debug.Log(
             $"NETWORK RESULT: {winner} WINS"
         );
+
+
+        // =============================================
+        // GLOW WINNING COINS
+        // =============================================
+
+        if (winGlowManager != null)
+        {
+            winGlowManager.GlowWinningCoins();
+        }
+
+
+        // =============================================
+        // SHOW GAME RESULT
+        // =============================================
 
         if (gameResultManager != null)
         {
@@ -97,6 +143,7 @@ public class NetworkGameResultManager : NetworkBehaviour
             "NETWORK RESULT: DRAW"
         );
 
+
         if (gameResultManager != null)
         {
             gameResultManager.SetDraw();
@@ -114,6 +161,7 @@ public class NetworkGameResultManager : NetworkBehaviour
         {
             return;
         }
+
 
         StartNextRoundClientRpc();
     }

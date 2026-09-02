@@ -30,6 +30,9 @@ public class MovementManager : MonoBehaviour
     [SerializeField]
     private NetworkGameResultManager networkGameResultManager;
 
+    [SerializeField]
+    private PlacementManager placementManager;
+
 
     [Header("Timing")]
 
@@ -290,6 +293,10 @@ public class MovementManager : MonoBehaviour
             resolution
         );
 
+        UpdateCoinVisualPositions(
+    resolution
+);
+
 
         boardManager.CurrentBoard
             .DebugPrintBoard();
@@ -361,6 +368,10 @@ public class MovementManager : MonoBehaviour
             resolution
         );
 
+        UpdateCoinVisualPositions(
+    resolution
+);
+
 
         boardManager.CurrentBoard
             .DebugPrintBoard();
@@ -386,13 +397,53 @@ public class MovementManager : MonoBehaviour
     // =====================================================
 
     private void ApplySuccessfulBoardMovement(
-        MovementResolution resolution)
+     MovementResolution resolution)
     {
+        // =============================================
+        // UPDATE BOARD DATA
+        // =============================================
+
         boardManager.CurrentBoard
             .ApplySuccessfulMovement(
                 resolution.playerXResult,
                 resolution.playerYResult
             );
+
+
+        // =============================================
+        // UPDATE COIN VISUAL POSITIONS
+        // =============================================
+
+        if (placementManager == null)
+        {
+            Debug.LogError(
+                "PlacementManager is missing."
+            );
+
+            return;
+        }
+
+
+        // ---------------------------------------------
+        // PLAYER X
+        // ---------------------------------------------
+
+        placementManager.UpdateCoinPosition(
+            resolution.playerXResult.startPosition,
+            resolution.playerXResult.destination,
+            playerXCoin
+        );
+
+
+        // ---------------------------------------------
+        // PLAYER Y
+        // ---------------------------------------------
+
+        placementManager.UpdateCoinPosition(
+            resolution.playerYResult.startPosition,
+            resolution.playerYResult.destination,
+            playerYCoin
+        );
     }
 
 
@@ -401,7 +452,7 @@ public class MovementManager : MonoBehaviour
     // =====================================================
 
     private void ApplyResolvedMovement(
-        MovementResolution resolution)
+     MovementResolution resolution)
     {
         MovementResult xResult =
             resolution.playerXResult;
@@ -416,6 +467,10 @@ public class MovementManager : MonoBehaviour
         MovementResult yFinal =
             yResult;
 
+
+        // =============================================
+        // PLAYER X BLOCKED
+        // =============================================
 
         if (
             resolution.playerXCollision !=
@@ -432,6 +487,10 @@ public class MovementManager : MonoBehaviour
         }
 
 
+        // =============================================
+        // PLAYER Y BLOCKED
+        // =============================================
+
         if (
             resolution.playerYCollision !=
             MovementCollisionType.None
@@ -447,11 +506,115 @@ public class MovementManager : MonoBehaviour
         }
 
 
+        // =============================================
+        // UPDATE BOARD
+        // =============================================
+
         boardManager.CurrentBoard
             .ApplySuccessfulMovement(
                 xFinal,
                 yFinal
             );
+
+
+        // =============================================
+        // UPDATE VISUAL POSITION DATABASE
+        // =============================================
+
+        if (placementManager != null)
+        {
+            placementManager.UpdateCoinPosition(
+                xFinal.startPosition,
+                xFinal.destination,
+                playerXCoin
+            );
+
+
+            placementManager.UpdateCoinPosition(
+                yFinal.startPosition,
+                yFinal.destination,
+                playerYCoin
+            );
+        }
+    }
+
+    // =====================================================
+    // UPDATE COIN VISUAL POSITIONS
+    // =====================================================
+
+    private void UpdateCoinVisualPositions(
+        MovementResolution resolution)
+    {
+        PlacementManager placementManager =
+            FindFirstObjectByType<PlacementManager>();
+
+
+        if (placementManager == null)
+        {
+            Debug.LogError(
+                "PlacementManager not found."
+            );
+
+            return;
+        }
+
+
+        // =============================================
+        // PLAYER X
+        // =============================================
+
+        MovementResult xResult =
+            resolution.playerXResult;
+
+
+        Vector2Int xFinalPosition =
+            xResult.destination;
+
+
+        if (
+            resolution.playerXCollision !=
+            MovementCollisionType.None
+        )
+        {
+            xFinalPosition =
+                xResult.startPosition;
+        }
+
+
+        placementManager.UpdateCoinPosition(
+            xResult.startPosition,
+            xFinalPosition,
+            playerXCoin
+        );
+
+
+        // =============================================
+        // PLAYER Y
+        // =============================================
+
+        MovementResult yResult =
+            resolution.playerYResult;
+
+
+        Vector2Int yFinalPosition =
+            yResult.destination;
+
+
+        if (
+            resolution.playerYCollision !=
+            MovementCollisionType.None
+        )
+        {
+            yFinalPosition =
+                yResult.startPosition;
+        }
+
+
+        placementManager.UpdateCoinPosition(
+            yResult.startPosition,
+            yFinalPosition,
+            playerYCoin
+        );
     }
 
 

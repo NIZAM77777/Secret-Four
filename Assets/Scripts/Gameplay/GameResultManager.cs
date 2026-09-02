@@ -11,6 +11,9 @@ public class GameResultManager : MonoBehaviour
     [SerializeField]
     private GameOverUI gameOverUI;
 
+    [SerializeField]
+    private WinGlowManager winGlowManager;
+
 
     [Header("Result Timing")]
 
@@ -30,7 +33,7 @@ public class GameResultManager : MonoBehaviour
     // =====================================================
 
     public void SetWinner(
-        PlayerType player)
+    PlayerType player)
     {
         if (HasResult)
         {
@@ -53,6 +56,16 @@ public class GameResultManager : MonoBehaviour
         Debug.Log(
             $"GAME OVER → {player} WINS!"
         );
+
+
+        // =============================================
+        // GLOW WINNING COINS ⭐
+        // =============================================
+
+        if (winGlowManager != null)
+        {
+            winGlowManager.GlowWinningCoins();
+        }
 
 
         StartCoroutine(
@@ -143,6 +156,16 @@ public class GameResultManager : MonoBehaviour
         HasResult = false;
 
         IsDraw = false;
+
+
+        // =============================================
+        // STOP WINNING GLOW
+        // =============================================
+
+        if (winGlowManager != null)
+        {
+            winGlowManager.StopAllGlows();
+        }
 
 
         gameOverUI.Hide();

@@ -814,7 +814,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameResultManager
   turnManager: {fileID: 1228661221}
   gameOverUI: {fileID: 484708348}
-  resultDelay: 1
+  winGlowManager: {fileID: 603295689}
+  resultDelay: 1.5
 --- !u!4 &276811466
 Transform:
   m_ObjectHideFlags: 0
@@ -2076,6 +2077,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardManager
   gameConfig: {fileID: 11400000, guid: fc8c4af12398dbe4bb7986e1e2a092ae, type: 2}
+--- !u!1 &603295687
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 603295688}
+  - component: {fileID: 603295689}
+  m_Layer: 0
+  m_Name: WinGlowManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &603295688
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603295687}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368414253}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &603295689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603295687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e00cfe4b0162fdb4c807e6e841f0a682, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WinGlowManager
+  placementManager: {fileID: 1282425387}
+  winConditionChecker: {fileID: 1554806499}
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -2311,6 +2358,7 @@ MonoBehaviour:
   winConditionChecker: {fileID: 1554806499}
   gameResultManager: {fileID: 276811465}
   turnManager: {fileID: 1228661221}
+  winGlowManager: {fileID: 0}
 --- !u!1 &705826832
 GameObject:
   m_ObjectHideFlags: 0
@@ -2625,6 +2673,7 @@ MonoBehaviour:
   boardView: {fileID: 894722789}
   networkMovementManager: {fileID: 585514129}
   networkGameResultManager: {fileID: 689930982}
+  placementManager: {fileID: 1282425387}
   revealDelay: 2
   movementDuration: 0.3
   blockedPauseDuration: 0.08
@@ -4202,6 +4251,7 @@ Transform:
   - {fileID: 422456082}
   - {fileID: 425535884}
   - {fileID: 1745291623}
+  - {fileID: 603295688}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1445640425

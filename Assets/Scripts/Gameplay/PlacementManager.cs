@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -31,6 +32,16 @@ public class PlacementManager : MonoBehaviour
     public GameObject PlayerXCoin { get; private set; }
 
     public GameObject PlayerYCoin { get; private set; }
+
+
+    // =========================================
+    // ALL COIN VISUALS
+    // Position → Coin GameObject
+    // =========================================
+
+    private Dictionary<Vector2Int, GameObject>
+        coinVisuals =
+        new Dictionary<Vector2Int, GameObject>();
 
 
     private void Start()
@@ -67,9 +78,6 @@ public class PlacementManager : MonoBehaviour
             PlayerType player =
                 GetCurrentPlacementPlayer();
 
-
-            // Check whether this local player
-            // is allowed to place this coin
 
             if (!IsLocalPlayerAllowed(player))
             {
@@ -136,10 +144,6 @@ public class PlacementManager : MonoBehaviour
 
         if (!board.IsInsideBoard(x, y))
         {
-            Debug.Log(
-                "Position is outside the board."
-            );
-
             return false;
         }
 
@@ -205,75 +209,6 @@ public class PlacementManager : MonoBehaviour
 
 
     // =========================================
-    // ONLINE CHECK
-    // =========================================
-
-    private bool IsOnlineGame()
-    {
-        if (NetworkManager.Singleton == null)
-        {
-            return false;
-        }
-
-
-        return NetworkManager.Singleton.IsListening;
-    }
-
-
-    // =========================================
-    // LOCAL PLAYER PERMISSION
-    // =========================================
-
-    private bool IsLocalPlayerAllowed(
-        PlayerType player)
-    {
-        if (NetworkManager.Singleton == null)
-        {
-            return true;
-        }
-
-
-        // Host controls Player X
-
-        if (NetworkManager.Singleton.IsHost &&
-            player == PlayerType.X)
-        {
-            return true;
-        }
-
-
-        // Client controls Player Y
-
-        if (NetworkManager.Singleton.IsClient &&
-            !NetworkManager.Singleton.IsHost &&
-            player == PlayerType.Y)
-        {
-            return true;
-        }
-
-
-        return false;
-    }
-
-
-    // =========================================
-    // CURRENT PLAYER
-    // =========================================
-
-    private PlayerType GetCurrentPlacementPlayer()
-    {
-        if (turnManager.CurrentState ==
-            GameState.WaitingForPlayerXPlacement)
-        {
-            return PlayerType.X;
-        }
-
-
-        return PlayerType.Y;
-    }
-
-
-    // =========================================
     // CREATE VISUAL
     // =========================================
 
@@ -300,6 +235,18 @@ public class PlacementManager : MonoBehaviour
 
         coin.name =
             $"{playerType}_Coin_{x}_{y}";
+
+
+        // =====================================
+        // STORE COIN POSITION
+        // =====================================
+
+        Vector2Int boardPosition =
+            new Vector2Int(x, y);
+
+
+        coinVisuals[boardPosition] =
+            coin;
 
 
         CoinView coinView =
@@ -330,6 +277,28 @@ public class PlacementManager : MonoBehaviour
 
 
     // =========================================
+    // GET COIN AT BOARD POSITION
+    // =========================================
+
+    public GameObject GetCoinAtPosition(
+        Vector2Int position)
+    {
+        if (
+            coinVisuals.TryGetValue(
+                position,
+                out GameObject coin
+            )
+        )
+        {
+            return coin;
+        }
+
+
+        return null;
+    }
+
+
+    // =========================================
     // CLEAR COINS
     // =========================================
 
@@ -339,9 +308,11 @@ public class PlacementManager : MonoBehaviour
             return;
 
 
-        for (int i = coinParent.childCount - 1;
-             i >= 0;
-             i--)
+        for (
+            int i = coinParent.childCount - 1;
+            i >= 0;
+            i--
+        )
         {
             Destroy(
                 coinParent.GetChild(i).gameObject
@@ -349,7 +320,175 @@ public class PlacementManager : MonoBehaviour
         }
 
 
+        // Clear stored coin references
+
+        coinVisuals.Clear();
+
+
         PlayerXCoin = null;
         PlayerYCoin = null;
     }
+
+
+    // =========================================
+    // ONLINE CHECK
+    // =========================================
+
+    private bool IsOnlineGame()
+    {
+        if (NetworkManager.Singleton == null)
+        {
+            return false;
+        }
+
+
+        return NetworkManager.Singleton.IsListening;
+    }
+
+
+    // =========================================
+    // LOCAL PLAYER PERMISSION
+    // =========================================
+
+    private bool IsLocalPlayerAllowed(
+        PlayerType player)
+    {
+        if (NetworkManager.Singleton == null)
+        {
+            return true;
+        }
+
+
+        if (
+            NetworkManager.Singleton.IsHost &&
+            player == PlayerType.X
+        )
+        {
+            return true;
+        }
+
+
+        if (
+            NetworkManager.Singleton.IsClient &&
+            !NetworkManager.Singleton.IsHost &&
+            player == PlayerType.Y
+        )
+        {
+            return true;
+        }
+
+
+        return false;
+    }
+
+
+    // =========================================
+    // CURRENT PLAYER
+    // =========================================
+
+    private PlayerType GetCurrentPlacementPlayer()
+    {
+        if (
+            turnManager.CurrentState ==
+            GameState.WaitingForPlayerXPlacement
+        )
+        {
+            return PlayerType.X;
+        }
+
+
+        return PlayerType.Y;
+    }
+
+    // =========================================
+    // UPDATE COIN POSITION
+    // =========================================
+
+    // =========================================
+    // UPDATE COIN POSITION
+    // =========================================
+
+    public void UpdateCoinPosition(
+        Vector2Int oldPosition,
+        Vector2Int newPosition,
+        GameObject coin)
+    {
+        // Remove old position
+
+        if (coinVisuals.ContainsKey(oldPosition))
+        {
+            coinVisuals.Remove(
+                oldPosition
+            );
+        }
+
+
+        // Store new position
+
+        coinVisuals[newPosition] =
+            coin;
+    }
+
+    // =========================================
+    // UPDATE MOVED COINS
+    // =========================================
+
+    public void UpdateCoinPositions(
+        MovementResolution resolution,
+        GameObject xCoin,
+        GameObject yCoin)
+    {
+        // =====================================
+        // PLAYER X
+        // =====================================
+
+        Vector2Int xOld =
+            resolution.playerXResult.startPosition;
+
+
+        Vector2Int xNew =
+            resolution.playerXResult.destination;
+
+
+        if (xOld != xNew && xCoin != null)
+        {
+            UpdateCoinPosition(
+                xOld,
+                xNew,
+                xCoin
+            );
+        }
+
+
+        // =====================================
+        // PLAYER Y
+        // =====================================
+
+        Vector2Int yOld =
+            resolution.playerYResult.startPosition;
+
+
+        Vector2Int yNew =
+            resolution.playerYResult.destination;
+
+
+        if (yOld != yNew && yCoin != null)
+        {
+            UpdateCoinPosition(
+                yOld,
+                yNew,
+                yCoin
+            );
+        }
+    }
+
+    // =========================================
+    // GET ALL COINS
+    // =========================================
+
+    public IEnumerable<GameObject> GetAllCoins()
+    {
+        return coinVisuals.Values;
+    }
+
 }
