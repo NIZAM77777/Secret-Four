@@ -1,7 +1,9 @@
 using UnityEngine;
 using Unity.Netcode;
 
-public class NetworkMovementManager : NetworkBehaviour
+
+public class NetworkMovementManager
+    : NetworkBehaviour
 {
     [Header("References")]
 
@@ -21,9 +23,9 @@ public class NetworkMovementManager : NetworkBehaviour
     private bool movementResolved;
 
 
-    // =====================================================
+    // =========================================
     // REQUEST MOVEMENT RESOLUTION
-    // =====================================================
+    // =========================================
 
     public void RequestMovementResolution()
     {
@@ -37,14 +39,10 @@ public class NetworkMovementManager : NetworkBehaviour
         }
 
 
-        // Only the Host should start resolution.
+        // Only Host/Server resolves.
 
         if (!IsServer)
         {
-            Debug.Log(
-                "Only Host can resolve movement."
-            );
-
             return;
         }
 
@@ -53,9 +51,9 @@ public class NetworkMovementManager : NetworkBehaviour
     }
 
 
-    // =====================================================
+    // =========================================
     // HOST RESOLUTION
-    // =====================================================
+    // =========================================
 
     private void ResolveMovementOnHost()
     {
@@ -86,15 +84,19 @@ public class NetworkMovementManager : NetworkBehaviour
         }
 
 
-        // =============================================
-        // MAKE SURE BOTH PLAYERS ARE READY
-        // =============================================
+        // =====================================
+        // BOTH PLAYERS MUST BE READY
+        // =====================================
 
-        if (!turnManager.PlayerXAction.hasChosenDirection ||
-            !turnManager.PlayerYAction.hasChosenDirection)
+        if (!turnManager
+                .PlayerXAction
+                .hasChosenDirection ||
+
+            !turnManager
+                .PlayerYAction
+                .hasChosenDirection)
         {
             Debug.LogWarning(
-                "Cannot resolve movement. " +
                 "Both directions are not ready."
             );
 
@@ -110,9 +112,9 @@ public class NetworkMovementManager : NetworkBehaviour
         );
 
 
-        // =============================================
-        // HOST CALCULATES THE RESULT ⭐
-        // =============================================
+        // =====================================
+        // HOST CALCULATES FINAL RESULT
+        // =====================================
 
         MovementResolution resolution =
             movementRuleResolver.Resolve(
@@ -121,9 +123,9 @@ public class NetworkMovementManager : NetworkBehaviour
             );
 
 
-        // =============================================
-        // SEND FINAL RESULT TO EVERYONE
-        // =============================================
+        // =====================================
+        // SEND RESULT TO EVERYONE
+        // =====================================
 
         SendResolutionClientRpc(
             GetMovementResultData(
@@ -141,9 +143,9 @@ public class NetworkMovementManager : NetworkBehaviour
     }
 
 
-    // =====================================================
+    // =========================================
     // RECEIVE FINAL RESULT
-    // =====================================================
+    // =========================================
 
     [ClientRpc]
     private void SendResolutionClientRpc(
@@ -153,10 +155,15 @@ public class NetworkMovementManager : NetworkBehaviour
         int yCollision)
     {
         MovementResult xResult =
-            CreateMovementResult(xData);
+            CreateMovementResult(
+                xData
+            );
+
 
         MovementResult yResult =
-            CreateMovementResult(yData);
+            CreateMovementResult(
+                yData
+            );
 
 
         MovementResolution resolution =
@@ -168,6 +175,7 @@ public class NetworkMovementManager : NetworkBehaviour
 
         resolution.playerXCollision =
             (MovementCollisionType)xCollision;
+
 
         resolution.playerYCollision =
             (MovementCollisionType)yCollision;
@@ -196,19 +204,15 @@ public class NetworkMovementManager : NetworkBehaviour
         );
 
 
-        // Reset this after the current
-        // resolution is sent.
-        //
-        // The next round will be able
-        // to resolve again.
+        // Allow next round.
 
         movementResolved = false;
     }
 
 
-    // =====================================================
+    // =========================================
     // RESULT → NETWORK DATA
-    // =====================================================
+    // =========================================
 
     private MovementResultData GetMovementResultData(
         MovementResult result)
@@ -236,9 +240,9 @@ public class NetworkMovementManager : NetworkBehaviour
     }
 
 
-    // =====================================================
+    // =========================================
     // NETWORK DATA → RESULT
-    // =====================================================
+    // =========================================
 
     private MovementResult CreateMovementResult(
         MovementResultData data)

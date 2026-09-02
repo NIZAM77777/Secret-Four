@@ -814,6 +814,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameResultManager
   turnManager: {fileID: 1228661221}
   gameOverUI: {fileID: 484708348}
+  resultDelay: 1
 --- !u!4 &276811466
 Transform:
   m_ObjectHideFlags: 0

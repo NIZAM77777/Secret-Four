@@ -1,8 +1,6 @@
 using Unity.Netcode;
 
-
-public struct MovementResultData
-    : INetworkSerializable
+public struct MovementResultData : INetworkSerializable
 {
     public int playerType;
 

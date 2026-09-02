@@ -104,16 +104,9 @@ public class DirectionButtonController : MonoBehaviour
         // NO available movement directions.
         // =====================================
 
-        bool hasAvailableMovement =
-            canMoveUp ||
-            canMoveDown ||
-            canMoveLeft ||
-            canMoveRight;
-
         if (stayButton != null)
         {
-            stayButton.interactable =
-                !hasAvailableMovement;
+            stayButton.interactable = true;
         }
     }
 

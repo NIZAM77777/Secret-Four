@@ -100,17 +100,26 @@ public class EasyBot : MonoBehaviour
     // ==========================================
 
     private List<MoveDirection>
-        GetValidDirections(
-            Board board,
-            Vector2Int position,
-            Vector2Int playerXPosition)
+     GetValidDirections(
+         Board board,
+         Vector2Int position,
+         Vector2Int playerXPosition)
     {
         List<MoveDirection> directions =
             new List<MoveDirection>();
 
 
         // ======================================
-        // ADD ONLY REAL MOVEMENT DIRECTIONS
+        // STAY IS ALWAYS AVAILABLE
+        // ======================================
+
+        directions.Add(
+            MoveDirection.Stay
+        );
+
+
+        // ======================================
+        // ADD VALID MOVEMENT DIRECTIONS
         // ======================================
 
         TryAddDirection(
@@ -121,7 +130,6 @@ public class EasyBot : MonoBehaviour
             MoveDirection.Up
         );
 
-
         TryAddDirection(
             directions,
             board,
@@ -129,7 +137,6 @@ public class EasyBot : MonoBehaviour
             playerXPosition,
             MoveDirection.Down
         );
-
 
         TryAddDirection(
             directions,
@@ -139,7 +146,6 @@ public class EasyBot : MonoBehaviour
             MoveDirection.Left
         );
 
-
         TryAddDirection(
             directions,
             board,
@@ -147,15 +153,6 @@ public class EasyBot : MonoBehaviour
             playerXPosition,
             MoveDirection.Right
         );
-
-
-        // IMPORTANT:
-        //
-        // Stay is NOT added here.
-        //
-        // Stay will only be returned by
-        // ChooseDirection when there are
-        // no valid movement directions.
 
 
         return directions;

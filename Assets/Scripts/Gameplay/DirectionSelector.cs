@@ -175,14 +175,7 @@ public class DirectionSelector : MonoBehaviour
 
         if (direction == MoveDirection.Stay)
         {
-            // Stay is ONLY allowed if
-            // no movement direction is available.
-
-            return !HasAnyValidMovement(
-                board,
-                position,
-                player
-            );
+            return true;
         }
 
 
@@ -205,47 +198,7 @@ public class DirectionSelector : MonoBehaviour
     }
 
 
-    // =========================================
-    // CHECK IF ANY MOVEMENT EXISTS
-    // =========================================
-
-    private bool HasAnyValidMovement(
-        Board board,
-        Vector2Int position,
-        PlayerType player)
-    {
-        MoveDirection[] directions =
-        {
-            MoveDirection.Up,
-            MoveDirection.Down,
-            MoveDirection.Left,
-            MoveDirection.Right
-        };
-
-
-        foreach (MoveDirection direction
-            in directions)
-        {
-            Vector2Int destination =
-                GetDestination(
-                    position,
-                    direction
-                );
-
-
-            if (CanMoveTo(
-                board,
-                destination,
-                player
-            ))
-            {
-                return true;
-            }
-        }
-
-
-        return false;
-    }
+    
 
 
     // =========================================

@@ -5,6 +5,8 @@ using Unity.Netcode;
 public class NetworkDirectionManager
     : NetworkBehaviour
 {
+    [Header("References")]
+
     [SerializeField]
     private DirectionSelector directionSelector;
 
@@ -50,10 +52,27 @@ public class NetworkDirectionManager
         int directionValue,
         ServerRpcParams rpcParams = default)
     {
-        if (turnManager == null)
+        if (turnManager == null ||
+            boardManager == null)
         {
             Debug.LogError(
-                "TurnManager is missing."
+                "Network references are missing."
+            );
+
+            return;
+        }
+
+
+        // =====================================
+        // VALIDATE ENUM VALUE
+        // =====================================
+
+        if (!IsValidDirectionValue(
+            directionValue
+        ))
+        {
+            Debug.LogWarning(
+                "Invalid direction value received."
             );
 
             return;
@@ -72,13 +91,14 @@ public class NetworkDirectionManager
             rpcParams.Receive.SenderClientId;
 
 
-        // -------------------------------------
+        // =====================================
         // PLAYER VALIDATION
-        // -------------------------------------
+        // =====================================
 
         if (!IsPlayerAllowed(
             senderId,
-            player))
+            player
+        ))
         {
             Debug.LogWarning(
                 "Illegal direction request."
@@ -88,11 +108,13 @@ public class NetworkDirectionManager
         }
 
 
-        // -------------------------------------
+        // =====================================
         // TURN VALIDATION
-        // -------------------------------------
+        // =====================================
 
-        if (!turnManager.CanChooseDirection(player))
+        if (!turnManager.CanChooseDirection(
+            player
+        ))
         {
             Debug.Log(
                 "Direction rejected."
@@ -101,9 +123,10 @@ public class NetworkDirectionManager
             return;
         }
 
-        // -------------------------------------
+
+        // =====================================
         // DIRECTION VALIDATION
-        // -------------------------------------
+        // =====================================
 
         if (!IsDirectionValid(
             player,
@@ -119,9 +142,9 @@ public class NetworkDirectionManager
         }
 
 
-        // -------------------------------------
-        // STORE ON HOST ONLY 🔒
-        // -------------------------------------
+        // =====================================
+        // STORE SECRETLY ON HOST
+        // =====================================
 
         PlayerAction action =
             turnManager.GetAction(player);
@@ -141,34 +164,86 @@ public class NetworkDirectionManager
         );
 
 
-        // Move to next state
+        // =====================================
+        // UPDATE TURN
+        // =====================================
 
-        turnManager.DirectionChosen(player);
+        turnManager.DirectionChosen(
+            player
+        );
 
 
-        // -------------------------------------
-        // CHECK IF BOTH READY
-        // -------------------------------------
+        // =====================================
+        // BOTH DIRECTIONS READY
+        // =====================================
 
         if (turnManager.CurrentState ==
             GameState.RevealingDirections)
         {
+            // ---------------------------------
+            // Reveal directions to everyone
+            // ---------------------------------
+
             RevealDirectionsClientRpc(
-                (int)turnManager.PlayerXAction.direction,
-                (int)turnManager.PlayerYAction.direction
+                (int)turnManager
+                    .PlayerXAction
+                    .direction,
+
+                (int)turnManager
+                    .PlayerYAction
+                    .direction
             );
-            networkMovementManager.RequestMovementResolution();
+
+
+            // ---------------------------------
+            // Host resolves movement
+            // ---------------------------------
+
+            if (networkMovementManager != null)
+            {
+                networkMovementManager
+                    .RequestMovementResolution();
+            }
+            else
+            {
+                Debug.LogError(
+                    "NetworkMovementManager is missing."
+                );
+            }
         }
         else
         {
-            // Inform players that selection
-            // was accepted, without revealing
-            // the direction.
+            // Direction accepted,
+            // but keep it secret.
 
             DirectionAcceptedClientRpc(
                 (int)player
             );
         }
+    }
+
+
+    // =========================================
+    // VALIDATE DIRECTION ENUM
+    // =========================================
+
+    private bool IsValidDirectionValue(
+        int directionValue)
+    {
+        return directionValue ==
+                   (int)MoveDirection.Up ||
+
+               directionValue ==
+                   (int)MoveDirection.Down ||
+
+               directionValue ==
+                   (int)MoveDirection.Left ||
+
+               directionValue ==
+                   (int)MoveDirection.Right ||
+
+               directionValue ==
+                   (int)MoveDirection.Stay;
     }
 
 
@@ -188,13 +263,13 @@ public class NetworkDirectionManager
             $"{player} direction selected."
         );
 
-        // IMPORTANT:
-        // Do not reveal the direction here.
+
+        // Do NOT reveal direction here.
     }
 
 
     // =========================================
-    // REVEAL BOTH DIRECTIONS ⭐
+    // REVEAL BOTH DIRECTIONS
     // =========================================
 
     [ClientRpc]
@@ -202,20 +277,19 @@ public class NetworkDirectionManager
         int playerXDirection,
         int playerYDirection)
     {
-        if (directionSelector == null ||
-            turnManager == null)
+        if (turnManager == null)
         {
             Debug.LogError(
-                "Direction references missing."
+                "TurnManager is missing."
             );
 
             return;
         }
 
 
-        // -------------------------------------
-        // APPLY X
-        // -------------------------------------
+        // =====================================
+        // APPLY X DIRECTION
+        // =====================================
 
         PlayerAction xAction =
             turnManager.PlayerXAction;
@@ -229,9 +303,9 @@ public class NetworkDirectionManager
             true;
 
 
-        // -------------------------------------
-        // APPLY Y
-        // -------------------------------------
+        // =====================================
+        // APPLY Y DIRECTION
+        // =====================================
 
         PlayerAction yAction =
             turnManager.PlayerYAction;
@@ -260,8 +334,9 @@ public class NetworkDirectionManager
         );
 
 
-        // Make sure both clients reach
-        // the reveal state
+        // =====================================
+        // SYNCHRONIZE GAME STATE
+        // =====================================
 
         if (turnManager.CurrentState !=
             GameState.RevealingDirections)
@@ -271,6 +346,7 @@ public class NetworkDirectionManager
             );
         }
     }
+
 
     // =========================================
     // VALIDATE DIRECTION
@@ -301,7 +377,9 @@ public class NetworkDirectionManager
 
 
         PlayerAction action =
-            turnManager.GetAction(player);
+            turnManager.GetAction(
+                player
+            );
 
 
         Vector2Int position =
@@ -309,14 +387,15 @@ public class NetworkDirectionManager
 
 
         // =====================================
-        // STAY
+        // STAY RULE
+        //
+        // Stay is ONLY allowed when there is
+        // NO valid movement direction.
         // =====================================
 
-        if (direction == MoveDirection.Stay)
+        if (direction ==
+            MoveDirection.Stay)
         {
-            // Stay is allowed ONLY when
-            // no movement direction exists.
-
             return !HasAnyValidMovement(
                 board,
                 position,
@@ -343,8 +422,9 @@ public class NetworkDirectionManager
         );
     }
 
+
     // =========================================
-    // CHECK AVAILABLE MOVEMENTS
+    // CHECK IF ANY VALID MOVEMENT EXISTS
     // =========================================
 
     private bool HasAnyValidMovement(
@@ -354,15 +434,17 @@ public class NetworkDirectionManager
     {
         MoveDirection[] directions =
         {
-        MoveDirection.Up,
-        MoveDirection.Down,
-        MoveDirection.Left,
-        MoveDirection.Right
-    };
+            MoveDirection.Up,
+            MoveDirection.Down,
+            MoveDirection.Left,
+            MoveDirection.Right
+        };
 
 
-        foreach (MoveDirection direction
-            in directions)
+        foreach (
+            MoveDirection direction
+            in directions
+        )
         {
             Vector2Int destination =
                 GetDestination(
@@ -385,6 +467,7 @@ public class NetworkDirectionManager
         return false;
     }
 
+
     // =========================================
     // CHECK DESTINATION
     // =========================================
@@ -394,7 +477,9 @@ public class NetworkDirectionManager
         Vector2Int destination,
         PlayerType player)
     {
-        // Outside board
+        // =====================================
+        // OUTSIDE BOARD
+        // =====================================
 
         if (!board.IsInsideBoard(
             destination.x,
@@ -405,7 +490,9 @@ public class NetworkDirectionManager
         }
 
 
-        // Empty cell
+        // =====================================
+        // EMPTY CELL
+        // =====================================
 
         if (board.IsEmpty(
             destination.x,
@@ -418,6 +505,8 @@ public class NetworkDirectionManager
 
         // =====================================
         // OTHER PLAYER'S CURRENT ROUND COIN
+        //
+        // Allow simultaneous movement / swapping.
         // =====================================
 
         PlayerType otherPlayer =
@@ -433,14 +522,20 @@ public class NetworkDirectionManager
 
 
         if (otherAction.hasPlaced &&
-            destination == otherAction.position)
+            destination ==
+            otherAction.position)
         {
             return true;
         }
 
 
+        // =====================================
+        // PERMANENT / OCCUPIED CELL
+        // =====================================
+
         return false;
     }
+
 
     // =========================================
     // GET DESTINATION
@@ -490,8 +585,9 @@ public class NetworkDirectionManager
         }
     }
 
+
     // =========================================
-    // CURRENT PLAYER
+    // CURRENT DIRECTION PLAYER
     // =========================================
 
     private PlayerType GetCurrentDirectionPlayer()
@@ -515,12 +611,16 @@ public class NetworkDirectionManager
         ulong senderId,
         PlayerType player)
     {
+        // HOST = PLAYER X
+
         if (player == PlayerType.X)
         {
             return senderId ==
                    NetworkManager.ServerClientId;
         }
 
+
+        // CLIENT = PLAYER Y
 
         if (player == PlayerType.Y)
         {

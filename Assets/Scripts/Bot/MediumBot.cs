@@ -257,14 +257,27 @@ public class MediumBot : MonoBehaviour
     // =================================================
 
     private List<MoveDirection>
-        GetValidDirectionsForPosition(
-            Board board,
-            Vector2Int position,
-            Vector2Int playerXPosition)
+     GetValidDirectionsForPosition(
+         Board board,
+         Vector2Int position,
+         Vector2Int playerXPosition)
     {
         List<MoveDirection> directions =
             new List<MoveDirection>();
 
+
+        // ==========================================
+        // STAY IS ALWAYS AVAILABLE
+        // ==========================================
+
+        directions.Add(
+            MoveDirection.Stay
+        );
+
+
+        // ==========================================
+        // VALID MOVEMENT DIRECTIONS
+        // ==========================================
 
         TryAddDirection(
             directions,
@@ -274,7 +287,6 @@ public class MediumBot : MonoBehaviour
             MoveDirection.Up
         );
 
-
         TryAddDirection(
             directions,
             board,
@@ -283,7 +295,6 @@ public class MediumBot : MonoBehaviour
             MoveDirection.Down
         );
 
-
         TryAddDirection(
             directions,
             board,
@@ -291,7 +302,6 @@ public class MediumBot : MonoBehaviour
             playerXPosition,
             MoveDirection.Left
         );
-
 
         TryAddDirection(
             directions,

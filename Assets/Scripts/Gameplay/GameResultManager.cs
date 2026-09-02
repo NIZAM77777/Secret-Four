@@ -1,12 +1,22 @@
+using System.Collections;
 using UnityEngine;
 
 public class GameResultManager : MonoBehaviour
 {
+    [Header("References")]
+
     [SerializeField]
     private TurnManager turnManager;
 
     [SerializeField]
     private GameOverUI gameOverUI;
+
+
+    [Header("Result Timing")]
+
+    [SerializeField]
+    private float resultDelay = 1.5f;
+
 
     public PlayerType Winner { get; private set; }
 
@@ -27,22 +37,28 @@ public class GameResultManager : MonoBehaviour
             return;
         }
 
+
         Winner = player;
 
         HasResult = true;
 
         IsDraw = false;
 
+
         turnManager.SetState(
             GameState.Won
         );
+
 
         Debug.Log(
             $"GAME OVER → {player} WINS!"
         );
 
-        gameOverUI.ShowWinner(
-            player
+
+        StartCoroutine(
+            ShowWinnerAfterDelay(
+                player
+            )
         );
     }
 
@@ -58,17 +74,56 @@ public class GameResultManager : MonoBehaviour
             return;
         }
 
+
         HasResult = true;
 
         IsDraw = true;
+
 
         turnManager.SetState(
             GameState.Draw
         );
 
+
         Debug.Log(
             "GAME OVER → DRAW!"
         );
+
+
+        StartCoroutine(
+            ShowDrawAfterDelay()
+        );
+    }
+
+
+    // =====================================================
+    // SHOW WINNER AFTER DELAY
+    // =====================================================
+
+    private IEnumerator ShowWinnerAfterDelay(
+        PlayerType player)
+    {
+        yield return new WaitForSeconds(
+            resultDelay
+        );
+
+
+        gameOverUI.ShowWinner(
+            player
+        );
+    }
+
+
+    // =====================================================
+    // SHOW DRAW AFTER DELAY
+    // =====================================================
+
+    private IEnumerator ShowDrawAfterDelay()
+    {
+        yield return new WaitForSeconds(
+            resultDelay
+        );
+
 
         gameOverUI.ShowDraw();
     }
@@ -80,13 +135,18 @@ public class GameResultManager : MonoBehaviour
 
     public void ResetResult()
     {
+        StopAllCoroutines();
+
+
         Winner = default;
 
         HasResult = false;
 
         IsDraw = false;
 
+
         gameOverUI.Hide();
+
 
         Debug.Log(
             "Game result reset."

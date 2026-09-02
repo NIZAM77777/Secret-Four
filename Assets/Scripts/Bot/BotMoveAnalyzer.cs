@@ -8,12 +8,21 @@ public class BotMoveAnalyzer : MonoBehaviour
     // =====================================================
 
     public List<MoveDirection> GetValidDirections(
-        Board board,
-        Vector2Int position,
-        Vector2Int otherPlayerPosition)
+    Board board,
+    Vector2Int position,
+    Vector2Int otherPlayerPosition)
     {
         List<MoveDirection> directions =
             new List<MoveDirection>();
+
+
+        // =============================================
+        // STAY IS ALWAYS AVAILABLE
+        // =============================================
+
+        directions.Add(
+            MoveDirection.Stay
+        );
 
 
         TryAddDirection(
@@ -47,18 +56,6 @@ public class BotMoveAnalyzer : MonoBehaviour
             otherPlayerPosition,
             MoveDirection.Right
         );
-
-
-        // =============================================
-        // STAY ONLY WHEN NO MOVEMENT IS AVAILABLE
-        // =============================================
-
-        if (directions.Count == 0)
-        {
-            directions.Add(
-                MoveDirection.Stay
-            );
-        }
 
 
         return directions;

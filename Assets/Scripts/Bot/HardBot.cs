@@ -117,15 +117,8 @@ public class HardBot : MonoBehaviour
 
 
             foreach (MoveDirection direction
-                in directions)
+    in directions)
             {
-                if (direction ==
-                    MoveDirection.Stay)
-                {
-                    continue;
-                }
-
-
                 if (DoesYWinWithDirection(
                     board,
                     playerXPosition,
@@ -137,13 +130,11 @@ public class HardBot : MonoBehaviour
                         "HARD BOT → IMMEDIATE WIN FOUND!"
                     );
 
-
                     plannedDirection =
                         direction;
 
                     hasPlannedDirection =
                         true;
-
 
                     return cell;
                 }
@@ -1074,25 +1065,34 @@ public class HardBot : MonoBehaviour
     // =====================================================
 
     private List<MoveDirection>
-        GetValidDirectionsForPosition(
-            Board board,
-            Vector2Int position)
+     GetValidDirectionsForPosition(
+         Board board,
+         Vector2Int position)
     {
         List<MoveDirection> directions =
             new List<MoveDirection>();
 
 
         // ================================================
-        // CHECK ALL MOVEMENT DIRECTIONS FIRST
+        // STAY IS ALWAYS AVAILABLE
+        // ================================================
+
+        directions.Add(
+            MoveDirection.Stay
+        );
+
+
+        // ================================================
+        // MOVEMENT DIRECTIONS
         // ================================================
 
         MoveDirection[] movementDirections =
         {
-            MoveDirection.Up,
-            MoveDirection.Down,
-            MoveDirection.Left,
-            MoveDirection.Right
-        };
+        MoveDirection.Up,
+        MoveDirection.Down,
+        MoveDirection.Left,
+        MoveDirection.Right
+    };
 
 
         foreach (MoveDirection direction
@@ -1115,18 +1115,6 @@ public class HardBot : MonoBehaviour
                     direction
                 );
             }
-        }
-
-
-        // ================================================
-        // STAY ONLY IF NO MOVEMENT EXISTS
-        // ================================================
-
-        if (directions.Count == 0)
-        {
-            directions.Add(
-                MoveDirection.Stay
-            );
         }
 
 
