@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cc43a21c0a7b764eba2b82402f2ea3e, type: 3}
+  m_Name: Coin_Default_X
+  m_EditorClassIdentifier: Assembly-CSharp::StoreItemData
+  itemID: default1
+  itemName: Default 1
+  itemType: 0
+  icon: {fileID: 8003260396191338441, guid: 525147a4dbd22484389d7b4232b4f4e8, type: 3}
+  adsRequired: 0
+  unlockedByDefault: 1
