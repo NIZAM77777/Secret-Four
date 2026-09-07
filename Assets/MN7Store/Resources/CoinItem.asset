@@ -12,12 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
   m_Name: CoinItem
   m_EditorClassIdentifier: Assembly-CSharp::MN7.Store.MN7ItemData
-  itemId: item_001
-  displayName: New Item
-  description: 
+  itemId: coin_item
+  displayName: 'Coin Pack '
+  description: Get more coins.
   icon: {fileID: 0}
   purchaseType: 1
   currencyId: soft_currency
   currencyCost: 100
   requiredAds: 1
+  adPlacementId: store_reward
   iapProductId: 
+  rewards:
+  - rewardType: 0
+    currencyId: soft_currency
+    currencyAmount: 250
+    itemId: 
+  ownershipType: 0

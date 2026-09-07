@@ -14,6 +14,7 @@ namespace MN7.Store
 
         public event Action<MN7ItemData> OnPurchaseSuccessful;
         public event Action<MN7ItemData> OnPurchaseFailed;
+        private readonly MN7TransactionManager transactionManager;
 
         private readonly MN7RewardManager rewardManager;
 
@@ -23,7 +24,8 @@ namespace MN7.Store
     MN7InventoryManager inventoryManager,
     MN7AdManager adManager,
     MN7AdPurchaseProgress adProgress,
-    MN7RewardManager rewardManager)
+    MN7RewardManager rewardManager,
+    MN7TransactionManager transactionManager)
         {
             this.config = config;
             this.currencyManager = currencyManager;
@@ -31,6 +33,7 @@ namespace MN7.Store
             this.adManager = adManager;
             this.adProgress = adProgress;
             this.rewardManager = rewardManager;
+            this.transactionManager = transactionManager;
         }
 
         //==================================================
@@ -116,6 +119,12 @@ namespace MN7.Store
                 return false;
             }
 
+            MN7TransactionData transaction =
+    transactionManager.CreateTransaction(
+        item.itemId,
+        item.purchaseType
+    );
+
             bool spent =
                 currencyManager.Spend(
                     item.currencyId,
@@ -142,6 +151,10 @@ namespace MN7.Store
 
                 return false;
             }
+
+            transactionManager.CompleteTransaction(
+                transaction.transactionId
+            );
 
             PurchaseSuccessful(item);
 

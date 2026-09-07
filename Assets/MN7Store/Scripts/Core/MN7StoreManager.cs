@@ -10,17 +10,23 @@ namespace MN7.Store
         [SerializeField]
         private MN7StoreConfig storeConfig;
 
-        public MN7CurrencyManager Currency { get; private set; }
+        //==================================================
+        // SYSTEMS
+        //==================================================
 
-        public MN7PurchaseManager Purchases { get; private set; }
+        public MN7CurrencyManager Currency { get; private set; }
 
         public MN7InventoryManager Inventory { get; private set; }
 
         public MN7AdPurchaseProgress AdProgress { get; private set; }
 
+        public MN7AdManager Ads { get; private set; }
+
         public MN7RewardManager Rewards { get; private set; }
 
-        public MN7AdManager Ads { get; private set; }
+        public MN7TransactionManager Transactions { get; private set; }
+
+        public MN7PurchaseManager Purchases { get; private set; }
 
         //==================================================
         // UNITY
@@ -28,7 +34,8 @@ namespace MN7.Store
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (Instance != null &&
+                Instance != this)
             {
                 Destroy(gameObject);
                 return;
@@ -56,10 +63,18 @@ namespace MN7.Store
                 return;
             }
 
+            //==================================================
+            // SAVE
+            //==================================================
+
             MN7SaveManager saveManager =
                 new MN7SaveManager(
                     storeConfig.saveKey
                 );
+
+            //==================================================
+            // CURRENCY
+            //==================================================
 
             Currency =
                 new MN7CurrencyManager(
@@ -67,39 +82,69 @@ namespace MN7.Store
                     saveManager
                 );
 
+            //==================================================
+            // INVENTORY
+            //==================================================
+
             Inventory =
                 new MN7InventoryManager(
                     storeConfig,
                     saveManager
                 );
 
-            AdProgress =
-    new MN7AdPurchaseProgress(
-        saveManager
-    );
+            //==================================================
+            // AD PROGRESS
+            //==================================================
 
-            Purchases =
-    new MN7PurchaseManager(
-        storeConfig,
-        Currency,
-        Inventory,
-        Ads,
-        AdProgress,
-        Rewards
-    );
+            AdProgress =
+                new MN7AdPurchaseProgress(
+                    saveManager
+                );
+
+            //==================================================
+            // ADS
+            //==================================================
 
             Ads =
                 new MN7AdManager();
 
+            //==================================================
+            // REWARDS
+            //==================================================
+
+            Rewards =
+                new MN7RewardManager(
+                    Currency,
+                    Inventory
+                );
+
+            //==================================================
+            // TRANSACTIONS
+            //==================================================
+
+            Transactions =
+                new MN7TransactionManager(
+                    saveManager
+                );
+
+            //==================================================
+            // PURCHASES
+            //==================================================
+
+            Purchases =
+                new MN7PurchaseManager(
+                    storeConfig,
+                    Currency,
+                    Inventory,
+                    Ads,
+                    AdProgress,
+                    Rewards,
+                    Transactions
+                );
+
             Debug.Log(
                 "[MN7 Store] Store initialized."
             );
-
-            Rewards =
-    new MN7RewardManager(
-        Currency,
-        Inventory
-    );
         }
 
         //==================================================
@@ -123,6 +168,10 @@ namespace MN7.Store
         {
             Currency?.ResetToDefaults();
             Inventory?.ClearInventory();
+
+            Debug.Log(
+                "[MN7 Store] Store data reset."
+            );
         }
     }
 }
