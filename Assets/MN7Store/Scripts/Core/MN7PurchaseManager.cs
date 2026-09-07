@@ -15,18 +15,22 @@ namespace MN7.Store
         public event Action<MN7ItemData> OnPurchaseSuccessful;
         public event Action<MN7ItemData> OnPurchaseFailed;
 
+        private readonly MN7RewardManager rewardManager;
+
         public MN7PurchaseManager(
     MN7StoreConfig config,
     MN7CurrencyManager currencyManager,
     MN7InventoryManager inventoryManager,
     MN7AdManager adManager,
-    MN7AdPurchaseProgress adProgress)
+    MN7AdPurchaseProgress adProgress,
+    MN7RewardManager rewardManager)
         {
             this.config = config;
             this.currencyManager = currencyManager;
             this.inventoryManager = inventoryManager;
             this.adManager = adManager;
             this.adProgress = adProgress;
+            this.rewardManager = rewardManager;
         }
 
         //==================================================
@@ -124,14 +128,16 @@ namespace MN7.Store
                 return false;
             }
 
-            bool added =
-                inventoryManager.AddItem(itemId);
+            bool rewardsGranted =
+    rewardManager.GrantItemRewards(
+        item
+    );
 
-            if (!added)
+            if (!rewardsGranted)
             {
                 Debug.LogError(
-                    $"[MN7 Store] Payment succeeded but " +
-                    $"inventory addition failed: {itemId}"
+                    $"[MN7 Store] Failed to grant rewards: " +
+                    $"{item.itemId}"
                 );
 
                 return false;

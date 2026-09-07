@@ -18,6 +18,8 @@ namespace MN7.Store
 
         public MN7AdPurchaseProgress AdProgress { get; private set; }
 
+        public MN7RewardManager Rewards { get; private set; }
+
         public MN7AdManager Ads { get; private set; }
 
         //==================================================
@@ -82,8 +84,9 @@ namespace MN7.Store
         Currency,
         Inventory,
         Ads,
-        AdProgress
-                );
+        AdProgress,
+        Rewards
+    );
 
             Ads =
                 new MN7AdManager();
@@ -91,6 +94,12 @@ namespace MN7.Store
             Debug.Log(
                 "[MN7 Store] Store initialized."
             );
+
+            Rewards =
+    new MN7RewardManager(
+        Currency,
+        Inventory
+    );
         }
 
         //==================================================

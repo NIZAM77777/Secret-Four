@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MN7.Store
@@ -9,6 +10,12 @@ namespace MN7.Store
         RewardedAd,
         CurrencyOrAd,
         IAP
+    }
+
+    public enum MN7ItemOwnershipType
+    {
+        Permanent,
+        Consumable
     }
 
     [CreateAssetMenu(
@@ -41,12 +48,20 @@ namespace MN7.Store
         [Min(1)]
         public int requiredAds = 1;
 
-        [Tooltip(
-            "Ad placement identifier used by the selected ad provider."
-        )]
-        public string adPlacementId = "store_reward";
+        public string adPlacementId =
+            "store_reward";
 
         [Header("IAP")]
         public string iapProductId;
+
+        [Header("Rewards")]
+        public List<MN7RewardData> rewards =
+            new();
+
+        [Header("Ownership")]
+        public MN7ItemOwnershipType ownershipType =
+    MN7ItemOwnershipType.Permanent;
     }
+
+    
 }
