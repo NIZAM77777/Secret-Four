@@ -4,29 +4,57 @@ namespace MN7.Store
 {
     public class MN7StoreManager : MonoBehaviour
     {
-        public static MN7StoreManager Instance { get; private set; }
+        public static MN7StoreManager Instance
+        {
+            get;
+            private set;
+        }
 
         [Header("Configuration")]
         [SerializeField]
         private MN7StoreConfig storeConfig;
 
-        //==================================================
-        // SYSTEMS
-        //==================================================
+        public MN7CurrencyManager Currency
+        {
+            get;
+            private set;
+        }
 
-        public MN7CurrencyManager Currency { get; private set; }
+        public MN7PurchaseManager Purchases
+        {
+            get;
+            private set;
+        }
 
-        public MN7InventoryManager Inventory { get; private set; }
+        public MN7InventoryManager Inventory
+        {
+            get;
+            private set;
+        }
 
-        public MN7AdPurchaseProgress AdProgress { get; private set; }
+        public MN7AdPurchaseProgress AdProgress
+        {
+            get;
+            private set;
+        }
 
-        public MN7AdManager Ads { get; private set; }
+        public MN7RewardManager Rewards
+        {
+            get;
+            private set;
+        }
 
-        public MN7RewardManager Rewards { get; private set; }
+        public MN7AdManager Ads
+        {
+            get;
+            private set;
+        }
 
-        public MN7TransactionManager Transactions { get; private set; }
-
-        public MN7PurchaseManager Purchases { get; private set; }
+        public MN7TransactionManager Transactions
+        {
+            get;
+            private set;
+        }
 
         //==================================================
         // UNITY
@@ -43,7 +71,9 @@ namespace MN7.Store
 
             Instance = this;
 
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(
+                gameObject
+            );
 
             Initialize();
         }
@@ -63,17 +93,13 @@ namespace MN7.Store
                 return;
             }
 
-            //==================================================
-            // SAVE
-            //==================================================
-
             MN7SaveManager saveManager =
                 new MN7SaveManager(
                     storeConfig.saveKey
                 );
 
             //==================================================
-            // CURRENCY
+            // CORE SYSTEMS
             //==================================================
 
             Currency =
@@ -82,35 +108,24 @@ namespace MN7.Store
                     saveManager
                 );
 
-            //==================================================
-            // INVENTORY
-            //==================================================
-
             Inventory =
                 new MN7InventoryManager(
                     storeConfig,
                     saveManager
                 );
 
-            //==================================================
-            // AD PROGRESS
-            //==================================================
-
             AdProgress =
                 new MN7AdPurchaseProgress(
                     saveManager
                 );
 
-            //==================================================
-            // ADS
-            //==================================================
+            Transactions =
+                new MN7TransactionManager(
+                    saveManager
+                );
 
             Ads =
                 new MN7AdManager();
-
-            //==================================================
-            // REWARDS
-            //==================================================
 
             Rewards =
                 new MN7RewardManager(
@@ -119,16 +134,7 @@ namespace MN7.Store
                 );
 
             //==================================================
-            // TRANSACTIONS
-            //==================================================
-
-            Transactions =
-                new MN7TransactionManager(
-                    saveManager
-                );
-
-            //==================================================
-            // PURCHASES
+            // PURCHASE SYSTEM
             //==================================================
 
             Purchases =
@@ -142,9 +148,22 @@ namespace MN7.Store
                     Transactions
                 );
 
+            Recovery =
+    new MN7TransactionRecovery(
+        Transactions,
+        Purchases,
+        storeConfig
+    );
+
             Debug.Log(
                 "[MN7 Store] Store initialized."
             );
+        }
+
+        public MN7TransactionRecovery Recovery
+        {
+            get;
+            private set;
         }
 
         //==================================================
@@ -168,10 +187,6 @@ namespace MN7.Store
         {
             Currency?.ResetToDefaults();
             Inventory?.ClearInventory();
-
-            Debug.Log(
-                "[MN7 Store] Store data reset."
-            );
         }
     }
 }

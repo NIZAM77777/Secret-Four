@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MN7.Store
 {
@@ -6,9 +7,17 @@ namespace MN7.Store
     public class MN7TransactionData
     {
         public string transactionId;
+
         public string itemId;
+
         public string purchaseType;
+
         public long timestamp;
-        public bool completed;
+
+        public string status;
+
+        // Reward indexes that have already been granted.
+        public List<int> appliedRewardIndexes =
+            new();
     }
 }

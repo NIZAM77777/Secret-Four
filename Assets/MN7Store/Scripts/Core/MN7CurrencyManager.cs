@@ -74,15 +74,58 @@ namespace MN7.Store
         }
 
         //==================================================
+        // CURRENCY EXISTS
+        //==================================================
+
+        public bool HasCurrency(
+            string currencyId)
+        {
+            if (string.IsNullOrWhiteSpace(currencyId))
+                return false;
+
+            return balances.ContainsKey(currencyId);
+        }
+
+        //==================================================
+        // CAN ADD
+        //==================================================
+
+        public bool CanAdd(
+            string currencyId,
+            int amount)
+        {
+            if (string.IsNullOrWhiteSpace(currencyId))
+                return false;
+
+            if (amount <= 0)
+                return false;
+
+            if (!balances.ContainsKey(currencyId))
+                return false;
+
+            long result =
+                (long)balances[currencyId] + amount;
+
+            return result <= int.MaxValue;
+        }
+
+
+        //==================================================
         // ADD
         //==================================================
 
-        public void Add(string currencyId, int amount)
+        //==================================================
+        // ADD
+        //==================================================
+
+        public void Add(
+            string currencyId,
+            int amount)
         {
-            if (amount < 0)
+            if (amount <= 0)
             {
                 Debug.LogWarning(
-                    $"[MN7 Store] Cannot add negative currency amount: {amount}"
+                    $"[MN7 Store] Cannot add invalid currency amount: {amount}"
                 );
 
                 return;
@@ -92,6 +135,18 @@ namespace MN7.Store
             {
                 Debug.LogWarning(
                     $"[MN7 Store] Unknown currency: {currencyId}"
+                );
+
+                return;
+            }
+
+            if (!CanAdd(
+                    currencyId,
+                    amount))
+            {
+                Debug.LogWarning(
+                    $"[MN7 Store] Currency balance would overflow: " +
+                    $"{currencyId}"
                 );
 
                 return;

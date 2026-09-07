@@ -22,5 +22,8 @@ namespace MN7.Store
 
         [Header("Item Reward")]
         public string itemId;
+
+        [Min(1)]
+        public int itemQuantity = 1;
     }
 }

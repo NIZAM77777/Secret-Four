@@ -18,13 +18,20 @@ namespace MN7.Store
 
         private readonly MN7SaveManager saveManager;
 
-        private readonly Dictionary<string, MN7TransactionData>
+        private readonly Dictionary<
+            string,
+            MN7TransactionData>
             transactions = new();
+
+        //==================================================
+        // CONSTRUCTOR
+        //==================================================
 
         public MN7TransactionManager(
             MN7SaveManager saveManager)
         {
-            this.saveManager = saveManager;
+            this.saveManager =
+                saveManager;
 
             Load();
         }
@@ -37,59 +44,104 @@ namespace MN7.Store
             string itemId,
             MN7PurchaseType purchaseType)
         {
+            if (string.IsNullOrWhiteSpace(itemId))
+                return null;
+
             string transactionId =
                 GenerateTransactionId();
 
             MN7TransactionData transaction =
                 new()
                 {
-                    transactionId = transactionId,
-                    itemId = itemId,
+                    transactionId =
+                        transactionId,
+
+                    itemId =
+                        itemId,
+
                     purchaseType =
                         purchaseType.ToString(),
+
                     timestamp =
-                        DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                    completed = false
+                        DateTimeOffset.UtcNow
+                            .ToUnixTimeSeconds(),
+
+                    status =
+                        MN7TransactionStatus
+                            .Pending
+                            .ToString(),
+
+                    appliedRewardIndexes =
+                        new List<int>()
                 };
 
-            transactions[transactionId] =
+            transactions[
+                transactionId] =
                 transaction;
 
             Save();
+
+            Debug.Log(
+                $"[MN7 Store] Transaction created: " +
+                $"{transactionId}"
+            );
 
             return transaction;
         }
 
         //==================================================
-        // COMPLETE
+        // STATUS
         //==================================================
 
-        public void CompleteTransaction(
-            string transactionId)
+        public void SetStatus(
+            string transactionId,
+            MN7TransactionStatus status)
         {
             if (!transactions.TryGetValue(
-                transactionId,
-                out MN7TransactionData transaction))
+                    transactionId,
+                    out MN7TransactionData transaction))
             {
+                Debug.LogWarning(
+                    $"[MN7 Store] Transaction not found: " +
+                    $"{transactionId}"
+                );
+
                 return;
             }
 
-            transaction.completed = true;
+            transaction.status =
+                status.ToString();
 
             Save();
+
+            Debug.Log(
+                $"[MN7 Store] Transaction status: " +
+                $"{transactionId} → {status}"
+            );
         }
 
         //==================================================
-        // CHECK
+        // GET STATUS
         //==================================================
 
-        public bool IsCompleted(
+        public MN7TransactionStatus GetStatus(
             string transactionId)
         {
-            return transactions.TryGetValue(
-                transactionId,
-                out MN7TransactionData transaction)
-                && transaction.completed;
+            if (!transactions.TryGetValue(
+                    transactionId,
+                    out MN7TransactionData transaction))
+            {
+                return MN7TransactionStatus.Failed;
+            }
+
+            if (Enum.TryParse(
+                    transaction.status,
+                    out MN7TransactionStatus status))
+            {
+                return status;
+            }
+
+            return MN7TransactionStatus.Failed;
         }
 
         //==================================================
@@ -104,6 +156,144 @@ namespace MN7.Store
                 out MN7TransactionData transaction);
 
             return transaction;
+        }
+
+        //==================================================
+        // REWARD APPLIED
+        //==================================================
+
+        public bool IsRewardApplied(
+            string transactionId,
+            int rewardIndex)
+        {
+            MN7TransactionData transaction =
+                GetTransaction(transactionId);
+
+            if (transaction == null)
+                return false;
+
+            if (transaction.appliedRewardIndexes == null)
+            {
+                transaction.appliedRewardIndexes =
+                    new List<int>();
+            }
+
+            return transaction.appliedRewardIndexes
+                .Contains(rewardIndex);
+        }
+
+        //==================================================
+        // MARK REWARD APPLIED
+        //==================================================
+
+        public void MarkRewardApplied(
+            string transactionId,
+            int rewardIndex)
+        {
+            MN7TransactionData transaction =
+                GetTransaction(transactionId);
+
+            if (transaction == null)
+                return;
+
+            if (rewardIndex < 0)
+                return;
+
+            if (transaction.appliedRewardIndexes == null)
+            {
+                transaction.appliedRewardIndexes =
+                    new List<int>();
+            }
+
+            if (transaction.appliedRewardIndexes
+                .Contains(rewardIndex))
+            {
+                return;
+            }
+
+            transaction.appliedRewardIndexes.Add(
+                rewardIndex
+            );
+
+            Save();
+
+            Debug.Log(
+                $"[MN7 Store] Reward marked applied: " +
+                $"{transactionId} / Reward {rewardIndex}"
+            );
+        }
+
+        //==================================================
+        // ALL REWARDS APPLIED
+        //==================================================
+
+        public bool AreAllRewardsApplied(
+            string transactionId,
+            int rewardCount)
+        {
+            MN7TransactionData transaction =
+                GetTransaction(transactionId);
+
+            if (transaction == null)
+                return false;
+
+            if (rewardCount <= 0)
+                return true;
+
+            if (transaction.appliedRewardIndexes == null)
+                return false;
+
+            return transaction.appliedRewardIndexes.Count
+                >= rewardCount;
+        }
+
+        //==================================================
+        // INCOMPLETE TRANSACTIONS
+        //==================================================
+
+        public List<MN7TransactionData>
+            GetRecoverableTransactions()
+        {
+            List<MN7TransactionData> result =
+                new();
+
+            foreach (
+                MN7TransactionData transaction
+                in transactions.Values)
+            {
+                if (transaction == null)
+                    continue;
+
+                MN7TransactionStatus status =
+                    GetStatus(
+                        transaction.transactionId
+                    );
+
+                if (status ==
+                        MN7TransactionStatus.PaymentCommitted ||
+                    status ==
+                        MN7TransactionStatus.RewardsGranted)
+                {
+                    result.Add(
+                        transaction
+                    );
+                }
+            }
+
+            return result;
+        }
+
+        //==================================================
+        // COMPLETED
+        //==================================================
+
+        public bool IsCompleted(
+            string transactionId)
+        {
+            return GetStatus(
+                transactionId)
+                ==
+                MN7TransactionStatus.Completed;
         }
 
         //==================================================
@@ -125,19 +315,24 @@ namespace MN7.Store
             MN7TransactionSaveData saveData =
                 new();
 
-            foreach (var transaction
-                     in transactions.Values)
+            foreach (
+                MN7TransactionData transaction
+                in transactions.Values)
             {
                 saveData.transactions.Add(
-                    transaction);
+                    transaction
+                );
             }
 
             string json =
-                JsonUtility.ToJson(saveData);
+                JsonUtility.ToJson(
+                    saveData
+                );
 
             saveManager.Save(
                 SaveKey,
-                json);
+                json
+            );
         }
 
         //==================================================
@@ -149,35 +344,59 @@ namespace MN7.Store
             transactions.Clear();
 
             string json =
-                saveManager.Load(SaveKey);
+                saveManager.Load(
+                    SaveKey
+                );
 
             if (string.IsNullOrEmpty(json))
                 return;
 
-            MN7TransactionSaveData saveData =
-                JsonUtility.FromJson<MN7TransactionSaveData>(
-                    json);
-
-            if (saveData == null ||
-                saveData.transactions == null)
+            try
             {
-                return;
-            }
+                MN7TransactionSaveData saveData =
+                    JsonUtility.FromJson<
+                        MN7TransactionSaveData>(
+                            json
+                        );
 
-            foreach (
-                MN7TransactionData transaction
-                in saveData.transactions)
-            {
-                if (transaction == null ||
-                    string.IsNullOrWhiteSpace(
-                        transaction.transactionId))
+                if (saveData == null ||
+                    saveData.transactions == null)
                 {
-                    continue;
+                    return;
                 }
 
-                transactions[
-                    transaction.transactionId] =
-                    transaction;
+                foreach (
+                    MN7TransactionData transaction
+                    in saveData.transactions)
+                {
+                    if (transaction == null)
+                        continue;
+
+                    if (string.IsNullOrWhiteSpace(
+                            transaction.transactionId))
+                    {
+                        continue;
+                    }
+
+                    if (transaction
+                        .appliedRewardIndexes == null)
+                    {
+                        transaction
+                            .appliedRewardIndexes =
+                            new List<int>();
+                    }
+
+                    transactions[
+                        transaction.transactionId] =
+                        transaction;
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Failed to load transactions.\n" +
+                    $"{exception}"
+                );
             }
         }
     }
