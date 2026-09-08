@@ -16,8 +16,10 @@ namespace MN7.Store
 
         public string status;
 
-        // Reward indexes that have already been granted.
         public List<int> appliedRewardIndexes =
+            new();
+
+        public List<string> completedRewardOperations =
             new();
     }
 }

@@ -56,23 +56,50 @@ namespace MN7.Store
         // ADD
         //==================================================
 
-        public void AddProgress(
-            string itemId,
-            int amount)
+        public bool AddProgress(
+     string itemId,
+     int amount = 1
+ )
         {
             if (string.IsNullOrWhiteSpace(itemId))
-                return;
+                return false;
 
             if (amount <= 0)
-                return;
+                return false;
 
             int current =
                 GetProgress(itemId);
 
+            long result =
+                (long)current + amount;
+
+            if (result > int.MaxValue)
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Ad progress overflow: " +
+                    $"{itemId}"
+                );
+
+                return false;
+            }
+
             progress[itemId] =
-                current + amount;
+                (int)result;
 
             Save();
+
+            return true;
+        }
+
+        public void ResetAll()
+        {
+            progress.Clear();
+
+            Save();
+
+            Debug.Log(
+                "[MN7 Store] All ad progress reset."
+            );
         }
 
         //==================================================
@@ -106,6 +133,8 @@ namespace MN7.Store
 
             Save();
         }
+
+
 
         //==================================================
         // SAVE

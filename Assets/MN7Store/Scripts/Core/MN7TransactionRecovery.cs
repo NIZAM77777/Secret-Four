@@ -5,9 +5,19 @@ namespace MN7.Store
 {
     public class MN7TransactionRecovery
     {
-        private readonly MN7TransactionManager transactionManager;
-        private readonly MN7PurchaseManager purchaseManager;
-        private readonly MN7StoreConfig config;
+        private readonly MN7TransactionManager
+            transactionManager;
+
+        private readonly MN7PurchaseManager
+            purchaseManager;
+
+        private readonly MN7StoreConfig
+            config;
+
+
+        //==================================================
+        // CONSTRUCTOR
+        //==================================================
 
         public MN7TransactionRecovery(
             MN7TransactionManager transactionManager,
@@ -24,39 +34,78 @@ namespace MN7.Store
                 config;
         }
 
+
         //==================================================
         // RECOVER
         //==================================================
 
         public void Recover()
         {
-            List<MN7TransactionData> transactions =
-                transactionManager
-                    .GetRecoverableTransactions();
-
-            if (transactions == null ||
-                transactions.Count == 0)
+            if (transactionManager == null)
             {
+                Debug.LogError(
+                    "[MN7 Store] Transaction Manager " +
+                    "is null during recovery."
+                );
+
+                return;
+            }
+
+            if (purchaseManager == null)
+            {
+                Debug.LogError(
+                    "[MN7 Store] Purchase Manager " +
+                    "is null during recovery."
+                );
+
+                return;
+            }
+
+            if (config == null)
+            {
+                Debug.LogError(
+                    "[MN7 Store] Store Config " +
+                    "is null during recovery."
+                );
+
+                return;
+            }
+
+            List<MN7TransactionData>
+                recoverable =
+                    transactionManager
+                        .GetRecoverableTransactions();
+
+            if (recoverable == null ||
+                recoverable.Count == 0)
+            {
+                Debug.Log(
+                    "[MN7 Store] No transactions " +
+                    "require recovery."
+                );
+
                 return;
             }
 
             Debug.Log(
                 $"[MN7 Store] Recovering " +
-                $"{transactions.Count} transaction(s)."
+                $"{recoverable.Count} transactions."
             );
 
-            foreach (
-                MN7TransactionData transaction
-                in transactions)
+            for (
+                int i = 0;
+                i < recoverable.Count;
+                i++)
             {
                 RecoverTransaction(
-                    transaction
+                    recoverable[i]
                 );
             }
         }
 
+
         //==================================================
-        // RECOVER SINGLE
+        // RECOVER TRANSACTION
         //==================================================
 
         private void RecoverTransaction(
@@ -73,26 +122,22 @@ namespace MN7.Store
             if (item == null)
             {
                 Debug.LogError(
-                    $"[MN7 Store] Cannot recover transaction. " +
-                    $"Item not found: {transaction.itemId}"
+                    $"[MN7 Store] Cannot recover " +
+                    $"transaction. Item not found: " +
+                    $"{transaction.itemId}"
                 );
 
                 return;
             }
 
-            Debug.Log(
-                $"[MN7 Store] Recovering transaction: " +
-                $"{transaction.transactionId}"
-            );
-
-            bool success =
+            bool recovered =
                 purchaseManager
                     .RecoverTransactionRewards(
                         transaction,
                         item
                     );
 
-            if (success)
+            if (recovered)
             {
                 Debug.Log(
                     $"[MN7 Store] Transaction recovered: " +
@@ -102,11 +147,13 @@ namespace MN7.Store
             else
             {
                 Debug.LogWarning(
-                    $"[MN7 Store] Transaction still requires " +
-                    $"recovery: {transaction.transactionId}"
+                    $"[MN7 Store] Transaction still " +
+                    $"requires recovery: " +
+                    $"{transaction.transactionId}"
                 );
             }
         }
+
 
         //==================================================
         // FIND ITEM
@@ -115,16 +162,26 @@ namespace MN7.Store
         private MN7ItemData FindItem(
             string itemId)
         {
+            if (config == null ||
+                config.items == null)
+            {
+                return null;
+            }
+
             if (string.IsNullOrWhiteSpace(
                     itemId))
             {
                 return null;
             }
 
-            foreach (
-                MN7ItemData item
-                in config.items)
+            for (
+                int i = 0;
+                i < config.items.Count;
+                i++)
             {
+                MN7ItemData item =
+                    config.items[i];
+
                 if (item == null)
                     continue;
 

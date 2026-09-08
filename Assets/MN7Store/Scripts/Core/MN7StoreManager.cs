@@ -56,6 +56,12 @@ namespace MN7.Store
             private set;
         }
 
+        public MN7TransactionRecovery Recovery
+        {
+            get;
+            private set;
+        }
+
         //==================================================
         // UNITY
         //==================================================
@@ -93,6 +99,17 @@ namespace MN7.Store
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(
+                    storeConfig.saveKey))
+            {
+                Debug.LogError(
+                    "[MN7 Store] Store Config save key " +
+                    "is empty."
+                );
+
+                return;
+            }
+
             MN7SaveManager saveManager =
                 new MN7SaveManager(
                     storeConfig.saveKey
@@ -121,7 +138,8 @@ namespace MN7.Store
 
             Transactions =
                 new MN7TransactionManager(
-                    saveManager
+                    saveManager,
+                    $"{storeConfig.saveKey}_TRANSACTIONS"
                 );
 
             Ads =
@@ -148,22 +166,30 @@ namespace MN7.Store
                     Transactions
                 );
 
+            //==================================================
+            // RECOVERY
+            //==================================================
+
             Recovery =
-    new MN7TransactionRecovery(
-        Transactions,
-        Purchases,
-        storeConfig
-    );
+                new MN7TransactionRecovery(
+                    Transactions,
+                    Purchases,
+                    storeConfig
+                );
+
+            Recovery.Recover();
+
+            //==================================================
+            // CLEANUP
+            //==================================================
+
+            Transactions.CleanupCompletedTransactions(
+                7L * 24L * 60L * 60L
+            );
 
             Debug.Log(
                 "[MN7 Store] Store initialized."
             );
-        }
-
-        public MN7TransactionRecovery Recovery
-        {
-            get;
-            private set;
         }
 
         //==================================================
@@ -186,7 +212,15 @@ namespace MN7.Store
         private void ResetStoreData()
         {
             Currency?.ResetToDefaults();
+
             Inventory?.ClearInventory();
+
+            AdProgress?.ResetAll();
+
+            Debug.Log(
+                "[MN7 Store] Store data reset."
+            );
         }
+
     }
 }

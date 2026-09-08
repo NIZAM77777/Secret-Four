@@ -224,14 +224,56 @@ namespace MN7.Store
         //==================================================
 
         public bool GrantRewardDirect(
-            MN7RewardData reward)
+     MN7RewardData reward)
         {
             if (reward == null)
                 return false;
 
-            return GrantRewardInternal(
-                reward
-            );
+            switch (reward.rewardType)
+            {
+                case MN7RewardType.Currency:
+
+                    if (!currencyManager.CanAdd(
+                            reward.currencyId,
+                            reward.currencyAmount))
+                    {
+                        return false;
+                    }
+
+                    currencyManager.Add(
+                        reward.currencyId,
+                        reward.currencyAmount
+                    );
+
+                    OnRewardGranted?.Invoke(
+                        reward
+                    );
+
+                    return true;
+
+
+                case MN7RewardType.Item:
+
+                    bool itemGranted =
+                        inventoryManager.AddItem(
+                            reward.itemId,
+                            reward.itemQuantity
+                        );
+
+                    if (!itemGranted)
+                        return false;
+
+                    OnRewardGranted?.Invoke(
+                        reward
+                    );
+
+                    return true;
+
+
+                default:
+
+                    return false;
+            }
         }
 
         //==================================================

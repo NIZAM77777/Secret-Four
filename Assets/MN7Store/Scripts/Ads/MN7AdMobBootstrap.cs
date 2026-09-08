@@ -10,28 +10,43 @@ namespace MN7.Store
 
         private MN7AdMobProvider provider;
 
+        //==================================================
+        // UNITY
+        //==================================================
+
         private void Start()
         {
+            if (adMobConfig == null)
+            {
+                Debug.LogError(
+                    "[MN7 Store] AdMob Config is not assigned."
+                );
+
+                return;
+            }
+
+            if (MN7StoreManager.Instance == null)
+            {
+                Debug.LogError(
+                    "[MN7 Store] Store Manager not found."
+                );
+
+                return;
+            }
+
             provider =
-                new MN7AdMobProvider();
+                new MN7AdMobProvider(
+                    adMobConfig
+                );
 
-            provider.Initialize(
-                success =>
-                {
-                    if (!success)
-                    {
-                        Debug.LogError(
-                            "[MN7 Store] AdMob initialization failed."
-                        );
+            RegisterProvider();
 
-                        return;
-                    }
-
-                    RegisterProvider();
-                    PreloadRewardedAds();
-                }
-            );
+            provider.Initialize();
         }
+
+        //==================================================
+        // REGISTER
+        //==================================================
 
         private void RegisterProvider()
         {
@@ -44,61 +59,21 @@ namespace MN7.Store
                 return;
             }
 
-            MN7StoreManager.Instance.Ads
-                .SetProvider(provider);
-        }
-
-        private void PreloadRewardedAds()
-        {
-            if (adMobConfig == null)
+            if (MN7StoreManager.Instance.Ads == null)
             {
-                Debug.LogWarning(
-                    "[MN7 Store] AdMob Config not assigned."
+                Debug.LogError(
+                    "[MN7 Store] Ad Manager not found."
                 );
 
                 return;
             }
 
-            foreach (
-                MN7AdMobPlacement placement
-                in adMobConfig.rewardedPlacements)
-            {
-                if (placement == null)
-                    continue;
+            MN7StoreManager.Instance.Ads
+                .SetProvider(provider);
 
-                string adUnitId =
-                    GetPlatformAdUnitId(
-                        placement
-                    );
-
-                if (string.IsNullOrWhiteSpace(
-                        adUnitId))
-                {
-                    Debug.LogWarning(
-                        $"[MN7 Store] No Ad Unit ID for: " +
-                        $"{placement.placementId}"
-                    );
-
-                    continue;
-                }
-
-                provider.LoadRewardedAd(
-                    placement.placementId,
-                    adUnitId
-                );
-            }
-        }
-
-        private string GetPlatformAdUnitId(
-            MN7AdMobPlacement placement)
-        {
-#if UNITY_ANDROID
-            return placement.androidAdUnitId;
-#elif UNITY_IOS
-            return placement.iosAdUnitId;
-#else
-            return string.Empty;
-#endif
+            Debug.Log(
+                "[MN7 Store] AdMob provider registered."
+            );
         }
     }
 }

@@ -1,40 +1,46 @@
-using GoogleMobileAds.Api;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using GoogleMobileAds.Api;
 
 namespace MN7.Store
 {
     public class MN7AdMobProvider : IMN7AdProvider
     {
+        private readonly MN7AdMobConfig config;
+
         private readonly Dictionary<string, RewardedAd> rewardedAds =
+            new();
+
+        private readonly HashSet<string> loadingPlacements =
             new();
 
         private bool initialized;
 
+        public MN7AdMobProvider(MN7AdMobConfig config)
+        {
+            this.config = config;
+        }
+
         //==================================================
-        // INITIALIZE
+        // INITIALIZATION
         //==================================================
 
-        public void Initialize(
-            Action<bool> onCompleted = null)
+        public void Initialize()
         {
             if (initialized)
-            {
-                onCompleted?.Invoke(true);
                 return;
-            }
+
+            initialized = true;
 
             MobileAds.Initialize(
                 initializationStatus =>
                 {
-                    initialized = true;
-
                     Debug.Log(
                         "[MN7 Store] AdMob initialized."
                     );
 
-                    onCompleted?.Invoke(true);
+                    LoadAllRewardedAds();
                 }
             );
         }
@@ -43,69 +49,93 @@ namespace MN7.Store
         // LOAD
         //==================================================
 
-        public void LoadRewardedAd(
-            string placementId,
-            string adUnitId)
+        private void LoadAllRewardedAds()
         {
-            if (!initialized)
+            if (config == null)
             {
-                Debug.LogWarning(
-                    "[MN7 Store] AdMob is not initialized."
+                Debug.LogError(
+                    "[MN7 Store] AdMob config is null."
                 );
 
                 return;
             }
+
+            if (config.rewardedPlacements == null)
+                return;
+
+            for (
+                int i = 0;
+                i < config.rewardedPlacements.Count;
+                i++)
+            {
+                MN7AdMobPlacement placement =
+                    config.rewardedPlacements[i];
+
+                if (placement == null)
+                    continue;
+
+                LoadRewardedAd(
+                    placement.placementId
+                );
+            }
+        }
+
+        private void LoadRewardedAd(string placementId)
+        {
+            if (string.IsNullOrWhiteSpace(placementId))
+                return;
+
+            if (loadingPlacements.Contains(placementId))
+                return;
+
+            if (rewardedAds.ContainsKey(placementId))
+            {
+                RewardedAd existingAd =
+                    rewardedAds[placementId];
+
+                if (existingAd != null &&
+                    existingAd.CanShowAd())
+                {
+                    return;
+                }
+            }
+
+            string adUnitId =
+                GetAdUnitId(placementId);
 
             if (string.IsNullOrWhiteSpace(adUnitId))
             {
                 Debug.LogError(
-                    "[MN7 Store] Rewarded Ad Unit ID is empty."
+                    $"[MN7 Store] No AdMob ad unit ID " +
+                    $"configured for placement: {placementId}"
                 );
 
                 return;
             }
 
-            if (rewardedAds.TryGetValue(
-                    placementId,
-                    out RewardedAd existingAd))
-            {
-                existingAd.Destroy();
-                rewardedAds.Remove(placementId);
-            }
-
-            AdRequest adRequest = new();
+            loadingPlacements.Add(placementId);
 
             RewardedAd.Load(
                 adUnitId,
-                adRequest,
+                new AdRequest(),
                 (RewardedAd ad, LoadAdError error) =>
                 {
-                    if (error != null)
-                    {
-                        Debug.LogWarning(
-                            $"[MN7 Store] Rewarded ad failed to load: " +
-                            $"{error}"
-                        );
+                    loadingPlacements.Remove(
+                        placementId
+                    );
 
-                        return;
-                    }
-
-                    if (ad == null)
+                    if (error != null ||
+                        ad == null)
                     {
-                        Debug.LogWarning(
-                            "[MN7 Store] Rewarded ad returned null."
+                        Debug.LogError(
+                            $"[MN7 Store] Rewarded ad load " +
+                            $"failed: {placementId}"
                         );
 
                         return;
                     }
 
                     rewardedAds[placementId] = ad;
-
-                    RegisterEvents(
-                        placementId,
-                        ad,
-                        adUnitId
-                    );
 
                     Debug.Log(
                         $"[MN7 Store] Rewarded ad loaded: " +
@@ -120,8 +150,12 @@ namespace MN7.Store
         //==================================================
 
         public bool IsRewardedAdReady(
-            string placementId)
+            string placementId
+        )
         {
+            if (string.IsNullOrWhiteSpace(placementId))
+                return false;
+
             if (!rewardedAds.TryGetValue(
                     placementId,
                     out RewardedAd ad))
@@ -129,8 +163,10 @@ namespace MN7.Store
                 return false;
             }
 
-            return ad != null &&
-                   ad.CanShowAd();
+            if (ad == null)
+                return false;
+
+            return ad.CanShowAd();
         }
 
         //==================================================
@@ -139,8 +175,18 @@ namespace MN7.Store
 
         public void ShowRewardedAd(
             string placementId,
-            Action<MN7AdResult> onCompleted)
+            Action<MN7AdResult> onCompleted
+        )
         {
+            if (string.IsNullOrWhiteSpace(placementId))
+            {
+                onCompleted?.Invoke(
+                    MN7AdResult.Failed
+                );
+
+                return;
+            }
+
             if (!rewardedAds.TryGetValue(
                     placementId,
                     out RewardedAd ad))
@@ -159,38 +205,30 @@ namespace MN7.Store
                     MN7AdResult.NotReady
                 );
 
+                LoadRewardedAd(
+                    placementId
+                );
+
                 return;
             }
 
             bool rewardEarned = false;
+            bool callbackSent = false;
 
-            ad.Show(
-                reward =>
-                {
-                    rewardEarned = true;
+            void Complete(
+                MN7AdResult result
+            )
+            {
+                if (callbackSent)
+                    return;
 
-                    Debug.Log(
-                        $"[MN7 Store] Reward earned. " +
-                        $"Type={reward.Type}, " +
-                        $"Amount={reward.Amount}"
-                    );
+                callbackSent = true;
 
-                    onCompleted?.Invoke(
-                        MN7AdResult.Completed
-                    );
-                }
-            );
-        }
+                onCompleted?.Invoke(
+                    result
+                );
+            }
 
-        //==================================================
-        // EVENTS
-        //==================================================
-
-        private void RegisterEvents(
-            string placementId,
-            RewardedAd ad,
-            string adUnitId)
-        {
             ad.OnAdFullScreenContentClosed += () =>
             {
                 Debug.Log(
@@ -198,53 +236,99 @@ namespace MN7.Store
                     $"{placementId}"
                 );
 
-                DestroyAd(placementId);
+                rewardedAds.Remove(
+                    placementId
+                );
 
                 LoadRewardedAd(
-                    placementId,
-                    adUnitId
+                    placementId
                 );
+
+                if (!rewardEarned)
+                {
+                    Complete(
+                        MN7AdResult.Skipped
+                    );
+                }
             };
 
             ad.OnAdFullScreenContentFailed +=
                 (AdError error) =>
                 {
-                    Debug.LogWarning(
-                        $"[MN7 Store] Rewarded ad failed to show: " +
-                        $"{error}"
+                    Debug.LogError(
+                        $"[MN7 Store] Rewarded ad " +
+                        $"fullscreen failed: " +
+                        $"{placementId} - {error}"
                     );
 
-                    DestroyAd(placementId);
+                    rewardedAds.Remove(
+                        placementId
+                    );
 
                     LoadRewardedAd(
-                        placementId,
-                        adUnitId
+                        placementId
+                    );
+
+                    Complete(
+                        MN7AdResult.Failed
                     );
                 };
+
+            ad.Show(
+                reward =>
+                {
+                    rewardEarned = true;
+
+                    Debug.Log(
+                        $"[MN7 Store] Rewarded ad completed: " +
+                        $"{placementId}"
+                    );
+
+                    Complete(
+                        MN7AdResult.Completed
+                    );
+                }
+            );
         }
 
         //==================================================
-        // DESTROY
+        // CONFIG
         //==================================================
 
-        private void DestroyAd(
-            string placementId)
+        private string GetAdUnitId(
+            string placementId
+        )
         {
-            if (!rewardedAds.TryGetValue(
-                    placementId,
-                    out RewardedAd ad))
+            if (config == null ||
+                config.rewardedPlacements == null)
             {
-                return;
+                return null;
             }
 
-            if (ad != null)
+            for (
+                int i = 0;
+                i < config.rewardedPlacements.Count;
+                i++)
             {
-                ad.Destroy();
+                MN7AdMobPlacement placement =
+                    config.rewardedPlacements[i];
+
+                if (placement == null)
+                    continue;
+
+                if (placement.placementId != placementId)
+                    continue;
+
+#if UNITY_ANDROID
+                return placement.androidAdUnitId;
+#elif UNITY_IOS
+                return placement.iosAdUnitId;
+#else
+                return null;
+#endif
             }
 
-            rewardedAds.Remove(
-                placementId
-            );
+            return null;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MN7.Store
@@ -15,6 +16,7 @@ namespace MN7.Store
         public event Action<MN7ItemData> OnPurchaseSuccessful;
         public event Action<MN7ItemData> OnPurchaseFailed;
         private readonly MN7TransactionManager transactionManager;
+        private readonly HashSet<string> activePurchaseItems = new();
 
         private readonly MN7RewardManager rewardManager;
 
@@ -70,8 +72,12 @@ namespace MN7.Store
         // CURRENCY PURCHASE
         //==================================================
 
+        //==================================================
+        // CURRENCY PURCHASE
+        //==================================================
+
         public bool PurchaseWithCurrency(
-    string itemId)
+            string itemId)
         {
             MN7ItemData item =
                 GetItem(itemId);
@@ -93,47 +99,16 @@ namespace MN7.Store
                 return false;
             }
 
+
             //==================================================
-            // OWNERSHIP
+            // PURCHASE LOCK
             //==================================================
 
-            if (item.ownershipType ==
-                    MN7ItemOwnershipType.Permanent &&
-                inventoryManager.IsOwned(itemId))
+            if (activePurchaseItems.Contains(itemId))
             {
-                OnPurchaseFailed?.Invoke(
-                    item
-                );
-
-                return false;
-            }
-
-            //==================================================
-            // PURCHASE TYPE
-            //==================================================
-
-            if (item.purchaseType !=
-                    MN7PurchaseType.Currency &&
-                item.purchaseType !=
-                    MN7PurchaseType.CurrencyOrAd)
-            {
-                OnPurchaseFailed?.Invoke(
-                    item
-                );
-
-                return false;
-            }
-
-            //==================================================
-            // VALIDATE REWARDS
-            //==================================================
-
-            if (!rewardManager.ValidateItemRewards(
-                    item))
-            {
-                Debug.LogError(
-                    $"[MN7 Store] Reward validation failed: " +
-                    $"{item.itemId}"
+                Debug.LogWarning(
+                    $"[MN7 Store] Purchase already in progress: " +
+                    $"{itemId}"
                 );
 
                 OnPurchaseFailed?.Invoke(
@@ -143,116 +118,233 @@ namespace MN7.Store
                 return false;
             }
 
-            //==================================================
-            // VALIDATE PAYMENT
-            //==================================================
 
-            if (!currencyManager.CanSpend(
-                    item.currencyId,
-                    item.currencyCost))
+            activePurchaseItems.Add(itemId);
+
+            try
             {
-                Debug.Log(
-                    $"[MN7 Store] Not enough currency: " +
-                    $"{item.displayName}"
-                );
+                //==================================================
+                // OWNERSHIP
+                //==================================================
 
-                OnPurchaseFailed?.Invoke(
-                    item
-                );
+                if (item.ownershipType ==
+                        MN7ItemOwnershipType.Permanent &&
+                    inventoryManager.IsOwned(itemId))
+                {
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
 
-                return false;
-            }
+                    return false;
+                }
 
-            //==================================================
-            // CREATE TRANSACTION
-            //==================================================
+                //==================================================
+                // PURCHASE TYPE
+                //==================================================
 
-            MN7TransactionData transaction =
-                transactionManager.CreateTransaction(
-                    item.itemId,
-                    item.purchaseType
-                );
+                if (item.purchaseType !=
+                        MN7PurchaseType.Currency &&
+                    item.purchaseType !=
+                        MN7PurchaseType.CurrencyOrAd)
+                {
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
 
-            if (transaction == null)
-            {
-                OnPurchaseFailed?.Invoke(
-                    item
-                );
+                    return false;
+                }
 
-                return false;
-            }
+                //==================================================
+                // VALIDATE REWARDS
+                //==================================================
 
-            //==================================================
-            // PAYMENT
-            //==================================================
+                if (!rewardManager.ValidateItemRewards(
+                        item))
+                {
+                    Debug.LogError(
+                        $"[MN7 Store] Reward validation failed: " +
+                        $"{item.itemId}"
+                    );
 
-            bool spent =
-                currencyManager.Spend(
-                    item.currencyId,
-                    item.currencyCost
-                );
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
 
-            if (!spent)
-            {
+                    return false;
+                }
+
+                //==================================================
+                // VALIDATE PAYMENT
+                //==================================================
+
+                if (!currencyManager.CanSpend(
+                        item.currencyId,
+                        item.currencyCost))
+                {
+                    Debug.Log(
+                        $"[MN7 Store] Not enough currency: " +
+                        $"{item.displayName}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // CREATE TRANSACTION
+                //==================================================
+
+                MN7TransactionData transaction =
+                    transactionManager.CreateTransaction(
+                        item.itemId,
+                        item.purchaseType
+                    );
+
+                if (transaction == null)
+                {
+                    Debug.LogError(
+                        $"[MN7 Store] Failed to create transaction: " +
+                        $"{item.itemId}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // PAYMENT
+                //==================================================
+
+                bool spent =
+                    currencyManager.Spend(
+                        item.currencyId,
+                        item.currencyCost
+                    );
+
+                if (!spent)
+                {
+                    transactionManager.SetStatus(
+                        transaction.transactionId,
+                        MN7TransactionStatus.Failed
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // PAYMENT COMMITTED
+                //==================================================
+
                 transactionManager.SetStatus(
                     transaction.transactionId,
-                    MN7TransactionStatus.Failed
+                    MN7TransactionStatus.PaymentCommitted
                 );
 
-                OnPurchaseFailed?.Invoke(
+                //==================================================
+                // REWARDS
+                //==================================================
+
+                bool rewardsGranted =
+                    ProcessTransactionRewards(
+                        transaction,
+                        item
+                    );
+
+                if (!rewardsGranted)
+                {
+                    /*
+                     * IMPORTANT:
+                     *
+                     * Payment has already been committed.
+                     *
+                     * Do NOT mark this transaction as Failed.
+                     *
+                     * The transaction remains recoverable by
+                     * MN7TransactionRecovery.
+                     */
+
+                    Debug.LogError(
+                        $"[MN7 Store] Transaction requires recovery: " +
+                        $"{transaction.transactionId}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // SUCCESS
+                //==================================================
+
+                PurchaseSuccessful(
                     item
                 );
 
-                return false;
+                return true;
             }
-
-            //==================================================
-            // PAYMENT COMMITTED
-            //==================================================
-
-            transactionManager.SetStatus(
-                transaction.transactionId,
-                MN7TransactionStatus.PaymentCommitted
-            );
-
-            //==================================================
-            // REWARDS
-            //==================================================
-
-            bool rewardsGranted =
-                ProcessTransactionRewards(
-                    transaction,
-                    item
-                );
-
-            if (!rewardsGranted)
+            finally
             {
-                /*
-                 * IMPORTANT:
-                 *
-                 * Do NOT mark this transaction as Failed.
-                 *
-                 * Payment already happened.
-                 * The transaction must remain recoverable.
-                 */
+                //==================================================
+                // RELEASE PURCHASE LOCK
+                //==================================================
 
-                Debug.LogError(
-                    $"[MN7 Store] Transaction requires recovery: " +
-                    $"{transaction.transactionId}"
+                activePurchaseItems.Remove(
+                    itemId
                 );
+            }
+        }
 
-                OnPurchaseFailed?.Invoke(
-                    item
-                );
+        //==================================================
+        // PURCHASE LOCK
+        //==================================================
 
+        private bool TryLockPurchase(
+            string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    itemId))
+            {
                 return false;
             }
 
-            PurchaseSuccessful(
-                item
+            if (activePurchaseItems.Contains(
+                    itemId))
+            {
+                return false;
+            }
+
+            activePurchaseItems.Add(
+                itemId
             );
 
             return true;
+        }
+
+        private void UnlockPurchase(
+            string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    itemId))
+            {
+                return;
+            }
+
+            activePurchaseItems.Remove(
+                itemId
+            );
         }
 
         //==================================================
@@ -288,6 +380,7 @@ namespace MN7.Store
             );
         }
 
+
         //==================================================
         // PROCESS TRANSACTION REWARDS
         //==================================================
@@ -314,14 +407,6 @@ namespace MN7.Store
                 rewardIndex < item.rewards.Count;
                 rewardIndex++)
             {
-                // Already granted?
-                if (transactionManager.IsRewardApplied(
-                        transaction.transactionId,
-                        rewardIndex))
-                {
-                    continue;
-                }
-
                 MN7RewardData reward =
                     item.rewards[rewardIndex];
 
@@ -335,14 +420,37 @@ namespace MN7.Store
                     return false;
                 }
 
+                string operationId =
+                    transactionManager.GetRewardOperationId(
+                        transaction.transactionId,
+                        rewardIndex
+                    );
+
+                //==================================================
+                // ALREADY COMPLETED?
+                //==================================================
+
+                if (transactionManager
+                    .IsRewardOperationCompleted(
+                        transaction.transactionId,
+                        operationId))
+                {
+                    Debug.Log(
+                        $"[MN7 Store] Reward already processed: " +
+                        $"{operationId}"
+                    );
+
+                    continue;
+                }
+
                 //==================================================
                 // GRANT
                 //==================================================
 
                 bool granted =
-    rewardManager.GrantRewardDirect(
-        reward
-    );
+                    rewardManager.GrantRewardDirect(
+                        reward
+                    );
 
                 if (!granted)
                 {
@@ -356,13 +464,15 @@ namespace MN7.Store
                 }
 
                 //==================================================
-                // SAVE IMMEDIATELY
+                // RECORD OPERATION
                 //==================================================
 
-                transactionManager.MarkRewardApplied(
-                    transaction.transactionId,
-                    rewardIndex
-                );
+                transactionManager
+                    .MarkRewardOperationCompleted(
+                        transaction.transactionId,
+                        operationId,
+                        rewardIndex
+                    );
             }
 
             //==================================================
@@ -386,41 +496,180 @@ namespace MN7.Store
         // FREE PURCHASE
         //==================================================
 
-        public bool PurchaseFree(string itemId)
+        //==================================================
+        // FREE PURCHASE
+        //==================================================
+
+        public bool PurchaseFree(
+            string itemId
+        )
         {
-            MN7ItemData item = GetItem(itemId);
+            MN7ItemData item =
+                GetItem(itemId);
 
             if (item == null)
             {
-                OnPurchaseFailed?.Invoke(null);
+                Debug.LogError(
+                    $"[MN7 Store] Item not found: {itemId}"
+                );
+
                 return false;
             }
 
-            if (inventoryManager.IsOwned(itemId))
+            if (!TryLockPurchase(itemId))
             {
-                OnPurchaseFailed?.Invoke(item);
+                Debug.LogWarning(
+                    $"[MN7 Store] Purchase already in progress: " +
+                    $"{itemId}"
+                );
+
                 return false;
             }
 
-            if (item.purchaseType != MN7PurchaseType.Free)
+            try
             {
-                OnPurchaseFailed?.Invoke(item);
-                return false;
+                //==================================================
+                // PURCHASE TYPE
+                //==================================================
+
+                if (item.purchaseType !=
+                    MN7PurchaseType.Free)
+                {
+                    Debug.LogError(
+                        $"[MN7 Store] Item is not a Free purchase: " +
+                        $"{item.itemId}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // OWNERSHIP
+                //==================================================
+
+                if (item.ownershipType ==
+                        MN7ItemOwnershipType.Permanent &&
+                    inventoryManager.IsOwned(
+                        item.itemId
+                    ))
+                {
+                    Debug.LogWarning(
+                        $"[MN7 Store] Item already owned: " +
+                        $"{item.itemId}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // VALIDATE REWARDS
+                //==================================================
+
+                if (!rewardManager.ValidateItemRewards(
+                        item
+                    ))
+                {
+                    Debug.LogError(
+                        $"[MN7 Store] Invalid rewards for item: " +
+                        $"{item.itemId}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // CREATE TRANSACTION
+                //==================================================
+
+                MN7TransactionData transaction =
+                    transactionManager.CreateTransaction(
+                        item.itemId,
+                        MN7PurchaseType.Free
+                    );
+
+                if (transaction == null)
+                {
+                    Debug.LogError(
+                        $"[MN7 Store] Failed to create Free " +
+                        $"transaction: {item.itemId}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // PAYMENT COMMITTED
+                //==================================================
+
+                transactionManager.SetStatus(
+                    transaction.transactionId,
+                    MN7TransactionStatus.PaymentCommitted
+                );
+
+                //==================================================
+                // REWARDS
+                //==================================================
+
+                bool rewardsGranted =
+                    ProcessTransactionRewards(
+                        transaction,
+                        item
+                    );
+
+                if (!rewardsGranted)
+                {
+                    Debug.LogError(
+                        $"[MN7 Store] Failed to process Free " +
+                        $"purchase rewards: {item.itemId}"
+                    );
+
+                    OnPurchaseFailed?.Invoke(
+                        item
+                    );
+
+                    return false;
+                }
+
+                //==================================================
+                // SUCCESS
+                //==================================================
+
+                OnPurchaseSuccessful?.Invoke(
+                    item
+                );
+
+                Debug.Log(
+                    $"[MN7 Store] Free purchase completed: " +
+                    $"{item.itemId}"
+                );
+
+                return true;
             }
-
-            bool added =
-                inventoryManager.AddItem(itemId);
-
-            if (!added)
+            finally
             {
-                OnPurchaseFailed?.Invoke(item);
-                return false;
+                UnlockPurchase(
+                    itemId
+                );
             }
-
-            PurchaseSuccessful(item);
-
-            return true;
         }
+
+
 
         //==================================================
         // REWARDED AD
@@ -428,71 +677,88 @@ namespace MN7.Store
 
         public void PurchaseWithRewardedAd(
      string itemId,
-     Action<MN7AdResult, int, int> onResult)
+     Action<MN7AdResult> onAdResult = null
+ )
         {
             MN7ItemData item =
-                GetItem(itemId);
+                config != null
+                    ? config.items.Find(
+                        x => x != null &&
+                             x.itemId == itemId
+                    )
+                    : null;
 
             if (item == null)
             {
-                onResult?.Invoke(
-                    MN7AdResult.Failed,
-                    0,
-                    0
+                Debug.LogError(
+                    $"[MN7 Store] Item not found: {itemId}"
+                );
+
+                onAdResult?.Invoke(
+                    MN7AdResult.Failed
                 );
 
                 return;
             }
 
-            if (inventoryManager.IsOwned(itemId))
+            if (!TryLockPurchase(itemId))
             {
-                onResult?.Invoke(
-                    MN7AdResult.Failed,
-                    item.requiredAds,
-                    item.requiredAds
+                Debug.LogWarning(
+                    $"[MN7 Store] Purchase already in progress: " +
+                    $"{itemId}"
+                );
+
+                onAdResult?.Invoke(
+                    MN7AdResult.Skipped
                 );
 
                 return;
             }
 
-            if (item.purchaseType !=
-                    MN7PurchaseType.RewardedAd &&
-                item.purchaseType !=
-                    MN7PurchaseType.CurrencyOrAd)
+            if (!ValidateRewardedAdPurchase(
+                    item
+                ))
             {
-                onResult?.Invoke(
-                    MN7AdResult.Failed,
-                    0,
-                    item.requiredAds
+                UnlockPurchase(itemId);
+
+                onAdResult?.Invoke(
+                    MN7AdResult.Failed
                 );
 
                 return;
             }
 
-            int currentProgress =
-                adProgress.GetProgress(itemId);
+            int progress =
+                adProgress.GetProgress(
+                    item.itemId
+                );
 
-            if (currentProgress >= item.requiredAds)
+            if (progress >= item.requiredAds)
             {
-                CompleteAdPurchase(
-                    item,
-                    onResult
+                bool completed =
+                    CompleteAdPurchase(
+                        item
+                    );
+
+                UnlockPurchase(itemId);
+
+                onAdResult?.Invoke(
+                    completed
+                        ? MN7AdResult.Completed
+                        : MN7AdResult.Failed
                 );
 
                 return;
             }
 
             if (!adManager.IsRewardedAdReady(
-                    item.adPlacementId))
+                    item.adPlacementId
+                ))
             {
-                Debug.Log(
-                    $"[MN7 Store] Rewarded ad not ready."
-                );
+                UnlockPurchase(itemId);
 
-                onResult?.Invoke(
-                    MN7AdResult.NotReady,
-                    currentProgress,
-                    item.requiredAds
+                onAdResult?.Invoke(
+                    MN7AdResult.NotReady
                 );
 
                 return;
@@ -502,82 +768,289 @@ namespace MN7.Store
                 item.adPlacementId,
                 result =>
                 {
-                    if (result != MN7AdResult.Completed)
-                    {
-                        onResult?.Invoke(
-                            result,
-                            adProgress.GetProgress(itemId),
-                            item.requiredAds
-                        );
-
-                        return;
-                    }
-
-                    adProgress.AddProgress(
-                        itemId,
-                        1
-                    );
-
-                    int newProgress =
-                        adProgress.GetProgress(itemId);
-
-                    Debug.Log(
-                        $"[MN7 Store] Ad progress: " +
-                        $"{newProgress}/{item.requiredAds}"
-                    );
-
-                    if (newProgress >=
-                        item.requiredAds)
-                    {
-                        CompleteAdPurchase(
-                            item,
-                            onResult
-                        );
-
-                        return;
-                    }
-
-                    onResult?.Invoke(
-                        MN7AdResult.Completed,
-                        newProgress,
-                        item.requiredAds
+                    HandleRewardedAdResult(
+                        item,
+                        result,
+                        onAdResult
                     );
                 }
             );
         }
 
-        private void CompleteAdPurchase(
-    MN7ItemData item,
-    Action<MN7AdResult, int, int> onResult)
+        private bool ValidateRewardedAdPurchase(
+    MN7ItemData item
+)
         {
-            bool added =
-                inventoryManager.AddItem(
-                    item.itemId
+            if (item == null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(
+                    item.itemId))
+            {
+                Debug.LogError(
+                    "[MN7 Store] Item ID is empty."
                 );
 
-            if (!added)
+                return false;
+            }
+
+            if (item.purchaseType !=
+                MN7PurchaseType.RewardedAd &&
+                item.purchaseType !=
+                MN7PurchaseType.CurrencyOrAd)
             {
-                onResult?.Invoke(
-                    MN7AdResult.Failed,
-                    adProgress.GetProgress(item.itemId),
-                    item.requiredAds
+                Debug.LogError(
+                    $"[MN7 Store] Item is not configured " +
+                    $"for rewarded ads: {item.itemId}"
+                );
+
+                return false;
+            }
+
+            if (item.ownershipType ==
+                MN7ItemOwnershipType.Permanent &&
+                inventoryManager.IsOwned(
+                    item.itemId
+                ))
+            {
+                Debug.LogWarning(
+                    $"[MN7 Store] Item already owned: " +
+                    $"{item.itemId}"
+                );
+
+                return false;
+            }
+
+            if (item.requiredAds <= 0)
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Invalid required ads: " +
+                    $"{item.itemId}"
+                );
+
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(
+                    item.adPlacementId))
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Ad placement ID is empty: " +
+                    $"{item.itemId}"
+                );
+
+                return false;
+            }
+
+            if (!rewardManager.ValidateItemRewards(
+                    item
+                ))
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Invalid rewards: " +
+                    $"{item.itemId}"
+                );
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private void HandleRewardedAdResult(
+    MN7ItemData item,
+    MN7AdResult result,
+    Action<MN7AdResult> onAdResult
+)
+        {
+            if (item == null)
+            {
+                onAdResult?.Invoke(
+                    MN7AdResult.Failed
                 );
 
                 return;
             }
 
+            //==================================================
+            // AD DID NOT COMPLETE
+            //==================================================
+
+            if (result != MN7AdResult.Completed)
+            {
+                UnlockPurchase(
+                    item.itemId
+                );
+
+                onAdResult?.Invoke(
+                    result
+                );
+
+                return;
+            }
+
+            //==================================================
+            // ADD AD PROGRESS
+            //==================================================
+
+            if (!adProgress.AddProgress(
+                    item.itemId,
+                    1
+                ))
+            {
+                UnlockPurchase(
+                    item.itemId
+                );
+
+                onAdResult?.Invoke(
+                    MN7AdResult.Failed
+                );
+
+                return;
+            }
+
+            int newProgress =
+                adProgress.GetProgress(
+                    item.itemId
+                );
+
+            Debug.Log(
+                $"[MN7 Store] Ad progress: " +
+                $"{item.itemId} " +
+                $"{newProgress}/{item.requiredAds}"
+            );
+
+            //==================================================
+            // REQUIRED ADS NOT YET REACHED
+            //==================================================
+
+            if (newProgress < item.requiredAds)
+            {
+                UnlockPurchase(
+                    item.itemId
+                );
+
+                onAdResult?.Invoke(
+                    MN7AdResult.Completed
+                );
+
+                return;
+            }
+
+            //==================================================
+            // COMPLETE PURCHASE
+            //==================================================
+
+            bool completed =
+                CompleteAdPurchase(
+                    item
+                );
+
+            UnlockPurchase(
+                item.itemId
+            );
+
+            onAdResult?.Invoke(
+                completed
+                    ? MN7AdResult.Completed
+                    : MN7AdResult.Failed
+            );
+        }
+
+        private bool CompleteAdPurchase(
+    MN7ItemData item
+)
+        {
+            if (item == null)
+                return false;
+
+            if (!rewardManager.ValidateItemRewards(
+                    item
+                ))
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Cannot complete rewarded " +
+                    $"purchase because rewards are invalid: " +
+                    $"{item.itemId}"
+                );
+
+                return false;
+            }
+
+            //==================================================
+            // CREATE TRANSACTION
+            //==================================================
+
+            MN7TransactionData transaction =
+                transactionManager.CreateTransaction(
+                    item.itemId,
+                    MN7PurchaseType.RewardedAd
+                );
+
+            if (transaction == null)
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Failed to create rewarded " +
+                    $"ad transaction: {item.itemId}"
+                );
+
+                return false;
+            }
+
+            //==================================================
+            // PAYMENT COMMITTED
+            //==================================================
+
+            transactionManager.SetStatus(
+                transaction.transactionId,
+                MN7TransactionStatus.PaymentCommitted
+            );
+
+            //==================================================
+            // REWARDS
+            //==================================================
+
+            bool rewardsGranted =
+                ProcessTransactionRewards(
+                    transaction,
+                    item
+                );
+
+            if (!rewardsGranted)
+            {
+                Debug.LogError(
+                    $"[MN7 Store] Reward processing failed " +
+                    $"for rewarded ad transaction: " +
+                    $"{transaction.transactionId}"
+                );
+
+                return false;
+            }
+
+            //==================================================
+            // RESET AD PROGRESS
+            //==================================================
+
             adProgress.ResetProgress(
                 item.itemId
             );
 
-            PurchaseSuccessful(item);
+            //==================================================
+            // SUCCESS
+            //==================================================
 
-            onResult?.Invoke(
-                MN7AdResult.Completed,
-                item.requiredAds,
-                item.requiredAds
+            OnPurchaseSuccessful?.Invoke(
+                item
             );
+
+            Debug.Log(
+                $"[MN7 Store] Rewarded ad purchase completed: " +
+                $"{item.itemId}"
+            );
+
+            return true;
         }
+        
 
         //==================================================
         // IAP

@@ -345,10 +345,12 @@ namespace MN7.Store
         // AD RESULT
         //==================================================
 
+        //==================================================
+        // AD RESULT
+        //==================================================
+
         private void HandleAdResult(
-            MN7AdResult result,
-            int progress,
-            int required)
+            MN7AdResult result)
         {
             UpdateAdText();
 
@@ -370,7 +372,16 @@ namespace MN7.Store
                 return;
             }
 
-            if (progress >= required)
+            if (result == MN7AdResult.Skipped)
+            {
+                if (statusText != null)
+                    statusText.text =
+                        "AD SKIPPED";
+
+                return;
+            }
+
+            if (result == MN7AdResult.Completed)
             {
                 Refresh();
             }
