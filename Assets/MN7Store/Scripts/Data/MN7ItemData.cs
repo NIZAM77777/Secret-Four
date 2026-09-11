@@ -6,8 +6,8 @@ namespace MN7.Store
     public enum MN7PurchaseType
     {
         Free,
-        Currency,
         RewardedAd,
+        Currency,
         CurrencyOrAd,
         IAP
     }
@@ -35,8 +35,7 @@ namespace MN7.Store
         public Sprite icon;
 
         [Header("Purchase")]
-        public MN7PurchaseType purchaseType =
-            MN7PurchaseType.Currency;
+        public MN7PurchaseType purchaseType = MN7PurchaseType.Free;
 
         [Header("Currency Purchase")]
         public string currencyId = "soft_currency";
@@ -48,20 +47,12 @@ namespace MN7.Store
         [Min(1)]
         public int requiredAds = 1;
 
-        public string adPlacementId =
-            "store_reward";
-
-        [Header("IAP")]
-        public string iapProductId;
+        public string adPlacementId = "store_reward";
 
         [Header("Rewards")]
-        public List<MN7RewardData> rewards =
-            new();
+        public List<MN7RewardData> rewards = new();
 
         [Header("Ownership")]
-        public MN7ItemOwnershipType ownershipType =
-    MN7ItemOwnershipType.Permanent;
+        public MN7ItemOwnershipType ownershipType = MN7ItemOwnershipType.Permanent;
     }
-
-    
 }
