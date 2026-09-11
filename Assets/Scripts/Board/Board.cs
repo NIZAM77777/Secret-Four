@@ -125,7 +125,7 @@ public class Board
         // Remove both current positions first.
         //
         // This prevents one movement from affecting
-        // the other movement.
+        // the other movement and allows a legal swap.
 
         if (xResult.IsMoving &&
             xStart != null &&
