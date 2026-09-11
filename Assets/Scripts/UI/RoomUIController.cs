@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 
 public class RoomUIController : MonoBehaviour
@@ -27,6 +28,9 @@ public class RoomUIController : MonoBehaviour
     [SerializeField]
     private TMP_InputField roomCodeInput;
 
+    [SerializeField]
+    private Button joinRoomButton;
+
 
     [Header("Managers")]
 
@@ -37,6 +41,24 @@ public class RoomUIController : MonoBehaviour
     private GameObject creatingRoomPanel;
 
     private bool isCreatingRoom;
+
+
+    private void Awake()
+    {
+        if (roomCodeInput != null)
+        {
+            roomCodeInput.onValueChanged.AddListener(OnRoomCodeChanged);
+        }
+    }
+
+
+    private void OnDestroy()
+    {
+        if (roomCodeInput != null)
+        {
+            roomCodeInput.onValueChanged.RemoveListener(OnRoomCodeChanged);
+        }
+    }
 
 
     // =========================================
@@ -118,6 +140,35 @@ public class RoomUIController : MonoBehaviour
 
         // Clear old room code
         roomCodeInput.text = "";
+
+        UpdateJoinButtonState();
+    }
+
+
+    // =========================================
+    // JOIN ROOM CODE VALIDATION
+    // =========================================
+
+    private void OnRoomCodeChanged(string value)
+    {
+        UpdateJoinButtonState();
+    }
+
+
+    private void UpdateJoinButtonState()
+    {
+        if (joinRoomButton == null)
+        {
+            return;
+        }
+
+        // Enable Join only after a valid-looking Relay code has been entered.
+        // Relay join codes are non-empty and are normalized before joining.
+        bool hasRoomCode =
+            roomCodeInput != null &&
+            !string.IsNullOrWhiteSpace(roomCodeInput.text);
+
+        joinRoomButton.interactable = hasRoomCode;
     }
 
 
@@ -133,6 +184,8 @@ public class RoomUIController : MonoBehaviour
 
         if (string.IsNullOrWhiteSpace(joinCode))
         {
+            UpdateJoinButtonState();
+
             Debug.LogWarning(
                 "Please enter a Room Code."
             );
@@ -158,6 +211,8 @@ public class RoomUIController : MonoBehaviour
                 "Failed to join room."
             );
 
+            // Keep the button available so the player can correct the code.
+            UpdateJoinButtonState();
             return;
         }
 
@@ -165,6 +220,13 @@ public class RoomUIController : MonoBehaviour
         Debug.Log(
             "Successfully joined the room!"
         );
+
+
+        // Disable while connection/scene transition is being handled.
+        if (joinRoomButton != null)
+        {
+            joinRoomButton.interactable = false;
+        }
 
 
         // We will decide the next screen/game flow
