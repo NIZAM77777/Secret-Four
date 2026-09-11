@@ -1,133 +1,48 @@
-# MN7 Store System
+# MN7 Store System — Secret Four Non-IAP Setup
 
-A reusable Unity store system for games.
+A reusable Unity store system for MN7 Studios games.
 
-Supports:
+For **Secret Four**, the store uses only:
 
 - Free items
-- Currency purchases
 - Rewarded Ad purchases
-- Currency OR Ad purchases
-- Permanent items
-- Consumable items
-- Currency management
+- Permanent or consumable ownership
 - Inventory
 - Rewards
 - Save/Load
-- Transaction recovery
+- Transaction recovery for local rewarded/free fulfillment
 - AdMob rewarded ads
 
-Real-money / IAP is not included.
+**IAP / real-money purchasing is intentionally disabled for Secret Four.**
 
 ---
 
-# 1. Import
+# 1. Secret Four Purchase Model
 
-Copy the complete `MN7Store` folder into:
+Secret Four does **not** use:
 
-Assets/
+- Unity IAP
+- Google Play Billing products for MN7 Store items
+- IAP provider components
+- IAP product IDs
+- Currency-paid store items
 
-The final structure should be:
+Store items should use only:
 
-Assets/
-└── MN7Store/
-    ├── Prefabs/
-    ├── Resources/
-    └── Scripts/
-        ├── Ads/
-        ├── Core/
-        ├── Data/
-        └── UI/
+```text
+Free
+RewardedAd
+```
 
-No external game scripts need to be placed inside MN7Store.
-
----
-
-# 2. Create Store Data
-
-In the Unity Project window, create:
-
-## Currency
-
-Right-click:
-
-Create → MN7 Store → Currency Data
-
-Example:
-
-Currency ID:
-soft_currency
-
-Display Name:
-Coins
-
-Starting Amount:
-1000
+Do not create items using `IAP`.
 
 ---
 
-## Store Items
+# 2. Store Manager
 
-Create:
+Use one persistent `MN7StoreManager` in the game's bootstrap/main scene.
 
-Create → MN7 Store → Store Item
-
-Create one item for each thing you want to sell.
-
-Set:
-
-- Item ID
-- Display Name
-- Description
-- Icon
-- Purchase Type
-- Currency ID / Cost
-- Rewarded Ad settings
-- Rewards
-- Ownership Type
-
-Every Item ID must be unique.
-
----
-
-## Store Config
-
-Create:
-
-Create → MN7 Store → Store Config
-
-Add:
-
-### Currencies
-Add all Currency Data assets.
-
-### Store Items
-Add all Store Item assets.
-
-Set a unique Save Key.
-
-Example:
-
-MN7_STORE_DATA
-
----
-
-# 3. Add Store Manager
-
-In the game's main scene, create:
-
-Empty GameObject
-→ MN7StoreManager
-
-Add:
-
-MN7StoreManager
-
-Assign:
-
-Store Config
-
-The Store Manager automatically creates and manages:
+The manager automatically creates:
 
 - Currency
 - Inventory
@@ -137,292 +52,318 @@ The Store Manager automatically creates and manages:
 - Recovery
 - Ads
 
-Do NOT create these managers manually.
+No separate IAP manager/provider is required for Secret Four.
 
 ---
 
-# 4. Store UI
+# 3. Game Identity
 
-Create a Canvas.
+The Secret Four store configuration uses the unique game ID:
+
+```text
+SECRET_FOUR
+```
+
+The store derives the save namespace from this Game ID so the store data is separated from other MN7 games.
+
+Do not ship with the generic save namespace:
+
+```text
+MN7_STORE_DATA
+```
+
+---
+
+# 4. Store Items
+
+Create store items with:
+
+```text
+Create → MN7 Store → Store Item
+```
+
+For each item configure:
+
+- Item ID
+- Display Name
+- Description
+- Icon
+- Purchase Type
+- Rewarded Ad settings when applicable
+- Rewards
+- Ownership Type
+
+### Free item
+
+Set:
+
+```text
+Purchase Type = Free
+```
+
+The player receives the configured reward without payment.
+
+### Rewarded Ad item
+
+Set:
+
+```text
+Purchase Type = RewardedAd
+```
+
+Configure:
+
+```text
+Required Ads = number of rewarded ads required
+Ad Placement ID = the rewarded-ad placement key
+```
+
+The player watches the required rewarded ads, then the reward is granted.
+
+---
+
+# 5. IAP Rules
+
+For Secret Four:
+
+```text
+IAP = OFF
+```
+
+Never add:
+
+```text
+MN7UnityIAPProvider
+```
+
+Never configure an IAP product ID.
+
+Never create an `IAP` store item.
+
+There is nothing to configure for MN7 Store IAP in Google Play Console.
+
+---
+
+# 6. Rewarded Ads / AdMob
+
+Secret Four uses AdMob for rewarded-ad store purchases.
+
+Create/keep the store AdMob bootstrap object:
+
+```text
+MN7AdMob
+└── MN7AdMobBootstrap
+```
+
+Assign the game's `MN7AdMobConfig`.
+
+The rewarded placement ID configured on a store item must match a placement handled by the game's ad setup.
+
+Use test ad IDs while developing and the game's production IDs for release.
+
+---
+
+# 7. Store UI
 
 Recommended structure:
 
+```text
 Canvas
 └── StorePanel
     ├── Header
     │   ├── CloseButton
     │   ├── StoreTitle
-    │   └── CurrencyDisplay
+    │   └── CurrencyDisplay (optional)
     │
     └── Scroll View
         └── Viewport
             └── Content
+```
 
-Add:
-
-### StorePanel
-
-Add:
-
-MN7StoreUI
+Add `MN7StoreUI` to `StorePanel`.
 
 Assign:
 
-- Item Container → Content
-- Item Prefab → MN7StoreItem prefab
-- Items → Store Items
+```text
+Item Container → Content
+Item Prefab    → MN7StoreItem.prefab
+```
+
+The store UI creates item cards from the configured store items.
 
 ---
 
-# 5. Store Item Prefab
+# 8. Store Item Prefab
 
-Use:
+Use the reusable `MN7StoreItem` prefab.
 
+Typical elements:
+
+```text
 MN7StoreItem
+├── Icon
+├── NameText
+├── DescriptionText
+├── PriceText
+├── StatusText
+├── BuyButton
+└── WatchAdButton
+```
 
-The prefab contains:
+For Secret Four:
 
-- Icon
-- Name
-- Description
-- Price
-- Status
-- Buy Button
-- Watch Ad Button
-
-Add:
-
-MN7StoreItemUI
-
-Connect the corresponding UI objects in the Inspector.
-
-The Item Data can be assigned automatically by MN7StoreUI.
+- Free items should expose the normal free-purchase action.
+- Rewarded-Ad items should expose the Watch Ad action.
+- IAP purchase controls should not be used.
 
 ---
 
-# 6. Currency UI
+# 9. Opening and Closing the Store
 
-For the currency display:
-
-CurrencyDisplay
-└── MN7CurrencyUI
-
-Assign:
-
-Currency ID:
-soft_currency
-
-Amount Text:
-Your currency TMP text.
-
-The ID must exactly match the Currency Data ID.
+The game controls the `StorePanel`.
 
 Example:
 
-Currency Data:
-soft_currency
-
-Currency UI:
-soft_currency
-
-Store Item:
-soft_currency
-
----
-
-# 7. Rewarded Ads / AdMob
-
-AdMob is optional.
-
-If the game uses rewarded ads:
-
-Create:
-
-Empty GameObject
-→ MN7AdMob
-
-Add:
-
-MN7AdMobBootstrap
-
-Create:
-
-Create → MN7 Store → AdMob Config
-
-Add the rewarded ad placements and their Android/iOS Ad Unit IDs.
-
-Assign the AdMob Config to:
-
-MN7AdMobBootstrap
-
-The AdMob object registers itself with MN7StoreManager automatically.
-
-For games that do not use rewarded ads, MN7AdMob is not required.
-
----
-
-# 8. Opening the Store
-
-The game only needs to control the StorePanel.
-
-Example:
-
-Game Store Button
+```text
+Store Button
     ↓
 StorePanel.SetActive(true)
 
 Close Button
     ↓
 StorePanel.SetActive(false)
+```
 
-MN7StoreUI handles the store contents automatically.
+The store UI handles the item list and purchase interaction.
 
 ---
 
-# 9. Required Scene Objects
+# 10. Secret Four Configuration
 
-For a normal store scene:
+The imported reusable package contains a store config under:
 
-Main Camera
+```text
+Assets/MN7Store/Resources/MN7StoreConfig.asset
+```
+
+Its Game ID is configured for:
+
+```text
+SECRET_FOUR
+```
+
+The store item and currency lists should contain only the assets Secret Four actually uses.
+
+Do not add IAP items.
+
+---
+
+# 11. Validation
+
+In Unity, select `MN7StoreManager` and run:
+
+```text
+Validate Store Config
+```
+
+Fix every validation error.
+
+Then run:
+
+```text
+Run Runtime Diagnostics
+```
+
+The store should initialize successfully.
+
+For Secret Four, validation should be based on the non-IAP item types actually configured.
+
+---
+
+# 12. What Gets Saved
+
+The store can persist locally:
+
+- Store currency data, when used
+- Inventory ownership/quantities
+- Rewarded-ad progress
+- Transaction state
+
+The store uses the Secret Four Game ID to keep this data in the game's store namespace.
+
+This is local persistence, not server-authoritative economy data.
+
+---
+
+# 13. Testing Checklist
+
+Before release, test:
+
+```text
+[ ] Store opens
+[ ] Store closes
+[ ] All item cards appear correctly
+[ ] Free item purchase works
+[ ] Free reward is granted once as configured
+[ ] Rewarded ad loads
+[ ] Rewarded ad completion advances progress
+[ ] Required number of ads is respected
+[ ] Reward is granted after required ads
+[ ] Inventory updates correctly
+[ ] Inventory persists after restart
+[ ] Rewarded-ad progress persists after restart
+[ ] Failed/not-ready ad does not grant the reward
+[ ] Duplicate purchase is blocked according to ownership rules
+[ ] No IAP button/path is exposed
+[ ] Android Back closes the store correctly
+[ ] Real Android device test completed
+```
+
+---
+
+# 14. Simple Secret Four Flow
+
+```text
+Secret Four
+     ↓
 MN7StoreManager
-Canvas
-└── StorePanel
-    └── Store UI
-
-EventSystem
-
-If using AdMob:
-
-MN7AdMob
-
-No other MN7 manager GameObjects are required.
-
----
-
-# 10. Important Rules
-
-### Unique IDs
-
-Every ID must be unique.
-
-Example:
-
-soft_currency
-item_coins_100
-item_skin_blue
-
-Do not use duplicate IDs.
-
-### Currency ID
-
-The Currency ID used by an item must exist in Store Config.
-
-### Item ID
-
-Every store item must have a valid unique Item ID.
-
-### Save Key
-
-Use a unique Save Key for each game if the same device can contain data from multiple games.
-
-Example:
-
-Secret Four:
-SECRET_FOUR_STORE
-
-Another Game:
-MY_GAME_STORE
-
-### Store Config
-
-Always assign the Store Config to MN7StoreManager.
-
-### Prefab
-
-Use the provided MN7StoreItem prefab or a prefab containing MN7StoreItemUI.
-
----
-
-# 11. Basic Connection
-
-The complete connection is:
-
-Store Config
      ↓
-MN7StoreManager
+MN7StoreConfig
      ↓
-┌───────────────┐
-│ Currency      │
-│ Inventory     │
-│ Purchases     │
-│ Rewards       │
-│ Transactions  │
-│ Recovery      │
-│ Ads           │
-└───────────────┘
-
-Store Config
+Store Catalog
      ↓
-MN7StoreUI
-     ↓
-Content
-     ↓
-MN7StoreItem
-     ↓
-MN7StoreItemUI
+┌──────────────────────┐
+│ Free Items           │
+│ Rewarded-Ad Items    │
+└──────────────────────┘
      ↓
 MN7PurchaseManager
-
-For rewarded ads:
-
-MN7AdMob
      ↓
-MN7AdMobBootstrap
+Rewards + Inventory
+     ↓
+Local Store Save
+```
+
+Rewarded-ad path:
+
+```text
+Store Item
+     ↓
+Watch Ad
      ↓
 MN7AdManager
      ↓
-MN7PurchaseManager
+AdMob Rewarded Ad
+     ↓
+Progress Complete
+     ↓
+Reward Granted
+     ↓
+Inventory / Currency Updated
+```
 
 ---
 
-# 12. Using in a New Game
+# 15. One Rule to Remember
 
-For every new game:
-
-1. Import `MN7Store`.
-2. Create Currency Data.
-3. Create Store Item Data.
-4. Create Store Config.
-5. Add currencies/items to Store Config.
-6. Add `MN7StoreManager` to the game.
-7. Assign Store Config.
-8. Create the Store UI.
-9. Assign `MN7StoreUI`.
-10. Assign the Store Item prefab.
-11. Add Currency UI if needed.
-12. Add `MN7AdMob` only if rewarded ads are used.
-13. Assign AdMob Config if using AdMob.
-14. Connect the game's Store button to `StorePanel`.
-
-Done.
-
----
-
-# 13. Important
-
-MN7Store is game-independent.
-
-Do not modify the MN7Store scripts for individual games unless a system-level feature is being added.
-
-Game-specific:
-
-- UI design
-- Store items
-- Currency names
-- Rewards
-- Icons
-- Prices
-- Ad placements
-- Store opening/closing
-
-should be configured from the game's own data and UI.
+**For Secret Four: MN7 Store = Free Items + Rewarded Ads only. No IAP, no Google Play store products, and no IAP provider.**
