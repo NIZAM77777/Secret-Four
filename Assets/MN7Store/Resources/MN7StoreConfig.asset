@@ -13,6 +13,4 @@ MonoBehaviour:
   m_Name: MN7StoreConfig
   m_EditorClassIdentifier: Assembly-CSharp::MN7.Store.MN7StoreConfig
   gameId: SECRET_FOUR
-  saveKey: MN7_STORE_DATA
-  currencies: []
   items: []
