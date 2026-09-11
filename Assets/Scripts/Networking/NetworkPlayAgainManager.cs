@@ -1,247 +1,95 @@
 using UnityEngine;
 using Unity.Netcode;
 
-public class NetworkPlayAgainManager
-    : NetworkBehaviour
+public class NetworkPlayAgainManager : NetworkBehaviour
 {
     [Header("References")]
-
-    [SerializeField]
-    private GameResultManager gameResultManager;
-
-    [SerializeField]
-    private TurnManager turnManager;
-
-    [SerializeField]
-    private BoardManager boardManager;
-
-    [SerializeField]
-    private PlacementManager placementManager;
-
-    [SerializeField]
-    private DirectionButtonController directionButtonController;
-
-
-    // =====================================================
-    // READY STATUS
-    // =====================================================
+    [SerializeField] private GameResultManager gameResultManager;
+    [SerializeField] private TurnManager turnManager;
+    [SerializeField] private BoardManager boardManager;
+    [SerializeField] private PlacementManager placementManager;
+    [SerializeField] private DirectionButtonController directionButtonController;
 
     private bool hostReady;
-
     private bool clientReady;
-
-
-    // =====================================================
-    // PLAY AGAIN BUTTON
-    // =====================================================
 
     public void RequestPlayAgain()
     {
         if (!IsSpawned)
         {
-            Debug.LogWarning(
-                "NetworkPlayAgainManager is not spawned."
-            );
-
+            Debug.LogWarning("NetworkPlayAgainManager is not spawned.");
             return;
         }
 
-        Debug.Log(
-            $"PLAYER {NetworkManager.LocalClientId} " +
-            $"REQUESTED PLAY AGAIN"
-        );
-
-        RequestPlayAgainServerRpc();
+        Debug.Log($"PLAYER {NetworkManager.LocalClientId} REQUESTED PLAY AGAIN");
+        RequestPlayAgainRpc();
     }
 
-
-    // =====================================================
-    // PLAYER REQUEST → HOST
-    // =====================================================
-
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestPlayAgainServerRpc(
-        ServerRpcParams rpcParams = default)
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void RequestPlayAgainRpc(RpcParams rpcParams = default)
     {
-        ulong playerId =
-            rpcParams.Receive.SenderClientId;
+        ulong playerId = rpcParams.Receive.SenderClientId;
 
-
-        // =============================================
-        // HOST READY
-        // =============================================
-
-        if (playerId ==
-            NetworkManager.ServerClientId)
+        if (playerId == NetworkManager.ServerClientId)
         {
             hostReady = true;
-
-            Debug.Log(
-                "HOST IS READY FOR PLAY AGAIN"
-            );
+            Debug.Log("HOST IS READY FOR PLAY AGAIN");
         }
-
-
-        // =============================================
-        // CLIENT READY
-        // =============================================
-
         else
         {
             clientReady = true;
-
-            Debug.Log(
-                "CLIENT IS READY FOR PLAY AGAIN"
-            );
+            Debug.Log("CLIENT IS READY FOR PLAY AGAIN");
         }
 
-
-        // Send status to everyone.
-
-        UpdateReadyStatusClientRpc(
-            hostReady,
-            clientReady
-        );
-
-
-        // Check if both players pressed Play Again.
-
+        UpdateReadyStatusRpc(hostReady, clientReady);
         CheckBothPlayersReady();
     }
 
-
-    // =====================================================
-    // CHECK BOTH PLAYERS
-    // =====================================================
-
     private void CheckBothPlayersReady()
     {
-        if (!IsServer)
-        {
+        if (!IsServer || !hostReady || !clientReady)
             return;
-        }
 
-
-        if (!hostReady || !clientReady)
-        {
-            return;
-        }
-
-
-        Debug.Log(
-            "BOTH PLAYERS READY!"
-        );
-
-
-        // Reset ready flags BEFORE starting
-        // the new match.
+        Debug.Log("BOTH PLAYERS READY!");
 
         hostReady = false;
-
         clientReady = false;
 
-
-        // Tell both players to reset.
-
-        RestartMatchClientRpc();
+        RestartMatchRpc();
     }
 
-
-    // =====================================================
-    // READY STATUS
-    // =====================================================
-
-    [ClientRpc]
-    private void UpdateReadyStatusClientRpc(
-        bool hostIsReady,
-        bool clientIsReady)
+    [Rpc(SendTo.ClientsAndHost)]
+    private void UpdateReadyStatusRpc(bool hostIsReady, bool clientIsReady)
     {
-        Debug.Log(
-            $"PLAY AGAIN STATUS → " +
-            $"HOST: {hostIsReady} | " +
-            $"CLIENT: {clientIsReady}"
-        );
+        Debug.Log($"PLAY AGAIN STATUS → HOST: {hostIsReady} | CLIENT: {clientIsReady}");
     }
 
-
-    // =====================================================
-    // RESTART MATCH
-    // =====================================================
-
-    [ClientRpc]
-    private void RestartMatchClientRpc()
+    [Rpc(SendTo.ClientsAndHost)]
+    private void RestartMatchRpc()
     {
-        Debug.Log(
-            "NETWORK → NEW MATCH STARTING"
-        );
-
+        Debug.Log("NETWORK → NEW MATCH STARTING");
         ResetCompleteMatch();
     }
 
-
-    // =====================================================
-    // RESET COMPLETE MATCH
-    // =====================================================
-
     private void ResetCompleteMatch()
     {
-        Debug.Log(
-            "===== RESETTING MATCH ====="
-        );
-
-
-        // ---------------------------------------------
-        // 1. Reset game result
-        // ---------------------------------------------
+        Debug.Log("===== RESETTING MATCH =====");
 
         if (gameResultManager != null)
-        {
             gameResultManager.ResetResult();
-        }
-
-
-        // ---------------------------------------------
-        // 2. Clear board data
-        // ---------------------------------------------
 
         if (boardManager != null)
-        {
             boardManager.ResetBoard();
-        }
-
-
-        // ---------------------------------------------
-        // 3. Remove old coin visuals
-        // ---------------------------------------------
 
         if (placementManager != null)
-        {
             placementManager.ClearAllCoins();
-        }
-
-
-        // ---------------------------------------------
-        // 4. Reset player actions + turn state
-        // ---------------------------------------------
 
         if (turnManager != null)
-        {
             turnManager.ResetMatch();
-        }
-
-
-        // ---------------------------------------------
-        // 5. Reset direction buttons
-        // ---------------------------------------------
 
         if (directionButtonController != null)
-        {
             directionButtonController.ResetButtons();
-        }
 
-
-        Debug.Log(
-            "===== NEW MATCH READY ====="
-        );
+        Debug.Log("===== NEW MATCH READY =====");
     }
 }
