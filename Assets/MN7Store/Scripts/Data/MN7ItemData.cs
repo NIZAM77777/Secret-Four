@@ -8,8 +8,7 @@ namespace MN7.Store
         Free,
         RewardedAd,
         Currency,
-        CurrencyOrAd,
-        IAP
+        CurrencyOrAd
     }
 
     public enum MN7ItemOwnershipType
