@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: MN7StoreConfig
   m_EditorClassIdentifier: Assembly-CSharp::MN7.Store.MN7StoreConfig
   gameId: SECRET_FOUR
-  items: []
+  items:
+  - {fileID: 11400000, guid: e679fba9fbae62e4a8fc105a962dd65d, type: 2}
