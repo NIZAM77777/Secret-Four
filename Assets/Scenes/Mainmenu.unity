@@ -639,7 +639,7 @@ GameObject:
   - component: {fileID: 117236615}
   - component: {fileID: 117236614}
   m_Layer: 5
-  m_Name: WithBot
+  m_Name: WithBotButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2623,7 +2623,7 @@ GameObject:
   - component: {fileID: 525398305}
   - component: {fileID: 525398304}
   m_Layer: 5
-  m_Name: WithHuman
+  m_Name: WithHumanButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3188,7 +3188,7 @@ GameObject:
   - component: {fileID: 561447336}
   - component: {fileID: 561447335}
   m_Layer: 5
-  m_Name: InRoom
+  m_Name: InRoomButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
