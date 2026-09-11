@@ -7,7 +7,7 @@ namespace MN7.Store
     {
         public static MN7StoreManager Instance { get; private set; }
 
-        [Header("Configuration")]
+        [Header("Secret Four Store Configuration")]
         [SerializeField] private MN7StoreConfig storeConfig;
 
         public MN7StoreState State { get; private set; } = MN7StoreState.Uninitialized;
@@ -19,7 +19,6 @@ namespace MN7.Store
 
         public MN7StoreConfig Config => storeConfig;
         public MN7StoreCatalog Catalog { get; private set; }
-        public MN7CurrencyManager Currency { get; private set; }
         public MN7PurchaseManager Purchases { get; private set; }
         public MN7InventoryManager Inventory { get; private set; }
         public MN7AdPurchaseProgress AdProgress { get; private set; }
@@ -52,37 +51,33 @@ namespace MN7.Store
 
             if (storeConfig == null)
             {
-                InitializationFailed("Store Config is not assigned.");
+                InitializationFailed("Secret Four Store Config is not assigned.");
                 return;
             }
 
             string effectiveSaveKey = storeConfig.GetEffectiveSaveKey();
-
             if (string.IsNullOrWhiteSpace(effectiveSaveKey))
             {
-                InitializationFailed("Store Config does not produce a valid save key.");
+                InitializationFailed("Secret Four Store Config does not produce a valid save key.");
                 return;
             }
 
             if (!MN7StoreValidator.ValidateConfig(storeConfig))
             {
-                InitializationFailed("Initialization stopped because the Store Config is invalid.");
+                InitializationFailed("Secret Four Store Config is invalid.");
                 return;
             }
 
             Catalog = new MN7StoreCatalog(storeConfig);
             MN7SaveManager saveManager = new MN7SaveManager(effectiveSaveKey);
-
-            Currency = new MN7CurrencyManager(storeConfig, saveManager);
             Inventory = new MN7InventoryManager(storeConfig, saveManager, Catalog);
             AdProgress = new MN7AdPurchaseProgress(saveManager, effectiveSaveKey);
             Transactions = new MN7TransactionManager(saveManager, $"{effectiveSaveKey}_TRANSACTIONS");
             Ads = new MN7AdManager();
-            Rewards = new MN7RewardManager(Currency, Inventory);
+            Rewards = new MN7RewardManager(Inventory);
 
             Purchases = new MN7PurchaseManager(
                 storeConfig,
-                Currency,
                 Inventory,
                 Ads,
                 AdProgress,
@@ -101,8 +96,7 @@ namespace MN7.Store
             Transactions.CleanupCompletedTransactions(7L * 24L * 60L * 60L);
 
             State = MN7StoreState.Initialized;
-
-            Debug.Log($"[MN7 Store] Store initialized. Save namespace: {effectiveSaveKey}");
+            Debug.Log($"[MN7 Store] Secret Four store initialized. Save namespace: {effectiveSaveKey}");
             OnStoreInitialized?.Invoke();
         }
 
@@ -116,7 +110,6 @@ namespace MN7.Store
         private void ClearManagers()
         {
             Catalog = null;
-            Currency = null;
             Purchases = null;
             Inventory = null;
             AdProgress = null;
@@ -133,9 +126,6 @@ namespace MN7.Store
         [ContextMenu("Run Runtime Diagnostics")]
         private void RunRuntimeDiagnostics() => MN7StoreDiagnostics.ValidateRuntime();
 
-        [ContextMenu("Debug Print Currency")]
-        private void DebugPrintCurrency() => Currency?.DebugPrintBalances();
-
         [ContextMenu("Debug Print Inventory")]
         private void DebugPrintInventory() => Inventory?.DebugPrintInventory();
 
@@ -148,10 +138,9 @@ namespace MN7.Store
                 return;
             }
 
-            Currency?.ResetToDefaults();
             Inventory?.ClearInventory();
             AdProgress?.ResetAll();
-            Debug.Log("[MN7 Store] Store data reset.");
+            Debug.Log("[MN7 Store] Secret Four store data reset.");
         }
 #endif
     }
