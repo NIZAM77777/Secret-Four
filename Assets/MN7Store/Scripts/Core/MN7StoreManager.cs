@@ -19,7 +19,6 @@ namespace MN7.Store
 
         public MN7StoreConfig Config => storeConfig;
         public MN7StoreCatalog Catalog { get; private set; }
-        public MN7IAPManager IAP { get; private set; }
         public MN7CurrencyManager Currency { get; private set; }
         public MN7PurchaseManager Purchases { get; private set; }
         public MN7InventoryManager Inventory { get; private set; }
@@ -81,13 +80,6 @@ namespace MN7.Store
             Ads = new MN7AdManager();
             Rewards = new MN7RewardManager(Currency, Inventory);
 
-            IAP = new MN7IAPManager(
-                storeConfig,
-                Inventory,
-                Rewards,
-                Transactions
-            );
-
             Purchases = new MN7PurchaseManager(
                 storeConfig,
                 Currency,
@@ -114,28 +106,6 @@ namespace MN7.Store
             OnStoreInitialized?.Invoke();
         }
 
-        public void SetIAPProvider(IMN7IAPProvider provider)
-        {
-            if (IAP == null)
-            {
-                Debug.LogError("[MN7 Store] Cannot set IAP provider before store initialization.");
-                return;
-            }
-
-            IAP.SetProvider(provider);
-        }
-
-        public void InitializeIAP(Action<bool> onInitialized = null)
-        {
-            if (IAP == null)
-            {
-                onInitialized?.Invoke(false);
-                return;
-            }
-
-            IAP.Initialize(onInitialized);
-        }
-
         private void InitializationFailed(string message)
         {
             State = MN7StoreState.Failed;
@@ -146,7 +116,6 @@ namespace MN7.Store
         private void ClearManagers()
         {
             Catalog = null;
-            IAP = null;
             Currency = null;
             Purchases = null;
             Inventory = null;
