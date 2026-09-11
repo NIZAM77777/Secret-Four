@@ -25,7 +25,6 @@ MonoBehaviour:
   rewards:
   - rewardType: 0
     currencyId: soft_currency
-    currencyAmount: 100
+    currencyAmount: 250
     itemId: 
-    itemQuantity: 1
-  ownershipType: 1
+  ownershipType: 0

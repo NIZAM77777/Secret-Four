@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MN7.Store.MN7CurrencyData
   currencyId: soft_currency
   displayName: Coins
-  startingAmount: 1000
+  startingAmount: 500
