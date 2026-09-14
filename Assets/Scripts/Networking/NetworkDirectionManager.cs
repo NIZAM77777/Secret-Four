@@ -147,26 +147,6 @@ public class NetworkDirectionManager : NetworkBehaviour
         return CanMoveTo(board, destination, player);
     }
 
-    private bool HasAnyValidMovement(Board board, Vector2Int position, PlayerType player)
-    {
-        MoveDirection[] directions =
-        {
-            MoveDirection.Up,
-            MoveDirection.Down,
-            MoveDirection.Left,
-            MoveDirection.Right
-        };
-
-        foreach (MoveDirection direction in directions)
-        {
-            Vector2Int destination = GetDestination(position, direction);
-            if (CanMoveTo(board, destination, player))
-                return true;
-        }
-
-        return false;
-    }
-
     private bool CanMoveTo(Board board, Vector2Int destination, PlayerType player)
     {
         if (!board.IsInsideBoard(destination.x, destination.y))
