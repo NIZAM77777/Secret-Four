@@ -5,8 +5,8 @@ using UnityEngine.UI;
 namespace MN7.Store
 {
     /// <summary>
-    /// Reusable visual/interaction layer for one store item.
-    /// The item prefab owns visual layout and the shared action-button prefab owns action artwork/text.
+    /// Reusable visual/interaction layer for one Secret Four store item.
+    /// Items are obtained either for free or by watching rewarded ads.
     /// </summary>
     public class MN7StoreItemUI : MonoBehaviour
     {
@@ -42,18 +42,22 @@ namespace MN7.Store
         {
             MN7StoreManager store = MN7StoreManager.Instance;
             if (store == null) return;
+
             if (store.Purchases != null)
             {
                 store.Purchases.OnPurchaseSuccessful += HandlePurchaseSuccessful;
                 store.Purchases.OnPurchaseFailed += HandlePurchaseFailed;
             }
+
             if (store.Inventory != null)
             {
                 store.Inventory.OnItemAdded += HandleItemAdded;
                 store.Inventory.OnItemRemoved += HandleItemRemoved;
             }
+
             if (store.Selection != null)
                 store.Selection.OnSelectionChanged += HandleSelectionChanged;
+
             Refresh();
         }
 
@@ -61,16 +65,19 @@ namespace MN7.Store
         {
             MN7StoreManager store = MN7StoreManager.Instance;
             if (store == null) return;
+
             if (store.Purchases != null)
             {
                 store.Purchases.OnPurchaseSuccessful -= HandlePurchaseSuccessful;
                 store.Purchases.OnPurchaseFailed -= HandlePurchaseFailed;
             }
+
             if (store.Inventory != null)
             {
                 store.Inventory.OnItemAdded -= HandleItemAdded;
                 store.Inventory.OnItemRemoved -= HandleItemRemoved;
             }
+
             if (store.Selection != null)
                 store.Selection.OnSelectionChanged -= HandleSelectionChanged;
         }
@@ -97,20 +104,22 @@ namespace MN7.Store
         public void Refresh()
         {
             if (itemData == null) return;
+
             if (icon != null)
             {
                 icon.sprite = itemData.icon;
                 icon.enabled = itemData.icon != null;
             }
+
             if (nameText != null) nameText.text = itemData.displayName;
             if (descriptionText != null) descriptionText.text = itemData.description;
+
             UpdateStateUI();
         }
 
         private void UpdateStateUI()
         {
             MN7StoreManager store = MN7StoreManager.Instance;
-            MN7StoreFeatureConfig features = store?.Features ?? new MN7StoreFeatureConfig();
             bool owned = store?.Inventory != null && store.Inventory.IsOwned(itemData.itemId);
             bool selectable = itemData.selectable && !string.IsNullOrWhiteSpace(itemData.selectionGroupId);
             bool selected = owned && selectable && store?.Selection != null && store.Selection.IsSelected(itemData);
@@ -118,7 +127,9 @@ namespace MN7.Store
             if (ownedState != null) ownedState.SetActive(owned);
             if (selectionState != null) selectionState.SetActive(selected);
             if (lockedState != null) lockedState.SetActive(false);
+
             actionSet?.HideAll();
+
             if (priceText != null) priceText.text = string.Empty;
             if (statusText != null) statusText.text = string.Empty;
 
@@ -127,134 +138,157 @@ namespace MN7.Store
                 actionSet?.ShowSelected();
                 return;
             }
+
             if (owned && selectable)
             {
                 actionSet?.ShowSelect();
                 return;
             }
+
             if (owned)
             {
                 if (statusText != null) statusText.text = "OWNED";
                 return;
             }
 
-            switch (itemData.purchaseType)
+            bool isAdItem = itemData.purchaseType == MN7PurchaseType.RewardedAd;
+            if (!isAdItem)
             {
-                case MN7PurchaseType.Free:
-                    if (features.freeItems)
-                    {
-                        actionSet?.ShowBuy();
-                        if (priceText != null) priceText.text = "FREE";
-                    }
-                    break;
-                case MN7PurchaseType.Currency:
-                    if (features.coins)
-                    {
-                        actionSet?.ShowBuy();
-                        if (priceText != null) priceText.text = itemData.currencyCost.ToString();
-                    }
-                    else if (statusText != null) statusText.text = "UNAVAILABLE";
-                    break;
-                case MN7PurchaseType.RewardedAd:
-                    if (features.adRewards)
-                    {
-                        actionSet?.ShowBuyWithAd();
-                        UpdateAdText();
-                    }
-                    break;
-                case MN7PurchaseType.CurrencyOrAd:
-                    if (features.coins && priceText != null) priceText.text = itemData.currencyCost.ToString();
-                    if (features.adRewards) UpdateAdText();
-                    if (features.coins && features.adRewards) actionSet?.ShowBuyAndAd();
-                    else if (features.coins) actionSet?.ShowBuy();
-                    else if (features.adRewards) actionSet?.ShowBuyWithAd();
-                    else if (statusText != null) statusText.text = "UNAVAILABLE";
-                    break;
-                case MN7PurchaseType.IAP:
-                    if (features.iap)
-                    {
-                        actionSet?.ShowBuy();
-                        if (priceText != null) priceText.text = "BUY";
-                    }
-                    else if (statusText != null) statusText.text = "UNAVAILABLE";
-                    break;
+                if (statusText != null) statusText.text = itemData.defaultOwned ? "OWNED" : "UNAVAILABLE";
+                return;
+            }
+
+            if (store != null && store.AdProgress != null)
+            {
+                actionSet?.ShowBuyWithAd();
+                UpdateAdText(store);
+            }
+            else if (statusText != null)
+            {
+                statusText.text = "AD UNAVAILABLE";
             }
         }
 
-        private void UpdateAdText()
+        private void UpdateAdText(MN7StoreManager store)
         {
-            if (statusText == null || itemData == null) return;
-            MN7StoreManager store = MN7StoreManager.Instance;
-            if (store?.AdProgress == null) return;
-            statusText.text = $"ADS {store.AdProgress.GetProgress(itemData.itemId)}/{itemData.requiredAds}";
+            if (statusText == null || itemData == null || store?.AdProgress == null)
+                return;
+
+            int progress = store.AdProgress.GetProgress(itemData.itemId);
+            statusText.text = itemData.requiredAds > 1
+                ? $"ADS {progress}/{itemData.requiredAds}"
+                : "WATCH AD";
         }
 
         public void Buy()
         {
             if (itemData == null) return;
+
             MN7StoreManager store = MN7StoreManager.Instance;
-            if (store == null) return;
-            if (store.Inventory != null && store.Inventory.IsOwned(itemData.itemId) && itemData.selectable)
+            if (store == null || store.Purchases == null) return;
+
+            if (store.Inventory != null && store.Inventory.IsOwned(itemData.itemId))
             {
                 Select();
                 return;
             }
-            if (store.Purchases == null) return;
-            switch (itemData.purchaseType)
-            {
-                case MN7PurchaseType.Free:
-                    if (store.Features.freeItems) store.Purchases.PurchaseFree(itemData.itemId);
-                    break;
-                case MN7PurchaseType.Currency:
-                case MN7PurchaseType.CurrencyOrAd:
-                    if (store.Features.coins) store.Purchases.PurchaseWithCurrency(itemData.itemId);
-                    break;
-                case MN7PurchaseType.IAP:
-                    if (store.Features.iap) store.Purchases.PurchaseWithIAP(itemData.itemId);
-                    break;
-            }
+
+            // Secret Four only supports free claims and rewarded-ad unlocks.
+            // The current data model uses RewardedAd for ad-unlocked items.
+            if (itemData.purchaseType == MN7PurchaseType.RewardedAd)
+                WatchAd();
         }
 
         public void WatchAd()
         {
             MN7StoreManager store = MN7StoreManager.Instance;
-            if (itemData == null || store == null || !store.Features.adRewards) return;
-            store.Purchases?.PurchaseWithRewardedAd(itemData.itemId, HandleAdResult);
+            if (itemData == null || store == null || store.Purchases == null)
+                return;
+
+            store.Purchases.PurchaseWithRewardedAd(itemData.itemId, HandleAdResult);
         }
 
         public void Select()
         {
-            if (itemData == null || !itemData.selectable) return;
+            if (itemData == null || !itemData.selectable)
+                return;
+
             MN7StoreManager.Instance?.Selection?.SelectItem(itemData.itemId);
         }
 
         private void HandleAdResult(MN7AdResult result)
         {
-            if (result == MN7AdResult.Completed) Refresh();
-            else if (statusText != null) statusText.text = result == MN7AdResult.NotReady ? "AD NOT READY" : result == MN7AdResult.Skipped ? "AD SKIPPED" : "AD FAILED";
+            if (result == MN7AdResult.Completed)
+            {
+                Refresh();
+                return;
+            }
+
+            if (statusText == null) return;
+
+            statusText.text = result switch
+            {
+                MN7AdResult.NotReady => "AD NOT READY",
+                MN7AdResult.Skipped => "AD SKIPPED",
+                _ => "AD FAILED"
+            };
         }
 
-        private void HandleItemAdded(string id) { if (itemData != null && itemData.itemId == id) Refresh(); }
-        private void HandleItemRemoved(string id) { if (itemData != null && itemData.itemId == id) Refresh(); }
+        private void HandleItemAdded(string id)
+        {
+            if (itemData != null && string.Equals(itemData.itemId, id, System.StringComparison.OrdinalIgnoreCase))
+                Refresh();
+        }
+
+        private void HandleItemRemoved(string id)
+        {
+            if (itemData != null && string.Equals(itemData.itemId, id, System.StringComparison.OrdinalIgnoreCase))
+                Refresh();
+        }
+
         private void HandleSelectionChanged(string group, string id)
         {
-            if (itemData != null && string.Equals(itemData.selectionGroupId, group, System.StringComparison.OrdinalIgnoreCase)) Refresh();
+            if (itemData != null &&
+                string.Equals(itemData.selectionGroupId, group, System.StringComparison.OrdinalIgnoreCase))
+                Refresh();
         }
-        private void HandlePurchaseSuccessful(MN7ItemData item) { if (item != null && itemData != null && item.itemId == itemData.itemId) Refresh(); }
-        private void HandlePurchaseFailed(MN7ItemData item) { if (item != null && itemData != null && item.itemId == itemData.itemId) Refresh(); }
+
+        private void HandlePurchaseSuccessful(MN7ItemData item)
+        {
+            if (item != null && itemData != null &&
+                string.Equals(item.itemId, itemData.itemId, System.StringComparison.OrdinalIgnoreCase))
+                Refresh();
+        }
+
+        private void HandlePurchaseFailed(MN7ItemData item)
+        {
+            if (item != null && itemData != null &&
+                string.Equals(item.itemId, itemData.itemId, System.StringComparison.OrdinalIgnoreCase))
+                Refresh();
+        }
 
         private Image FindImage(params string[] names)
         {
             foreach (Transform child in GetComponentsInChildren<Transform>(true))
+            {
                 foreach (string targetName in names)
-                    if (child.name == targetName) return child.GetComponent<Image>();
+                {
+                    if (child.name == targetName)
+                        return child.GetComponent<Image>();
+                }
+            }
+
             return null;
         }
 
         private TMP_Text FindText(string targetName)
         {
             foreach (Transform child in GetComponentsInChildren<Transform>(true))
-                if (child.name == targetName) return child.GetComponent<TMP_Text>();
+            {
+                if (child.name == targetName)
+                    return child.GetComponent<TMP_Text>();
+            }
+
             return null;
         }
 
