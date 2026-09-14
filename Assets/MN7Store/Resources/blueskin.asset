@@ -28,7 +28,6 @@ MonoBehaviour:
   requiredAds: 1
   adPlacementId: store_reward
   rewards:
-  - rewardType: 0
-    itemId: blue
+  - itemId: blue
     itemQuantity: 1
   ownershipType: 0
