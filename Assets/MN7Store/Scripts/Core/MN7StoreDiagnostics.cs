@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace MN7.Store
 {
-    /// <summary>Lightweight runtime diagnostics. Does not modify store data.</summary>
+    /// <summary>Lightweight runtime diagnostics for the rewarded-ads-only store.</summary>
     public static class MN7StoreDiagnostics
     {
         public static bool ValidateRuntime(bool logSuccess = true)
@@ -17,21 +17,14 @@ namespace MN7.Store
             if (store.Purchases == null) return Fail("Purchase Manager is missing.");
             if (store.Transactions == null) return Fail("Transaction Manager is missing.");
             if (store.Recovery == null) return Fail("Transaction Recovery is missing.");
-
-            MN7StoreFeatureConfig features = store.Features ?? new MN7StoreFeatureConfig();
-            if (features.coins && store.Currency == null) return Fail("Coins are enabled but Currency Manager is missing.");
-            if (!features.coins && store.Currency != null) return Fail("Coins are disabled but Currency Manager was initialized.");
-            if (features.adRewards && store.Ads == null) return Fail("Ad Rewards are enabled but Ad Manager is missing.");
-            if (!features.adRewards && store.Ads != null) return Fail("Ad Rewards are disabled but Ad Manager was initialized.");
-            if (features.adRewards && store.AdProgress == null) return Fail("Ad Rewards are enabled but Ad Progress is missing.");
-            if (!features.adRewards && store.AdProgress != null) return Fail("Ad Rewards are disabled but Ad Progress was initialized.");
-            if (features.iap && store.IAP == null) return Fail("IAP is enabled but IAP Manager is missing.");
-            if (!features.iap && store.IAP != null) return Fail("IAP is disabled but IAP Manager was initialized.");
+            if (store.Ads == null) return Fail("Ad Manager is missing.");
+            if (store.AdProgress == null) return Fail("Ad Progress is missing.");
 
             if (logSuccess)
             {
                 Debug.Log($"[MN7 Store] Runtime diagnostics passed. Items: {store.Catalog.GetItems().Count}, Transactions: {store.Transactions.GetTransactionCount()}");
             }
+
             return true;
         }
 
