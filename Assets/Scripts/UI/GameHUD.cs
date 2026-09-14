@@ -61,8 +61,8 @@ public class GameHUD : MonoBehaviour
 
     private void OnStoreSelectionChanged(string selectionGroupId, string itemId)
     {
-        if (string.Equals(selectionGroupId, SecretFourStoreIntegration.PlayerSelectionGroup, System.StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(selectionGroupId, SecretFourStoreIntegration.OppositeSelectionGroup, System.StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(selectionGroupId, SecretFourStoreIntegration.PlayerXSelectionGroup, System.StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(selectionGroupId, SecretFourStoreIntegration.PlayerYSelectionGroup, System.StringComparison.OrdinalIgnoreCase))
         {
             SetupPlayerImages();
         }
@@ -86,8 +86,8 @@ public class GameHUD : MonoBehaviour
 
     private void SetupPlayerImages()
     {
-        Sprite xSprite = SecretFourStoreIntegration.GetSelectedPlayerSprite();
-        Sprite ySprite = SecretFourStoreIntegration.GetSelectedOppositeSprite();
+        Sprite xSprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(PlayerType.X);
+        Sprite ySprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(PlayerType.Y);
 
         if (xSprite == null && coinConfig != null)
             xSprite = coinConfig.GetSprite(PlayerType.X);
