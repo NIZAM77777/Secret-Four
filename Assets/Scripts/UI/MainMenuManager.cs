@@ -47,9 +47,21 @@ public class MainMenuManager : MonoBehaviour
         if (storePanel != null)
             return;
 
-        GameObject found = GameObject.Find("StorePanel");
-        if (found != null)
-            storePanel = found;
+        // GameObject.Find does not find inactive StorePanel objects.
+        // Search the Main Menu scene hierarchy instead so the panel can start disabled.
+        Scene currentScene = gameObject.scene;
+        if (!currentScene.IsValid() || !currentScene.isLoaded)
+            return;
+
+        foreach (GameObject root in currentScene.GetRootGameObjects())
+        {
+            Transform found = FindChildRecursive(root.transform, "StorePanel");
+            if (found != null)
+            {
+                storePanel = found.gameObject;
+                return;
+            }
+        }
     }
 
     private void AutoWireStoreButtons()
@@ -111,7 +123,6 @@ public class MainMenuManager : MonoBehaviour
     // STORE
     // =========================
 
-    /// <summary>Opens the Store panel from the Main Menu.</summary>
     public void OpenStore()
     {
         ResolveStorePanel();
@@ -137,7 +148,6 @@ public class MainMenuManager : MonoBehaviour
         storePanel.SetActive(true);
     }
 
-    /// <summary>Closes the Store panel and returns to the Main Menu.</summary>
     public void CloseStore()
     {
         ResolveStorePanel();
