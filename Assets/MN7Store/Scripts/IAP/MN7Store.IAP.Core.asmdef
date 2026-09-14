@@ -1,0 +1,16 @@
+{
+  "name": "MN7Store.IAP.Core",
+  "rootNamespace": "MN7.Store",
+  "references": [
+    "MN7Store.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
