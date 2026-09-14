@@ -152,29 +152,21 @@ namespace MN7.Store
 
             if (itemData.purchaseType == MN7PurchaseType.Free)
             {
-                if (store?.Features == null || store.Features.freeItems)
-                {
-                    actionSet?.ShowBuy();
-                    if (priceText != null) priceText.text = "FREE";
-                }
-                else if (statusText != null)
-                {
-                    statusText.text = "UNAVAILABLE";
-                }
-
+                actionSet?.ShowBuy();
+                if (priceText != null) priceText.text = "FREE";
                 return;
             }
 
             if (itemData.purchaseType == MN7PurchaseType.RewardedAd)
             {
-                if (store?.Features == null || store.Features.adRewards)
+                if (store?.AdProgress != null)
                 {
                     actionSet?.ShowBuyWithAd();
                     UpdateAdText(store);
                 }
                 else if (statusText != null)
                 {
-                    statusText.text = "UNAVAILABLE";
+                    statusText.text = "AD UNAVAILABLE";
                 }
 
                 return;
@@ -209,20 +201,14 @@ namespace MN7.Store
                 return;
             }
 
-            if (itemData.purchaseType == MN7PurchaseType.Free &&
-                (store.Features == null || store.Features.freeItems))
-            {
+            if (itemData.purchaseType == MN7PurchaseType.Free)
                 store.Purchases.PurchaseFree(itemData.itemId);
-            }
         }
 
         public void WatchAd()
         {
             MN7StoreManager store = MN7StoreManager.Instance;
             if (itemData == null || store == null || store.Purchases == null)
-                return;
-
-            if (store.Features != null && !store.Features.adRewards)
                 return;
 
             store.Purchases.PurchaseWithRewardedAd(itemData.itemId, HandleAdResult);
