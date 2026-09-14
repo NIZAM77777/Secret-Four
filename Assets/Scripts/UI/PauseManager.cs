@@ -17,6 +17,7 @@ public class PauseManager : MonoBehaviour
 
     private bool isPaused;
     private bool isBlockingInput;
+    private bool returningToMainMenu;
 
     private void Start()
     {
@@ -24,6 +25,7 @@ public class PauseManager : MonoBehaviour
 
         isPaused = false;
         isBlockingInput = false;
+        returningToMainMenu = false;
 
         if (pausePanel != null)
         {
@@ -33,7 +35,7 @@ public class PauseManager : MonoBehaviour
 
     public void PauseGame()
     {
-        if (isPaused)
+        if (isPaused || returningToMainMenu)
             return;
 
         isPaused = true;
@@ -50,14 +52,11 @@ public class PauseManager : MonoBehaviour
 
     public void ResumeGame()
     {
-        if (!isPaused)
+        if (!isPaused || returningToMainMenu)
             return;
 
-        // Block board input BEFORE resuming.
         isBlockingInput = true;
-
         isPaused = false;
-
         Time.timeScale = 1f;
 
         if (pausePanel != null)
@@ -74,17 +73,14 @@ public class PauseManager : MonoBehaviour
 
     private IEnumerator WaitForInputRelease()
     {
-        // Wait at least one frame.
         yield return null;
 
-        // Wait until mouse button is released.
         while (Mouse.current != null &&
                Mouse.current.leftButton.isPressed)
         {
             yield return null;
         }
 
-        // Small safety frame.
         yield return null;
 
         isBlockingInput = false;
@@ -94,6 +90,9 @@ public class PauseManager : MonoBehaviour
 
     public void TogglePause()
     {
+        if (returningToMainMenu)
+            return;
+
         if (isPaused)
         {
             ResumeGame();
@@ -116,6 +115,9 @@ public class PauseManager : MonoBehaviour
 
     public void RestartGame()
     {
+        if (returningToMainMenu)
+            return;
+
         Time.timeScale = 1f;
 
         isPaused = false;
@@ -128,10 +130,37 @@ public class PauseManager : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
-        Time.timeScale = 1f;
+        if (returningToMainMenu)
+            return;
 
+        returningToMainMenu = true;
+        Time.timeScale = 1f;
         isPaused = false;
         isBlockingInput = false;
+
+        StartCoroutine(
+            ReturnToMainMenuAfterShutdown()
+        );
+    }
+
+    private IEnumerator ReturnToMainMenuAfterShutdown()
+    {
+        Unity.Netcode.NetworkManager networkManager =
+            Unity.Netcode.NetworkManager.Singleton;
+
+        if (networkManager != null &&
+            (networkManager.IsListening ||
+             networkManager.ShutdownInProgress))
+        {
+            networkManager.Shutdown(true);
+
+            while (Unity.Netcode.NetworkManager.Singleton != null &&
+                   (Unity.Netcode.NetworkManager.Singleton.IsListening ||
+                    Unity.Netcode.NetworkManager.Singleton.ShutdownInProgress))
+            {
+                yield return null;
+            }
+        }
 
         SceneManager.LoadScene(
             mainMenuSceneName
