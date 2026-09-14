@@ -6,15 +6,16 @@ using UnityEngine.UI;
 namespace MN7.Store
 {
     /// <summary>
-    /// Shared action-button set for a store item. The prefab owns button artwork and text.
+    /// Shared action-button set for a store item.
+    /// Secret Four supports Free and Rewarded Ad item acquisition only.
     /// </summary>
     public class MN7StoreItemActionSetUI : MonoBehaviour
     {
-        [Header("Buy")]
+        [Header("Claim / General Action")]
         [SerializeField] private Button buyButton;
         [SerializeField] private TMP_Text buyLabel;
 
-        [Header("Buy With Ad")]
+        [Header("Watch Ad")]
         [SerializeField] private Button buyWithAdButton;
         [SerializeField] private TMP_Text buyWithAdLabel;
 
@@ -22,7 +23,7 @@ namespace MN7.Store
         [SerializeField] private Button selectButton;
         [SerializeField] private TMP_Text selectLabel;
 
-        [Header("Selected")]
+        [Header("Equipped")]
         [SerializeField] private Button selectedButton;
         [SerializeField] private TMP_Text selectedLabel;
 
@@ -51,14 +52,6 @@ namespace MN7.Store
         public void ShowBuyWithAd() => ShowOnly(buyWithAdButton);
         public void ShowSelect() => ShowOnly(selectButton);
         public void ShowSelected() => ShowOnly(selectedButton);
-
-        public void ShowBuyAndAd()
-        {
-            SetActive(buyButton, true);
-            SetActive(buyWithAdButton, true);
-            SetActive(selectButton, false);
-            SetActive(selectedButton, false);
-        }
 
         private void ShowOnly(Button target)
         {
