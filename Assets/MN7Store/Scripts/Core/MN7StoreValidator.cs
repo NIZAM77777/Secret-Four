@@ -88,15 +88,22 @@ namespace MN7.Store
                     valid = false;
                 }
 
-                if (item.purchaseType != MN7PurchaseType.RewardedAd)
+                if (item.purchaseType != MN7PurchaseType.Free && item.purchaseType != MN7PurchaseType.RewardedAd)
                 {
-                    LogError($"Item '{item.itemId}' must use Rewarded Ad as its purchase method.", logMessages);
+                    LogError($"Item '{item.itemId}' has an unsupported acquisition method.", logMessages);
                     valid = false;
                 }
 
-                if (item.requiredAds <= 0 || string.IsNullOrWhiteSpace(item.adPlacementId))
+                if (item.purchaseType == MN7PurchaseType.RewardedAd &&
+                    (item.requiredAds <= 0 || string.IsNullOrWhiteSpace(item.adPlacementId)))
                 {
-                    LogError($"Item '{item.itemId}' has invalid rewarded-ad settings.", logMessages);
+                    LogError($"Ad item '{item.itemId}' has invalid rewarded-ad settings.", logMessages);
+                    valid = false;
+                }
+
+                if (item.purchaseType == MN7PurchaseType.Free && item.defaultSelected && !item.defaultOwned)
+                {
+                    LogError($"Free item '{item.itemId}' cannot be Default Selected unless Default Owned is enabled.", logMessages);
                     valid = false;
                 }
 
@@ -109,12 +116,6 @@ namespace MN7.Store
                 if (!item.selectable && item.defaultSelected)
                 {
                     LogError($"Item '{item.itemId}' cannot be Default Selected when Selectable is disabled.", logMessages);
-                    valid = false;
-                }
-
-                if (item.defaultSelected && !item.defaultOwned)
-                {
-                    LogError($"Item '{item.itemId}' cannot be Default Selected unless Default Owned is enabled.", logMessages);
                     valid = false;
                 }
 
