@@ -5,7 +5,6 @@ namespace MN7.Store
 {
     public enum MN7PurchaseType
     {
-        Free,
         RewardedAd
     }
 
@@ -30,28 +29,17 @@ namespace MN7.Store
         public Sprite icon;
 
         [Header("Categories")]
-        [Tooltip("IDs of the categories this item belongs to. An item may belong to multiple categories.")]
         public List<string> categoryIds = new();
 
         [Header("Selection")]
-        [Tooltip("Items with the same Selection Group ID share one selection slot. Leave empty for non-selectable items.")]
         public string selectionGroupId;
-        [Tooltip("Whether this item can be selected/equipped after ownership.")]
         public bool selectable;
-        [Tooltip("When true, this item starts owned on a brand-new save.")]
         public bool defaultOwned;
-        [Tooltip("When true and no saved selection exists for this group, this item becomes the initial selection.")]
         public bool defaultSelected;
 
         [Header("Sorting")]
-        [Tooltip("Lower values appear first within the same ownership/selection state.")]
         public int sortPriority;
-        [Tooltip("Higher values take priority when the Store's sorting mode gives manual priority more weight.")]
         public int customSortWeight;
-
-        [Header("Purchase")]
-        [Tooltip("Secret Four uses rewarded ads as the purchase method. Free items are optional.")]
-        public MN7PurchaseType purchaseType = MN7PurchaseType.RewardedAd;
 
         [Header("Rewarded Ads")]
         [Min(1)]
