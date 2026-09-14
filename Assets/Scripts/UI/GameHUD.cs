@@ -47,21 +47,22 @@ public class GameHUD : MonoBehaviour
     private TMP_Text botDifficultyText;
 
 
+    private GameState lastState;
+    private bool hasLastState;
+
+
     private void Start()
     {
         SetupPlayers();
-
         SetupPlayerImages();
-
         SetupBotDifficulty();
-
-        Refresh();
+        Refresh(true);
     }
 
 
     private void Update()
     {
-        Refresh();
+        Refresh(false);
     }
 
 
@@ -75,14 +76,12 @@ public class GameHUD : MonoBehaviour
         {
             if (playerXNameText != null)
             {
-                playerXNameText.text =
-                    "Player 1";
+                playerXNameText.text = "Player 1";
             }
 
             if (playerYNameText != null)
             {
-                playerYNameText.text =
-                    "Player 2";
+                playerYNameText.text = "Player 2";
             }
 
             return;
@@ -139,15 +138,27 @@ public class GameHUD : MonoBehaviour
     // HUD REFRESH
     // =================================================
 
-    private void Refresh()
+    private void Refresh(bool force)
     {
         if (turnManager == null)
         {
             return;
         }
 
-        UpdateTurnText();
+        GameState currentState =
+            turnManager.CurrentState;
 
+        if (!force &&
+            hasLastState &&
+            currentState == lastState)
+        {
+            return;
+        }
+
+        lastState = currentState;
+        hasLastState = true;
+
+        UpdateTurnText();
         UpdatePlayerHighlight();
     }
 
@@ -166,81 +177,43 @@ public class GameHUD : MonoBehaviour
         switch (turnManager.CurrentState)
         {
             case GameState.WaitingForPlayerXPlacement:
-
-                turnText.text =
-                    $"{GetPlayerXName()}'s Turn";
-
+                turnText.text = $"{GetPlayerXName()}'s Turn";
                 break;
-
 
             case GameState.WaitingForPlayerXDirection:
-
-                turnText.text =
-                    $"{GetPlayerXName()} — Choose Direction";
-
+                turnText.text = $"{GetPlayerXName()} — Choose Direction";
                 break;
-
 
             case GameState.WaitingForPlayerYPlacement:
-
-                turnText.text =
-                    $"{GetPlayerYName()}'s Turn";
-
+                turnText.text = $"{GetPlayerYName()}'s Turn";
                 break;
-
 
             case GameState.WaitingForPlayerYDirection:
-
-                turnText.text =
-                    $"{GetPlayerYName()} — Choose Direction";
-
+                turnText.text = $"{GetPlayerYName()} — Choose Direction";
                 break;
-
 
             case GameState.RevealingDirections:
-
-                turnText.text =
-                    "Directions Revealed";
-
+                turnText.text = "Directions Revealed";
                 break;
-
 
             case GameState.Moving:
-
-                turnText.text =
-                    "Moving...";
-
+                turnText.text = "Moving...";
                 break;
-
 
             case GameState.CheckingResult:
-
-                turnText.text =
-                    "Checking Result...";
-
+                turnText.text = "Checking Result...";
                 break;
-
 
             case GameState.Won:
-
-                turnText.text =
-                    "Game Over";
-
+                turnText.text = "Game Over";
                 break;
-
 
             case GameState.Draw:
-
-                turnText.text =
-                    "Draw";
-
+                turnText.text = "Draw";
                 break;
 
-
             default:
-
                 turnText.text = "";
-
                 break;
         }
     }
@@ -256,104 +229,33 @@ public class GameHUD : MonoBehaviour
             turnManager.CurrentState;
 
         bool xActive =
-            state ==
-                GameState.WaitingForPlayerXPlacement
-            ||
-            state ==
-                GameState.WaitingForPlayerXDirection;
+            state == GameState.WaitingForPlayerXPlacement ||
+            state == GameState.WaitingForPlayerXDirection;
 
         bool yActive =
-            state ==
-                GameState.WaitingForPlayerYPlacement
-            ||
-            state ==
-                GameState.WaitingForPlayerYDirection;
-
-
-        // ---------------------------------------------
-        // X ACTIVE
-        // ---------------------------------------------
+            state == GameState.WaitingForPlayerYPlacement ||
+            state == GameState.WaitingForPlayerYDirection;
 
         if (xActive)
         {
-            SetImageAlpha(
-                playerXImage,
-                activeAlpha
-            );
-
-            SetTextAlpha(
-                playerXNameText,
-                activeAlpha
-            );
-
-
-            SetImageAlpha(
-                playerYImage,
-                inactiveAlpha
-            );
-
-            SetTextAlpha(
-                playerYNameText,
-                inactiveAlpha
-            );
+            SetImageAlpha(playerXImage, activeAlpha);
+            SetTextAlpha(playerXNameText, activeAlpha);
+            SetImageAlpha(playerYImage, inactiveAlpha);
+            SetTextAlpha(playerYNameText, inactiveAlpha);
         }
-
-
-        // ---------------------------------------------
-        // Y ACTIVE
-        // ---------------------------------------------
-
         else if (yActive)
         {
-            SetImageAlpha(
-                playerXImage,
-                inactiveAlpha
-            );
-
-            SetTextAlpha(
-                playerXNameText,
-                inactiveAlpha
-            );
-
-
-            SetImageAlpha(
-                playerYImage,
-                activeAlpha
-            );
-
-            SetTextAlpha(
-                playerYNameText,
-                activeAlpha
-            );
+            SetImageAlpha(playerXImage, inactiveAlpha);
+            SetTextAlpha(playerXNameText, inactiveAlpha);
+            SetImageAlpha(playerYImage, activeAlpha);
+            SetTextAlpha(playerYNameText, activeAlpha);
         }
-
-
-        // ---------------------------------------------
-        // REVEAL / MOVEMENT
-        // ---------------------------------------------
-
         else
         {
-            SetImageAlpha(
-                playerXImage,
-                activeAlpha
-            );
-
-            SetTextAlpha(
-                playerXNameText,
-                activeAlpha
-            );
-
-
-            SetImageAlpha(
-                playerYImage,
-                activeAlpha
-            );
-
-            SetTextAlpha(
-                playerYNameText,
-                activeAlpha
-            );
+            SetImageAlpha(playerXImage, activeAlpha);
+            SetTextAlpha(playerXNameText, activeAlpha);
+            SetImageAlpha(playerYImage, activeAlpha);
+            SetTextAlpha(playerYNameText, activeAlpha);
         }
     }
 
@@ -371,11 +273,8 @@ public class GameHUD : MonoBehaviour
             return;
         }
 
-        Color color =
-            image.color;
-
+        Color color = image.color;
         color.a = alpha;
-
         image.color = color;
     }
 
@@ -393,11 +292,8 @@ public class GameHUD : MonoBehaviour
             return;
         }
 
-        Color color =
-            text.color;
-
+        Color color = text.color;
         color.a = alpha;
-
         text.color = color;
     }
 
@@ -427,6 +323,7 @@ public class GameHUD : MonoBehaviour
         return GameSession.Instance.Player2Name;
     }
 
+
     // =========================
     // BOT DIFFICULTY
     // =========================
@@ -436,13 +333,11 @@ public class GameHUD : MonoBehaviour
         if (botDifficultyText == null)
             return;
 
-        // Hide by default
         botDifficultyText.gameObject.SetActive(false);
 
         if (GameSession.Instance == null)
             return;
 
-        // Only show in Bot mode
         if (GameSession.Instance.CurrentGameMode !=
             GameMode.Bot)
         {
@@ -457,31 +352,19 @@ public class GameHUD : MonoBehaviour
         switch (difficulty)
         {
             case BotDifficulty.Easy:
-
-                botDifficultyText.text =
-                    "Easy";
-
+                botDifficultyText.text = "Easy";
                 break;
 
             case BotDifficulty.Medium:
-
-                botDifficultyText.text =
-                    "Medium";
-
+                botDifficultyText.text = "Medium";
                 break;
 
             case BotDifficulty.Hard:
-
-                botDifficultyText.text =
-                    "Hard";
-
+                botDifficultyText.text = "Hard";
                 break;
 
             default:
-
-                botDifficultyText.text =
-                    "Bot";
-
+                botDifficultyText.text = "Bot";
                 break;
         }
     }
