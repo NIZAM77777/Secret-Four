@@ -5,8 +5,8 @@ using UnityEngine.UI;
 namespace MN7.Store
 {
     /// <summary>
-    /// Reusable visual/interaction layer for one Secret Four store item.
-    /// Items are obtained either for free or by watching rewarded ads.
+    /// Visual and interaction layer for one Secret Four Store item.
+    /// Acquisition is limited to Free claims and Rewarded Ads.
     /// </summary>
     public class MN7StoreItemUI : MonoBehaviour
     {
@@ -129,7 +129,6 @@ namespace MN7.Store
             if (lockedState != null) lockedState.SetActive(false);
 
             actionSet?.HideAll();
-
             if (priceText != null) priceText.text = string.Empty;
             if (statusText != null) statusText.text = string.Empty;
 
@@ -151,22 +150,38 @@ namespace MN7.Store
                 return;
             }
 
-            bool isAdItem = itemData.purchaseType == MN7PurchaseType.RewardedAd;
-            if (!isAdItem)
+            if (itemData.purchaseType == MN7PurchaseType.Free)
             {
-                if (statusText != null) statusText.text = itemData.defaultOwned ? "OWNED" : "UNAVAILABLE";
+                if (store?.Features == null || store.Features.freeItems)
+                {
+                    actionSet?.ShowBuy();
+                    if (priceText != null) priceText.text = "FREE";
+                }
+                else if (statusText != null)
+                {
+                    statusText.text = "UNAVAILABLE";
+                }
+
                 return;
             }
 
-            if (store != null && store.AdProgress != null)
+            if (itemData.purchaseType == MN7PurchaseType.RewardedAd)
             {
-                actionSet?.ShowBuyWithAd();
-                UpdateAdText(store);
+                if (store?.Features == null || store.Features.adRewards)
+                {
+                    actionSet?.ShowBuyWithAd();
+                    UpdateAdText(store);
+                }
+                else if (statusText != null)
+                {
+                    statusText.text = "UNAVAILABLE";
+                }
+
+                return;
             }
-            else if (statusText != null)
-            {
-                statusText.text = "AD UNAVAILABLE";
-            }
+
+            if (statusText != null)
+                statusText.text = "UNAVAILABLE";
         }
 
         private void UpdateAdText(MN7StoreManager store)
@@ -189,20 +204,25 @@ namespace MN7.Store
 
             if (store.Inventory != null && store.Inventory.IsOwned(itemData.itemId))
             {
-                Select();
+                if (itemData.selectable)
+                    Select();
                 return;
             }
 
-            // Secret Four only supports free claims and rewarded-ad unlocks.
-            // The current data model uses RewardedAd for ad-unlocked items.
-            if (itemData.purchaseType == MN7PurchaseType.RewardedAd)
-                WatchAd();
+            if (itemData.purchaseType == MN7PurchaseType.Free &&
+                (store.Features == null || store.Features.freeItems))
+            {
+                store.Purchases.PurchaseFree(itemData.itemId);
+            }
         }
 
         public void WatchAd()
         {
             MN7StoreManager store = MN7StoreManager.Instance;
             if (itemData == null || store == null || store.Purchases == null)
+                return;
+
+            if (store.Features != null && !store.Features.adRewards)
                 return;
 
             store.Purchases.PurchaseWithRewardedAd(itemData.itemId, HandleAdResult);
