@@ -2,11 +2,6 @@ using UnityEngine;
 
 namespace MN7.Store
 {
-    public enum MN7RewardType
-    {
-        Item
-    }
-
     [System.Serializable]
     public class MN7RewardData
     {
