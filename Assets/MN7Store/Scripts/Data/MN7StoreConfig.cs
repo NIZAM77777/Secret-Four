@@ -7,25 +7,18 @@ namespace MN7.Store
 {
     [CreateAssetMenu(
         fileName = "MN7StoreConfig",
-        menuName = "MN7 Store/Store Config"
-    )]
+        menuName = "MN7 Store/Store Config")]
     public class MN7StoreConfig : ScriptableObject
     {
         public const string AllCategoryId = "__ALL__";
 
         [Header("Game")]
-        [Tooltip("Unique ID for the game using this store.")]
         public string gameId;
 
         [Header("Save")]
-        [Tooltip("Fallback/legacy key. Game ID is preferred for isolated saves.")]
         public string saveKey = "MN7_STORE_DATA";
 
-        [Header("Currencies")]
-        public List<MN7CurrencyData> currencies = new();
-
         [Header("Categories")]
-        [Tooltip("Add only the categories used by this game. ALL is automatic and always appears first.")]
         public List<MN7StoreCategoryData> categories = new();
 
         [Header("Store Items")]
@@ -106,7 +99,7 @@ namespace MN7.Store
             if (string.IsNullOrWhiteSpace(value))
                 return string.Empty;
 
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new();
             foreach (char character in value.Trim())
             {
                 if (char.IsLetterOrDigit(character) || character == '_' || character == '-')
