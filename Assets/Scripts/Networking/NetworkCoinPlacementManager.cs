@@ -6,7 +6,7 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
     [SerializeField]
     private PlacementManager placementManager;
 
-    public void RequestPlaceCoin(int x, int y)
+    public void RequestPlaceCoin(int x, int y, PlayerType player)
     {
         if (!IsSpawned)
         {
@@ -14,13 +14,21 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
-        string selectedSkinId = SecretFourStoreIntegration.GetSelectedPlayerItemId();
-        Debug.Log($"Network placement requested: ({x},{y}), skin = {selectedSkinId}");
-        RequestPlaceCoinRpc(x, y, selectedSkinId ?? string.Empty);
+        string selectedSkinId = SecretFourStoreIntegration.GetSelectedPlayerItemId(player);
+        Debug.Log($"Network placement requested: ({x},{y}), player = {player}, skin = {selectedSkinId}");
+        RequestPlaceCoinRpc(x, y, (int)player, selectedSkinId ?? string.Empty);
+    }
+
+    // Compatibility overload for any older callers. The placement manager now supplies
+    // the explicit player so X and Y can use different selection groups.
+    public void RequestPlaceCoin(int x, int y)
+    {
+        PlayerType player = GetCurrentPlayer();
+        RequestPlaceCoin(x, y, player);
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void RequestPlaceCoinRpc(int x, int y, string selectedSkinId, RpcParams rpcParams = default)
+    private void RequestPlaceCoinRpc(int x, int y, int requestedPlayerValue, string selectedSkinId, RpcParams rpcParams = default)
     {
         if (placementManager == null)
         {
@@ -28,7 +36,7 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
-        PlayerType player = GetCurrentPlayer();
+        PlayerType player = (PlayerType)requestedPlayerValue;
         ulong senderId = rpcParams.Receive.SenderClientId;
 
         if (!IsPlayerAllowed(senderId, player))
@@ -37,14 +45,19 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
+        // Do not allow a client to submit a skin belonging to the other player's
+        // selection group. This keeps X/Y cosmetics independent online as well.
+        if (!SecretFourStoreIntegration.IsValidPlayerSkin(selectedSkinId, player))
+        {
+            Debug.LogWarning($"Rejected invalid {player} skin: {selectedSkinId}");
+            return;
+        }
+
         if (!IsMoveValid(x, y, player))
         {
             Debug.Log("Host rejected placement.");
             return;
         }
-
-        if (!IsValidSkinId(selectedSkinId))
-            selectedSkinId = string.Empty;
 
         Debug.Log($"HOST accepted placement: {player} → ({x},{y}), skin = {selectedSkinId}");
         PlaceCoinRpc(x, y, (int)player, selectedSkinId);
@@ -102,21 +115,5 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return senderId != NetworkManager.ServerClientId;
 
         return false;
-    }
-
-    private bool IsValidSkinId(string skinId)
-    {
-        if (string.IsNullOrWhiteSpace(skinId))
-            return true;
-
-        MN7.Store.MN7StoreManager store = MN7.Store.MN7StoreManager.Instance;
-        MN7.Store.MN7ItemData item = store?.Catalog?.GetItem(skinId);
-
-        return item != null &&
-               item.selectable &&
-               string.Equals(
-                   item.selectionGroupId?.Trim(),
-                   SecretFourStoreIntegration.PlayerSelectionGroup,
-                   System.StringComparison.OrdinalIgnoreCase);
     }
 }
