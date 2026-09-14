@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -19,7 +20,9 @@ public class DisconnectUIManager : MonoBehaviour
     [Header("Scene")]
 
     [SerializeField]
-    private string mainMenuSceneName = "MainMenu";
+    private string mainMenuSceneName = "Mainmenu";
+
+    private bool returningToMainMenu;
 
 
     // =============================================
@@ -57,10 +60,35 @@ public class DisconnectUIManager : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
+        if (returningToMainMenu)
+        {
+            return;
+        }
+
+        returningToMainMenu = true;
+        StartCoroutine(ReturnToMainMenuAfterShutdown());
+    }
+
+
+    private IEnumerator ReturnToMainMenuAfterShutdown()
+    {
         if (NetworkManagerExists())
         {
-            Unity.Netcode.NetworkManager.Singleton
-                .Shutdown();
+            Unity.Netcode.NetworkManager networkManager =
+                Unity.Netcode.NetworkManager.Singleton;
+
+            if (networkManager.IsListening ||
+                networkManager.ShutdownInProgress)
+            {
+                networkManager.Shutdown(true);
+
+                while (Unity.Netcode.NetworkManager.Singleton != null &&
+                       (Unity.Netcode.NetworkManager.Singleton.IsListening ||
+                        Unity.Netcode.NetworkManager.Singleton.ShutdownInProgress))
+                {
+                    yield return null;
+                }
+            }
         }
 
         SceneManager.LoadScene(
