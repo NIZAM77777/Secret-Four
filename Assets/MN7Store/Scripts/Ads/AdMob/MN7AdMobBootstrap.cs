@@ -19,22 +19,47 @@ namespace MN7.Store
                 return;
             }
 
-            if (store.Features == null || !store.Features.adRewards)
+            if (!store.IsReady)
             {
-                Debug.Log("[MN7 Store] AdMob bootstrap skipped because Ad Rewards are disabled.");
+                store.OnStoreInitialized -= HandleStoreInitialized;
+                store.OnStoreInitialized += HandleStoreInitialized;
                 return;
             }
+
+            Initialize(store);
+        }
+
+        private void OnDestroy()
+        {
+            MN7StoreManager store = MN7StoreManager.Instance;
+            if (store != null)
+                store.OnStoreInitialized -= HandleStoreInitialized;
+        }
+
+        private void HandleStoreInitialized()
+        {
+            MN7StoreManager store = MN7StoreManager.Instance;
+            if (store != null)
+                Initialize(store);
+        }
+
+        private void Initialize(MN7StoreManager store)
+        {
+            store.OnStoreInitialized -= HandleStoreInitialized;
 
             if (adMobConfig == null)
             {
-                Debug.LogError("[MN7 Store] AdMob Config is not assigned while Ad Rewards are enabled.");
+                Debug.LogError("[MN7 Store] AdMob Config is not assigned while Rewarded Ads are enabled.");
                 return;
             }
 
-            if (!ValidateConfig(store, adMobConfig)) return;
+            if (!ValidateConfig(store, adMobConfig))
+                return;
 
             provider = new MN7AdMobProvider(adMobConfig);
-            if (!RegisterProvider(store)) return;
+            if (!RegisterProvider(store))
+                return;
+
             provider.Initialize();
         }
 
@@ -81,17 +106,21 @@ namespace MN7.Store
             {
                 foreach (MN7ItemData item in store.Config.items)
                 {
-                    if (item == null ||
-                        (item.purchaseType != MN7PurchaseType.RewardedAd && item.purchaseType != MN7PurchaseType.CurrencyOrAd))
+                    if (item == null || item.purchaseType != MN7PurchaseType.RewardedAd)
                         continue;
 
                     string placementId = item.adPlacementId?.Trim();
-                    if (string.IsNullOrWhiteSpace(placementId)) continue;
+                    if (string.IsNullOrWhiteSpace(placementId))
+                    {
+                        Debug.LogError($"[MN7 Store] Rewarded-ad item '{item.itemId}' has no Placement ID.");
+                        return false;
+                    }
 
                     bool found = false;
                     foreach (MN7AdMobPlacement placement in config.rewardedPlacements)
                     {
-                        if (placement != null && string.Equals(placement.placementId?.Trim(), placementId, StringComparison.OrdinalIgnoreCase))
+                        if (placement != null &&
+                            string.Equals(placement.placementId?.Trim(), placementId, StringComparison.OrdinalIgnoreCase))
                         {
                             found = true;
                             break;
@@ -113,7 +142,7 @@ namespace MN7.Store
         {
             if (store.Ads == null)
             {
-                Debug.LogError("[MN7 Store] Ad Manager is unavailable. Ensure Ad Rewards are enabled and Store initialization succeeded.");
+                Debug.LogError("[MN7 Store] Ad Manager is unavailable. Ensure Store initialization succeeded.");
                 return false;
             }
 
