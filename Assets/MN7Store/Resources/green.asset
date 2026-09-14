@@ -13,27 +13,22 @@ MonoBehaviour:
   m_Name: green
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
   itemId: green
-  displayName: 'green Skin '
-  description: 
+  displayName: Green Skin
+  description: Unlock with a rewarded ad.
   icon: {fileID: -351388739, guid: 519e94860530a8f40aea403f9b57140f, type: 3}
   categoryIds:
   - Skins
-  selectionGroupId: CharacterSkin
+  selectionGroupId: PLAYER
   selectable: 1
   defaultOwned: 0
   defaultSelected: 0
-  sortPriority: 0
+  sortPriority: 2
   customSortWeight: 0
-  purchaseType: 2
-  currencyId: soft_currency
-  currencyCost: 100
+  purchaseType: 1
   requiredAds: 1
   adPlacementId: store_reward
-  iapProductId: 
   rewards:
-  - rewardType: 1
-    currencyId: 
-    currencyAmount: 0
+  - rewardType: 0
     itemId: green
     itemQuantity: 1
   ownershipType: 0
