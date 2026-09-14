@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -24,112 +23,25 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private GameObject storePanel;
 
-    [Header("Store Buttons")]
-    [SerializeField]
-    private Button storeButton;
-
-    [SerializeField]
-    private Button storeCloseButton;
-
     [Header("Human Setup")]
     [SerializeField]
     private HumanSetupManager humanSetupManager;
 
     private void Awake()
     {
-        ResolveStorePanel();
-        AutoWireStoreButtons();
         CloseStore();
-    }
-
-    private void ResolveStorePanel()
-    {
-        if (storePanel != null)
-            return;
-
-        // GameObject.Find does not find inactive StorePanel objects.
-        // Search the Main Menu scene hierarchy instead so the panel can start disabled.
-        Scene currentScene = gameObject.scene;
-        if (!currentScene.IsValid() || !currentScene.isLoaded)
-            return;
-
-        foreach (GameObject root in currentScene.GetRootGameObjects())
-        {
-            Transform found = FindChildRecursive(root.transform, "StorePanel");
-            if (found != null)
-            {
-                storePanel = found.gameObject;
-                return;
-            }
-        }
-    }
-
-    private void AutoWireStoreButtons()
-    {
-        if (storeButton == null)
-        {
-            GameObject found = GameObject.Find("StoreButton");
-            if (found != null)
-                storeButton = found.GetComponent<Button>();
-        }
-
-        if (storeCloseButton == null && storePanel != null)
-        {
-            Transform closeTransform = FindChildRecursive(storePanel.transform, "CloseButton");
-            if (closeTransform != null)
-                storeCloseButton = closeTransform.GetComponent<Button>();
-        }
-
-        if (storeButton != null)
-        {
-            storeButton.onClick.RemoveListener(OpenStore);
-            storeButton.onClick.AddListener(OpenStore);
-        }
-        else
-        {
-            Debug.LogWarning("[Secret Four] StoreButton was not found or has no Button component.");
-        }
-
-        if (storeCloseButton != null)
-        {
-            storeCloseButton.onClick.RemoveListener(CloseStore);
-            storeCloseButton.onClick.AddListener(CloseStore);
-        }
-        else
-        {
-            Debug.LogWarning("[Secret Four] StorePanel/CloseButton was not found or has no Button component.");
-        }
-    }
-
-    private static Transform FindChildRecursive(Transform parent, string targetName)
-    {
-        if (parent == null)
-            return null;
-
-        if (parent.name == targetName)
-            return parent;
-
-        foreach (Transform child in parent)
-        {
-            Transform result = FindChildRecursive(child, targetName);
-            if (result != null)
-                return result;
-        }
-
-        return null;
     }
 
     // =========================
     // STORE
     // =========================
 
+    /// <summary>Opens the Store panel from the Main Menu.</summary>
     public void OpenStore()
     {
-        ResolveStorePanel();
-
         if (storePanel == null)
         {
-            Debug.LogError("[Secret Four] Cannot open Store: StorePanel is missing.");
+            Debug.LogError("[Secret Four] Cannot open Store: StorePanel is not assigned on MainMenuManager.");
             return;
         }
 
@@ -148,10 +60,9 @@ public class MainMenuManager : MonoBehaviour
         storePanel.SetActive(true);
     }
 
+    /// <summary>Closes the Store panel and returns to the Main Menu.</summary>
     public void CloseStore()
     {
-        ResolveStorePanel();
-
         if (storePanel != null)
             storePanel.SetActive(false);
 
