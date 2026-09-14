@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -165,27 +164,6 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void UnloadStoreSceneBeforeGame()
-    {
-        Scene storeScene = SceneManager.GetSceneByName(StoreSceneName);
-        if (!storeScene.IsValid() || !storeScene.isLoaded)
-        {
-            LoadGameSceneImmediately();
-            return;
-        }
-
-        StartCoroutine(UnloadStoreAndLoadGame(storeScene));
-    }
-
-    private IEnumerator UnloadStoreAndLoadGame(Scene storeScene)
-    {
-        AsyncOperation unload = SceneManager.UnloadSceneAsync(storeScene);
-        if (unload != null)
-            yield return unload;
-
-        LoadGameSceneImmediately();
-    }
-
     // =========================
     // BOT
     // =========================
@@ -301,17 +279,7 @@ public class MainMenuManager : MonoBehaviour
             return;
         }
 
-        UnloadStoreSceneBeforeGame();
-    }
-
-    private void LoadGameSceneImmediately()
-    {
-        if (string.IsNullOrWhiteSpace(gameSceneName))
-        {
-            Debug.LogError("Game scene name is missing.");
-            return;
-        }
-
+        CloseStore();
         SceneManager.LoadScene(gameSceneName);
     }
 }
