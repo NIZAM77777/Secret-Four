@@ -25,10 +25,6 @@ public class DisconnectUIManager : MonoBehaviour
     private bool returningToMainMenu;
 
 
-    // =============================================
-    // SHOW DISCONNECT
-    // =============================================
-
     public void ShowDisconnect(
         string title,
         string message)
@@ -38,32 +34,20 @@ public class DisconnectUIManager : MonoBehaviour
         );
 
         if (disconnectPanel != null)
-        {
             disconnectPanel.SetActive(true);
-        }
 
         if (titleText != null)
-        {
             titleText.text = title;
-        }
 
         if (messageText != null)
-        {
             messageText.text = message;
-        }
     }
 
-
-    // =============================================
-    // RETURN TO MAIN MENU
-    // =============================================
 
     public void ReturnToMainMenu()
     {
         if (returningToMainMenu)
-        {
             return;
-        }
 
         returningToMainMenu = true;
         StartCoroutine(ReturnToMainMenuAfterShutdown());
@@ -72,11 +56,11 @@ public class DisconnectUIManager : MonoBehaviour
 
     private IEnumerator ReturnToMainMenuAfterShutdown()
     {
-        if (NetworkManagerExists())
-        {
-            Unity.Netcode.NetworkManager networkManager =
-                Unity.Netcode.NetworkManager.Singleton;
+        Unity.Netcode.NetworkManager networkManager =
+            Unity.Netcode.NetworkManager.Singleton;
 
+        if (networkManager != null)
+        {
             if (networkManager.IsListening ||
                 networkManager.ShutdownInProgress)
             {
@@ -89,16 +73,13 @@ public class DisconnectUIManager : MonoBehaviour
                     yield return null;
                 }
             }
+
+            if (networkManager != null)
+            {
+                Destroy(networkManager.gameObject);
+            }
         }
 
-        SceneManager.LoadScene(
-            mainMenuSceneName
-        );
-    }
-
-
-    private bool NetworkManagerExists()
-    {
-        return Unity.Netcode.NetworkManager.Singleton != null;
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 }
