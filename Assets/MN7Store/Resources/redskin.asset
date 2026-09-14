@@ -28,7 +28,6 @@ MonoBehaviour:
   requiredAds: 1
   adPlacementId: store_reward
   rewards:
-  - rewardType: 0
-    itemId: red_skin
+  - itemId: red_skin
     itemQuantity: 1
   ownershipType: 0
