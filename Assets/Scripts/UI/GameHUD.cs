@@ -11,10 +11,8 @@ public class GameHUD : MonoBehaviour
     [Header("Player Images")]
     [SerializeField] private Image playerXImage;
     [SerializeField] private Image playerYImage;
-
     [Tooltip("Fallback sprite used for Player X when CoinConfig does not provide one.")]
     [SerializeField] private Sprite playerXDefaultSprite;
-
     [Tooltip("Fallback sprite used for Player Y when CoinConfig does not provide one.")]
     [SerializeField] private Sprite playerYDefaultSprite;
 
@@ -75,8 +73,6 @@ public class GameHUD : MonoBehaviour
             ySprite = coinConfig.GetSprite(PlayerType.Y);
         }
 
-        // CoinConfig is the primary source. Explicit HUD fallbacks make the header
-        // remain visible even when the CoinConfig asset has no sprite assigned.
         if (xSprite == null)
             xSprite = playerXDefaultSprite;
 
@@ -97,9 +93,7 @@ public class GameHUD : MonoBehaviour
 
         if (xSprite == null || ySprite == null)
         {
-            Debug.LogWarning(
-                "GameHUD player coin icons are not assigned. Set X/Y sprites in CoinConfig or assign the HUD fallback sprites."
-            );
+            Debug.LogWarning("GameHUD player coin icons are not assigned. Set X/Y sprites in CoinConfig or assign the HUD fallback sprites.");
         }
     }
 
@@ -159,3 +153,108 @@ public class GameHUD : MonoBehaviour
                 break;
         }
     }
+
+    private void UpdatePlayerHighlight()
+    {
+        GameState state = turnManager.CurrentState;
+
+        bool xActive =
+            state == GameState.WaitingForPlayerXPlacement ||
+            state == GameState.WaitingForPlayerXDirection;
+
+        bool yActive =
+            state == GameState.WaitingForPlayerYPlacement ||
+            state == GameState.WaitingForPlayerYDirection;
+
+        if (xActive)
+        {
+            SetImageAlpha(playerXImage, activeAlpha);
+            SetTextAlpha(playerXNameText, activeAlpha);
+            SetImageAlpha(playerYImage, inactiveAlpha);
+            SetTextAlpha(playerYNameText, inactiveAlpha);
+        }
+        else if (yActive)
+        {
+            SetImageAlpha(playerXImage, inactiveAlpha);
+            SetTextAlpha(playerXNameText, inactiveAlpha);
+            SetImageAlpha(playerYImage, activeAlpha);
+            SetTextAlpha(playerYNameText, activeAlpha);
+        }
+        else
+        {
+            SetImageAlpha(playerXImage, activeAlpha);
+            SetTextAlpha(playerXNameText, activeAlpha);
+            SetImageAlpha(playerYImage, activeAlpha);
+            SetTextAlpha(playerYNameText, activeAlpha);
+        }
+    }
+
+    private void SetImageAlpha(Image image, float alpha)
+    {
+        if (image == null)
+            return;
+
+        Color color = image.color;
+        color.a = alpha;
+        image.color = color;
+    }
+
+    private void SetTextAlpha(TMP_Text text, float alpha)
+    {
+        if (text == null)
+            return;
+
+        Color color = text.color;
+        color.a = alpha;
+        text.color = color;
+    }
+
+    private string GetPlayerXName()
+    {
+        if (GameSession.Instance == null)
+            return "Player 1";
+
+        return GameSession.Instance.Player1Name;
+    }
+
+    private string GetPlayerYName()
+    {
+        if (GameSession.Instance == null)
+            return "Player 2";
+
+        return GameSession.Instance.Player2Name;
+    }
+
+    private void SetupBotDifficulty()
+    {
+        if (botDifficultyText == null)
+            return;
+
+        botDifficultyText.gameObject.SetActive(false);
+
+        if (GameSession.Instance == null)
+            return;
+
+        if (GameSession.Instance.CurrentGameMode != GameMode.Bot)
+            return;
+
+        BotDifficulty difficulty = GameSession.Instance.CurrentBotDifficulty;
+        botDifficultyText.gameObject.SetActive(true);
+
+        switch (difficulty)
+        {
+            case BotDifficulty.Easy:
+                botDifficultyText.text = "Easy";
+                break;
+            case BotDifficulty.Medium:
+                botDifficultyText.text = "Medium";
+                break;
+            case BotDifficulty.Hard:
+                botDifficultyText.text = "Hard";
+                break;
+            default:
+                botDifficultyText.text = "Bot";
+                break;
+        }
+    }
+}
