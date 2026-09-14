@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
-  m_Name: green
+  m_Name: DefaultY
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
-  itemId: green
-  displayName: Green Skin
-  description: Unlock with a rewarded ad.
-  icon: {fileID: -351388739, guid: 519e94860530a8f40aea403f9b57140f, type: 3}
+  itemId: coin1
+  displayName: Default Y
+  description: Default Y Secret Four player skin.
+  icon: {fileID: 5848064539680731454, guid: 72c241448c635e3478ec0f927c2b2dcf, type: 3}
+  purchaseType: 0
   categoryIds:
-  - Skins
-  selectionGroupId: PLAYER
+  - X Coins
+  selectionGroupId: Opposite
   selectable: 1
-  defaultOwned: 0
-  defaultSelected: 0
-  sortPriority: 2
+  defaultOwned: 1
+  defaultSelected: 1
+  sortPriority: 0
   customSortWeight: 0
-  purchaseType: 1
   requiredAds: 1
   adPlacementId: store_reward
   rewards:
-  - itemId: green
+  - itemId: coin1
     itemQuantity: 1
   ownershipType: 0

@@ -6,18 +6,21 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 190f05375094e8048a609c8e573bb44e, type: 3}
-  m_Name: MN7StoreConfig
+  m_Name: MN7StoreConfig 1
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7StoreConfig
   gameId: SECRET_FOUR
   saveKey: SECRET_FOUR_STORE
   categories:
-  - categoryId: Skins
-    displayName: Skins
+  - categoryId: X Coins
+    displayName: X Coins
+    sortOrder: 1
+  - categoryId: Y Coins
+    displayName: Y Coins
     sortOrder: 1
   items:
   - {fileID: 11400000, guid: 6b69ddf83ce915b418a7a85c2c1f8c22, type: 2}
-  - {fileID: 11400000, guid: 36dabbb9d6807b74985a7a297497203c, type: 2}
-  - {fileID: 11400000, guid: 81a441d2c60adc043973560c95f01331, type: 2}
+  - {fileID: 11400000, guid: cbd2d907c16c0954aa9633c203fd498d, type: 2}

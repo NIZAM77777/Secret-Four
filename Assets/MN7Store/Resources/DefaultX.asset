@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
-  m_Name: redskin
+  m_Name: DefaultX
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
-  itemId: red_skin
-  displayName: Red Skin
-  description: Default Secret Four player skin.
-  icon: {fileID: 1654714237, guid: d018ddb4677482a4f84d3c4a5fab10b0, type: 3}
+  itemId: coin2
+  displayName: Default X
+  description: 
+  icon: {fileID: -3338749442709606003, guid: 72c241448c635e3478ec0f927c2b2dcf, type: 3}
+  purchaseType: 0
   categoryIds:
-  - Skins
+  - Y Coins
   selectionGroupId: PLAYER
   selectable: 1
   defaultOwned: 1
   defaultSelected: 1
   sortPriority: 0
   customSortWeight: 0
-  purchaseType: 0
   requiredAds: 1
   adPlacementId: store_reward
   rewards:
-  - itemId: red_skin
+  - itemId: coin2
     itemQuantity: 1
   ownershipType: 0
