@@ -97,12 +97,7 @@ public class DirectionButtonController : MonoBehaviour
             rightButton.interactable = canMoveRight;
 
 
-        // =====================================
-        // STAY RULE
-        //
-        // Stay is allowed ONLY when there are
-        // NO available movement directions.
-        // =====================================
+        // Stay is always a valid direction.
 
         if (stayButton != null)
         {
