@@ -135,7 +135,7 @@ public class OnlineSceneLoader : MonoBehaviour
         // If the waiting client leaves before the game
         // starts, allow the host to create another room.
         if (!gameStarting &&
-            clientId != networkManager.ServerClientId)
+            clientId != NetworkManager.ServerClientId)
         {
             Debug.Log(
                 "Waiting client disconnected. Online scene loader is ready again."
