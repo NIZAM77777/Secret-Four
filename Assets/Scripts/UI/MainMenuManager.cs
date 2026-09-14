@@ -6,7 +6,7 @@ public class MainMenuManager : MonoBehaviour
     [Header("Scenes")]
 
     [SerializeField]
-    private string gameSceneName = "GameScene";
+    private string gameSceneName = "Game";
 
 
     [Header("Panels")]
@@ -79,6 +79,12 @@ public class MainMenuManager : MonoBehaviour
     private void StartBotGame(
         BotDifficulty difficulty)
     {
+        if (GameSession.Instance == null)
+        {
+            Debug.LogError("GameSession is missing.");
+            return;
+        }
+
         GameSession.Instance.StartBotGame(
             difficulty
         );
@@ -108,6 +114,12 @@ public class MainMenuManager : MonoBehaviour
         string player1Name,
         string player2Name)
     {
+        if (GameSession.Instance == null)
+        {
+            Debug.LogError("GameSession is missing.");
+            return;
+        }
+
         GameSession.Instance.StartLocalHumanGame(
             player1Name,
             player2Name
@@ -171,6 +183,12 @@ public class MainMenuManager : MonoBehaviour
 
     private void LoadGameScene()
     {
+        if (string.IsNullOrWhiteSpace(gameSceneName))
+        {
+            Debug.LogError("Game scene name is missing.");
+            return;
+        }
+
         SceneManager.LoadScene(
             gameSceneName
         );
