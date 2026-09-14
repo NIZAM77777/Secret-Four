@@ -13,7 +13,7 @@ public class PauseManager : MonoBehaviour
     [Header("Scenes")]
 
     [SerializeField]
-    private string mainMenuSceneName = "MainMenu";
+    private string mainMenuSceneName = "Mainmenu";
 
     private bool isPaused;
     private bool isBlockingInput;
@@ -53,7 +53,6 @@ public class PauseManager : MonoBehaviour
         if (!isPaused)
             return;
 
-        // IMPORTANT:
         // Block board input BEFORE resuming.
         isBlockingInput = true;
 
