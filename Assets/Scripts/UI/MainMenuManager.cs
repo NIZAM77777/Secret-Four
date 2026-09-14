@@ -33,10 +33,12 @@ public class MainMenuManager : MonoBehaviour
 
     private Button storeButton;
     private AsyncOperation storeSceneLoadOperation;
+    private bool showStoreWhenLoaded;
 
     private void Awake()
     {
         AutoWireStoreButton();
+        EnsureStoreSystemLoaded(false);
     }
 
     private void OnDestroy()
@@ -71,10 +73,26 @@ public class MainMenuManager : MonoBehaviour
 
     public void OpenStore()
     {
+        EnsureStoreSystemLoaded(true);
+    }
+
+    public void CloseStore()
+    {
+        Scene storeScene = SceneManager.GetSceneByName(StoreSceneName);
+        if (storeScene.IsValid() && storeScene.isLoaded)
+            SetStorePanelVisible(storeScene, false);
+    }
+
+    private void EnsureStoreSystemLoaded(bool showWhenReady)
+    {
+        showStoreWhenLoaded |= showWhenReady;
+
         Scene storeScene = SceneManager.GetSceneByName(StoreSceneName);
         if (storeScene.IsValid() && storeScene.isLoaded)
         {
-            SetStorePanelVisible(storeScene, true);
+            RemoveStoreSceneEventSystems(storeScene);
+            SetStorePanelVisible(storeScene, showStoreWhenLoaded);
+            showStoreWhenLoaded = false;
             return;
         }
 
@@ -92,15 +110,9 @@ public class MainMenuManager : MonoBehaviour
 
             Scene loadedStoreScene = SceneManager.GetSceneByName(StoreSceneName);
             RemoveStoreSceneEventSystems(loadedStoreScene);
-            SetStorePanelVisible(loadedStoreScene, true);
+            SetStorePanelVisible(loadedStoreScene, showStoreWhenLoaded);
+            showStoreWhenLoaded = false;
         };
-    }
-
-    public void CloseStore()
-    {
-        Scene storeScene = SceneManager.GetSceneByName(StoreSceneName);
-        if (storeScene.IsValid() && storeScene.isLoaded)
-            SetStorePanelVisible(storeScene, false);
     }
 
     private static void SetStorePanelVisible(Scene storeScene, bool visible)
@@ -148,7 +160,7 @@ public class MainMenuManager : MonoBehaviour
             foreach (EventSystem eventSystem in eventSystems)
             {
                 if (eventSystem != null)
-                    Destroy(eventSystem.gameObject);
+                    UnityEngine.Object.Destroy(eventSystem.gameObject);
             }
         }
     }
