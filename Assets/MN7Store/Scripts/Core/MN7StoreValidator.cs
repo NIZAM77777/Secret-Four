@@ -159,7 +159,6 @@ namespace MN7.Store
                 foreach (MN7RewardData reward in item.rewards)
                 {
                     if (reward == null ||
-                        reward.rewardType != MN7RewardType.Item ||
                         string.IsNullOrWhiteSpace(reward.itemId) ||
                         reward.itemQuantity <= 0 ||
                         !itemIds.Contains(reward.itemId.Trim()))
