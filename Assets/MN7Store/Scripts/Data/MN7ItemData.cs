@@ -29,6 +29,9 @@ namespace MN7.Store
         public string description;
         public Sprite icon;
 
+        [Header("Acquisition")]
+        public MN7PurchaseType purchaseType = MN7PurchaseType.Free;
+
         [Header("Categories")]
         public List<string> categoryIds = new();
 
