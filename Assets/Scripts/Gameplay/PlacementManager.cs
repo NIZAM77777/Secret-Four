@@ -41,6 +41,8 @@ public class PlacementManager : MonoBehaviour
 
     public void TryPlaceCoin(int x, int y)
     {
+        PlayerType player = GetCurrentPlacementPlayer();
+
         if (IsOnlineGame())
         {
             if (networkCoinPlacementManager == null)
@@ -49,18 +51,17 @@ public class PlacementManager : MonoBehaviour
                 return;
             }
 
-            PlayerType player = GetCurrentPlacementPlayer();
             if (!IsLocalPlayerAllowed(player))
             {
                 Debug.Log("It is not your turn.");
                 return;
             }
 
-            networkCoinPlacementManager.RequestPlaceCoin(x, y);
+            networkCoinPlacementManager.RequestPlaceCoin(x, y, player);
             return;
         }
 
-        ApplyCoinPlacement(x, y, GetCurrentPlacementPlayer());
+        ApplyCoinPlacement(x, y, player);
     }
 
     /// <summary>
@@ -114,7 +115,7 @@ public class PlacementManager : MonoBehaviour
                 sprite = SecretFourStoreIntegration.GetSpriteForItem(selectedSkinId);
 
             if (sprite == null)
-                sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite();
+                sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(playerType);
 
             if (sprite == null && coinConfig != null)
                 sprite = coinConfig.GetSprite(playerType);
