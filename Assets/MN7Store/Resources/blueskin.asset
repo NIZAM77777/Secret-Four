@@ -13,27 +13,22 @@ MonoBehaviour:
   m_Name: blueskin
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
   itemId: blue
-  displayName: 'blue Skin '
-  description: 
+  displayName: Blue Skin
+  description: Unlock with a rewarded ad.
   icon: {fileID: -742100963, guid: 70de40aae7628e640b128e6510f5de4e, type: 3}
   categoryIds:
-  - Color
-  selectionGroupId: CharacterColor
+  - Skins
+  selectionGroupId: PLAYER
   selectable: 1
   defaultOwned: 0
   defaultSelected: 0
-  sortPriority: 0
+  sortPriority: 1
   customSortWeight: 0
   purchaseType: 1
-  currencyId: soft_currency
-  currencyCost: 100
   requiredAds: 1
   adPlacementId: store_reward
-  iapProductId: 
   rewards:
-  - rewardType: 1
-    currencyId: 
-    currencyAmount: 0
+  - rewardType: 0
     itemId: blue
     itemQuantity: 1
   ownershipType: 0
