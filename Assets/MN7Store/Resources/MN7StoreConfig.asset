@@ -12,19 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190f05375094e8048a609c8e573bb44e, type: 3}
   m_Name: MN7StoreConfig
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7StoreConfig
-  gameId: demo_game
-  saveKey: MN7_STORE_DATA
-  currencies:
-  - {fileID: 11400000, guid: 378aa51f550132947b24753d091a72a6, type: 2}
+  gameId: SECRET_FOUR
+  saveKey: SECRET_FOUR_STORE
   categories:
   - categoryId: Skins
-    displayName: skins
+    displayName: Skins
     sortOrder: 1
-  - categoryId: Color
-    displayName: color
-    sortOrder: 2
   items:
+  - {fileID: 11400000, guid: 662c854a8c654f14ead4217902257e94, type: 2}
   - {fileID: 11400000, guid: 36dabbb9d6807b74985a7a297497203c, type: 2}
   - {fileID: 11400000, guid: 81a441d2c60adc043973560c95f01331, type: 2}
-  - {fileID: 11400000, guid: 6b69ddf83ce915b418a7a85c2c1f8c22, type: 2}
-  - {fileID: 11400000, guid: 662c854a8c654f14ead4217902257e94, type: 2}
