@@ -29,12 +29,11 @@ namespace MN7.Store
             HashSet<string> categoryIds = new(StringComparer.OrdinalIgnoreCase);
             if (config.categories != null)
             {
-                for (int i = 0; i < config.categories.Count; i++)
+                foreach (MN7StoreCategoryData category in config.categories)
                 {
-                    MN7StoreCategoryData category = config.categories[i];
                     if (category == null)
                     {
-                        LogError($"Store category at index {i} is null.", logMessages);
+                        LogError("Store contains a null category.", logMessages);
                         valid = false;
                         continue;
                     }
@@ -56,16 +55,13 @@ namespace MN7.Store
                 }
             }
 
-            HashSet<string> itemIds = new(StringComparer.OrdinalIgnoreCase);
-            HashSet<string> defaultSelectionGroups = new(StringComparer.OrdinalIgnoreCase);
-
             if (config.items == null)
             {
                 LogError("Store items list is null.", logMessages);
-                valid = false;
-                return LogResult(valid, saveKey, logMessages);
+                return LogResult(false, saveKey, logMessages);
             }
 
+            HashSet<string> itemIds = new(StringComparer.OrdinalIgnoreCase);
             foreach (MN7ItemData item in config.items)
             {
                 if (item == null)
@@ -81,6 +77,13 @@ namespace MN7.Store
                     LogError($"Store item has an empty or duplicate ID: {item.itemId}", logMessages);
                     valid = false;
                 }
+            }
+
+            HashSet<string> defaultSelectionGroups = new(StringComparer.OrdinalIgnoreCase);
+
+            foreach (MN7ItemData item in config.items)
+            {
+                if (item == null) continue;
 
                 if (string.IsNullOrWhiteSpace(item.displayName))
                 {
@@ -134,8 +137,7 @@ namespace MN7.Store
                     foreach (string categoryValue in item.categoryIds)
                     {
                         string categoryId = categoryValue?.Trim();
-                        if (string.IsNullOrWhiteSpace(categoryId))
-                            continue;
+                        if (string.IsNullOrWhiteSpace(categoryId)) continue;
 
                         if (categoryId.Equals(MN7StoreConfig.AllCategoryId, StringComparison.OrdinalIgnoreCase) ||
                             !categoryIds.Contains(categoryId))
