@@ -14,12 +14,13 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
-        Debug.Log($"Network placement requested: ({x},{y})");
-        RequestPlaceCoinRpc(x, y);
+        string selectedSkinId = SecretFourStoreIntegration.GetSelectedPlayerItemId();
+        Debug.Log($"Network placement requested: ({x},{y}), skin = {selectedSkinId}");
+        RequestPlaceCoinRpc(x, y, selectedSkinId ?? string.Empty);
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void RequestPlaceCoinRpc(int x, int y, RpcParams rpcParams = default)
+    private void RequestPlaceCoinRpc(int x, int y, string selectedSkinId, RpcParams rpcParams = default)
     {
         if (placementManager == null)
         {
@@ -42,12 +43,15 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
-        Debug.Log($"HOST accepted placement: {player} → ({x},{y})");
-        PlaceCoinRpc(x, y, (int)player);
+        if (!IsValidSkinId(selectedSkinId))
+            selectedSkinId = string.Empty;
+
+        Debug.Log($"HOST accepted placement: {player} → ({x},{y}), skin = {selectedSkinId}");
+        PlaceCoinRpc(x, y, (int)player, selectedSkinId);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    private void PlaceCoinRpc(int x, int y, int playerValue)
+    private void PlaceCoinRpc(int x, int y, int playerValue, string selectedSkinId)
     {
         if (placementManager == null)
         {
@@ -56,21 +60,19 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
         }
 
         PlayerType player = (PlayerType)playerValue;
-        Debug.Log($"NETWORK MOVE RECEIVED: {player} → ({x},{y})");
-        placementManager.ApplyCoinPlacement(x, y, player);
+        Debug.Log($"NETWORK MOVE RECEIVED: {player} → ({x},{y}), skin = {selectedSkinId}");
+        placementManager.ApplyCoinPlacement(x, y, player, selectedSkinId);
     }
 
     private PlayerType GetCurrentPlayer()
     {
         TurnManager turnManager = FindFirstObjectByType<TurnManager>();
-
         if (turnManager == null)
             return PlayerType.X;
 
-        if (turnManager.CurrentState == GameState.WaitingForPlayerXPlacement)
-            return PlayerType.X;
-
-        return PlayerType.Y;
+        return turnManager.CurrentState == GameState.WaitingForPlayerXPlacement
+            ? PlayerType.X
+            : PlayerType.Y;
     }
 
     private bool IsMoveValid(int x, int y, PlayerType player)
@@ -85,13 +87,7 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return false;
 
         Board board = boardManager.CurrentBoard;
-        if (board == null)
-            return false;
-
-        if (!board.IsInsideBoard(x, y))
-            return false;
-
-        if (!board.IsEmpty(x, y))
+        if (board == null || !board.IsInsideBoard(x, y) || !board.IsEmpty(x, y))
             return false;
 
         return true;
@@ -106,5 +102,21 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return senderId != NetworkManager.ServerClientId;
 
         return false;
+    }
+
+    private bool IsValidSkinId(string skinId)
+    {
+        if (string.IsNullOrWhiteSpace(skinId))
+            return true;
+
+        MN7.Store.MN7StoreManager store = MN7.Store.MN7StoreManager.Instance;
+        MN7.Store.MN7ItemData item = store?.Catalog?.GetItem(skinId);
+
+        return item != null &&
+               item.selectable &&
+               string.Equals(
+                   item.selectionGroupId?.Trim(),
+                   SecretFourStoreIntegration.PlayerSelectionGroup,
+                   System.StringComparison.OrdinalIgnoreCase);
     }
 }
