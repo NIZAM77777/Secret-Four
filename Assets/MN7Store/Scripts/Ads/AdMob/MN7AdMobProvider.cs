@@ -7,6 +7,8 @@ namespace MN7.Store
 {
     public class MN7AdMobProvider : IMN7AdProvider
     {
+        private static bool sdkInitialized;
+
         private readonly MN7AdMobConfig config;
         private readonly Dictionary<string, RewardedAd> rewardedAds = new();
         private readonly HashSet<string> loadingPlacements = new();
@@ -21,6 +23,14 @@ namespace MN7.Store
         {
             if (initialized) return;
             initialized = true;
+
+            if (sdkInitialized)
+            {
+                LoadAllRewardedAds();
+                return;
+            }
+
+            sdkInitialized = true;
 
             MobileAds.Initialize(initializationStatus =>
             {
