@@ -6,10 +6,7 @@ namespace MN7.Store
     public enum MN7PurchaseType
     {
         Free,
-        Currency,
-        RewardedAd,
-        CurrencyOrAd,
-        IAP
+        RewardedAd
     }
 
     public enum MN7ItemOwnershipType
@@ -53,21 +50,13 @@ namespace MN7.Store
         public int customSortWeight;
 
         [Header("Purchase")]
-        public MN7PurchaseType purchaseType = MN7PurchaseType.Currency;
-
-        [Header("Currency Purchase")]
-        public string currencyId = "soft_currency";
-
-        [Min(0)]
-        public int currencyCost = 100;
+        [Tooltip("Secret Four uses rewarded ads as the purchase method. Free items are optional.")]
+        public MN7PurchaseType purchaseType = MN7PurchaseType.RewardedAd;
 
         [Header("Rewarded Ads")]
         [Min(1)]
         public int requiredAds = 1;
         public string adPlacementId = "store_reward";
-
-        [Header("IAP")]
-        public string iapProductId;
 
         [Header("Rewards")]
         public List<MN7RewardData> rewards = new();
