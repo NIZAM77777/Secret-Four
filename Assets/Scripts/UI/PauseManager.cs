@@ -22,15 +22,12 @@ public class PauseManager : MonoBehaviour
     private void Start()
     {
         Time.timeScale = 1f;
-
         isPaused = false;
         isBlockingInput = false;
         returningToMainMenu = false;
 
         if (pausePanel != null)
-        {
             pausePanel.SetActive(false);
-        }
     }
 
     public void PauseGame()
@@ -41,12 +38,9 @@ public class PauseManager : MonoBehaviour
         isPaused = true;
 
         if (pausePanel != null)
-        {
             pausePanel.SetActive(true);
-        }
 
         Time.timeScale = 0f;
-
         Debug.Log("Game Paused");
     }
 
@@ -60,14 +54,9 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = 1f;
 
         if (pausePanel != null)
-        {
             pausePanel.SetActive(false);
-        }
 
-        StartCoroutine(
-            WaitForInputRelease()
-        );
-
+        StartCoroutine(WaitForInputRelease());
         Debug.Log("Game Resumed");
     }
 
@@ -82,7 +71,6 @@ public class PauseManager : MonoBehaviour
         }
 
         yield return null;
-
         isBlockingInput = false;
 
         Debug.Log("Board Input Unlocked");
@@ -94,24 +82,14 @@ public class PauseManager : MonoBehaviour
             return;
 
         if (isPaused)
-        {
             ResumeGame();
-        }
         else
-        {
             PauseGame();
-        }
     }
 
-    public bool IsPaused()
-    {
-        return isPaused;
-    }
+    public bool IsPaused() => isPaused;
 
-    public bool IsInputBlocked()
-    {
-        return isBlockingInput;
-    }
+    public bool IsInputBlocked() => isBlockingInput;
 
     public void RestartGame()
     {
@@ -119,7 +97,6 @@ public class PauseManager : MonoBehaviour
             return;
 
         Time.timeScale = 1f;
-
         isPaused = false;
         isBlockingInput = false;
 
@@ -138,9 +115,7 @@ public class PauseManager : MonoBehaviour
         isPaused = false;
         isBlockingInput = false;
 
-        StartCoroutine(
-            ReturnToMainMenuAfterShutdown()
-        );
+        StartCoroutine(ReturnToMainMenuAfterShutdown());
     }
 
     private IEnumerator ReturnToMainMenuAfterShutdown()
@@ -148,22 +123,27 @@ public class PauseManager : MonoBehaviour
         Unity.Netcode.NetworkManager networkManager =
             Unity.Netcode.NetworkManager.Singleton;
 
-        if (networkManager != null &&
-            (networkManager.IsListening ||
-             networkManager.ShutdownInProgress))
+        if (networkManager != null)
         {
-            networkManager.Shutdown(true);
-
-            while (Unity.Netcode.NetworkManager.Singleton != null &&
-                   (Unity.Netcode.NetworkManager.Singleton.IsListening ||
-                    Unity.Netcode.NetworkManager.Singleton.ShutdownInProgress))
+            if (networkManager.IsListening ||
+                networkManager.ShutdownInProgress)
             {
-                yield return null;
+                networkManager.Shutdown(true);
+
+                while (Unity.Netcode.NetworkManager.Singleton != null &&
+                       (Unity.Netcode.NetworkManager.Singleton.IsListening ||
+                        Unity.Netcode.NetworkManager.Singleton.ShutdownInProgress))
+                {
+                    yield return null;
+                }
+            }
+
+            if (networkManager != null)
+            {
+                Destroy(networkManager.gameObject);
             }
         }
 
-        SceneManager.LoadScene(
-            mainMenuSceneName
-        );
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 }
