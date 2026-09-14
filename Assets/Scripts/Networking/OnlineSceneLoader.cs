@@ -11,7 +11,7 @@ public class OnlineSceneLoader : MonoBehaviour
     private string gameSceneName = "GameScene";
 
 
-    private bool gameStarting = false;
+    private bool gameStarting;
 
 
     private void Awake()
@@ -22,73 +22,124 @@ public class OnlineSceneLoader : MonoBehaviour
 
     private void Start()
     {
-        if (NetworkManager.Singleton == null)
+        NetworkManager networkManager =
+            NetworkManager.Singleton;
+
+        if (networkManager == null)
         {
             Debug.LogError(
-                "NetworkManager not found."
+                "OnlineSceneLoader: NetworkManager not found."
             );
 
             return;
         }
 
-
-        NetworkManager.Singleton.OnClientConnectedCallback +=
+        networkManager.OnClientConnectedCallback +=
             OnClientConnected;
+
+        networkManager.OnClientDisconnectCallback +=
+            OnClientDisconnected;
     }
 
 
     private void OnDestroy()
     {
-        if (NetworkManager.Singleton != null)
+        NetworkManager networkManager =
+            NetworkManager.Singleton;
+
+        if (networkManager == null)
         {
-            NetworkManager.Singleton.OnClientConnectedCallback -=
-                OnClientConnected;
+            return;
         }
+
+        networkManager.OnClientConnectedCallback -=
+            OnClientConnected;
+
+        networkManager.OnClientDisconnectCallback -=
+            OnClientDisconnected;
     }
 
 
     private void OnClientConnected(
         ulong clientId)
     {
-        if (!NetworkManager.Singleton.IsHost)
+        NetworkManager networkManager =
+            NetworkManager.Singleton;
+
+        if (networkManager == null ||
+            !networkManager.IsHost)
         {
             return;
         }
 
-
-        // Ignore the Host itself
-        if (clientId ==
-            NetworkManager.Singleton.LocalClientId)
+        // Ignore the Host itself.
+        if (clientId == networkManager.LocalClientId)
         {
             return;
         }
-
 
         if (gameStarting)
         {
             return;
         }
 
-
         gameStarting = true;
-
 
         Debug.Log(
             "Player 2 connected!"
         );
 
-
         Debug.Log(
             "Loading GameScene for both players..."
         );
 
+        if (GameSession.Instance != null)
+        {
+            GameSession.Instance.StartOnlineRoomGame();
+        }
+        else
+        {
+            Debug.LogError(
+                "OnlineSceneLoader: GameSession is missing."
+            );
 
-        GameSession.Instance.StartOnlineRoomGame();
+            gameStarting = false;
+            return;
+        }
 
-
-        NetworkManager.Singleton.SceneManager.LoadScene(
+        networkManager.SceneManager.LoadScene(
             gameSceneName,
             LoadSceneMode.Single
         );
+
+        // This loader only exists to start the networked
+        // scene transition. A fresh instance is created
+        // with the next Main Menu scene, preventing stale
+        // callbacks/state from surviving into another room.
+        Destroy(gameObject);
+    }
+
+
+    private void OnClientDisconnected(
+        ulong clientId)
+    {
+        NetworkManager networkManager =
+            NetworkManager.Singleton;
+
+        if (networkManager == null ||
+            !networkManager.IsHost)
+        {
+            return;
+        }
+
+        // If the waiting client leaves before the game
+        // starts, allow the host to create another room.
+        if (!gameStarting &&
+            clientId != networkManager.ServerClientId)
+        {
+            Debug.Log(
+                "Waiting client disconnected. Online scene loader is ready again."
+            );
+        }
     }
 }
