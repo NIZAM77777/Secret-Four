@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using MN7.Store;
 
 public class GameHUD : MonoBehaviour
 {
@@ -11,9 +12,9 @@ public class GameHUD : MonoBehaviour
     [Header("Player Images")]
     [SerializeField] private Image playerXImage;
     [SerializeField] private Image playerYImage;
-    [Tooltip("Fallback sprite used for Player X when CoinConfig does not provide one.")]
+    [Tooltip("Fallback sprite used for Player X when no selected Store skin is available.")]
     [SerializeField] private Sprite playerXDefaultSprite;
-    [Tooltip("Fallback sprite used for Player Y when CoinConfig does not provide one.")]
+    [Tooltip("Fallback sprite used for Player Y when no selected Store skin is available.")]
     [SerializeField] private Sprite playerYDefaultSprite;
 
     [Header("Turn Information")]
@@ -46,6 +47,27 @@ public class GameHUD : MonoBehaviour
         Refresh(false);
     }
 
+    private void OnEnable()
+    {
+        if (MN7StoreManager.Instance?.Selection != null)
+            MN7StoreManager.Instance.Selection.OnSelectionChanged += OnStoreSelectionChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (MN7StoreManager.Instance?.Selection != null)
+            MN7StoreManager.Instance.Selection.OnSelectionChanged -= OnStoreSelectionChanged;
+    }
+
+    private void OnStoreSelectionChanged(string selectionGroupId, string itemId)
+    {
+        if (string.Equals(selectionGroupId, SecretFourStoreIntegration.PlayerSelectionGroup, System.StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(selectionGroupId, SecretFourStoreIntegration.OppositeSelectionGroup, System.StringComparison.OrdinalIgnoreCase))
+        {
+            SetupPlayerImages();
+        }
+    }
+
     private void SetupPlayers()
     {
         if (GameSession.Instance == null)
@@ -64,14 +86,14 @@ public class GameHUD : MonoBehaviour
 
     private void SetupPlayerImages()
     {
-        Sprite xSprite = null;
-        Sprite ySprite = null;
+        Sprite xSprite = SecretFourStoreIntegration.GetSelectedPlayerSprite();
+        Sprite ySprite = SecretFourStoreIntegration.GetSelectedOppositeSprite();
 
-        if (coinConfig != null)
-        {
+        if (xSprite == null && coinConfig != null)
             xSprite = coinConfig.GetSprite(PlayerType.X);
+
+        if (ySprite == null && coinConfig != null)
             ySprite = coinConfig.GetSprite(PlayerType.Y);
-        }
 
         if (xSprite == null)
             xSprite = playerXDefaultSprite;
@@ -92,9 +114,7 @@ public class GameHUD : MonoBehaviour
         }
 
         if (xSprite == null || ySprite == null)
-        {
-            Debug.LogWarning("GameHUD player coin icons are not assigned. Set X/Y sprites in CoinConfig or assign the HUD fallback sprites.");
-        }
+            Debug.LogWarning("GameHUD player coin icons are not assigned. Set Store selections or X/Y fallback sprites.");
     }
 
     private void Refresh(bool force)
