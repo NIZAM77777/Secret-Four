@@ -5,8 +5,8 @@ using UnityEngine;
 namespace MN7.Store
 {
     /// <summary>
-    /// Handles all purchases for Secret Four.
-    /// Rewarded ads are the only payment method.
+    /// Handles Secret Four Store acquisition.
+    /// Items are either free or unlocked through rewarded ads. There is no currency or IAP path.
     /// </summary>
     public class MN7PurchaseManager
     {
@@ -53,6 +53,44 @@ namespace MN7.Store
 
         public bool IsOwned(string itemId) =>
             inventoryManager != null && inventoryManager.IsOwned(itemId);
+
+        /// <summary>Claims a free item. Free items never require ads, currency, or IAP.</summary>
+        public bool PurchaseFree(string itemId)
+        {
+            MN7ItemData item = GetItem(itemId);
+            if (item == null || item.purchaseType != MN7PurchaseType.Free)
+            {
+                PurchaseFailed(item);
+                return false;
+            }
+
+            if (!TryLockPurchase(item.itemId))
+                return false;
+
+            try
+            {
+                if (inventoryManager == null || inventoryManager.IsOwned(item.itemId) ||
+                    rewardManager == null || !rewardManager.ValidateItemRewards(item))
+                {
+                    PurchaseFailed(item);
+                    return false;
+                }
+
+                bool granted = rewardManager.GrantItemRewards(item);
+                if (granted)
+                {
+                    PurchaseSuccessful(item);
+                    return true;
+                }
+
+                PurchaseFailed(item);
+                return false;
+            }
+            finally
+            {
+                UnlockPurchase(item.itemId);
+            }
+        }
 
         /// <summary>
         /// Unlocks an item by watching its configured number of rewarded ads.
@@ -256,8 +294,15 @@ namespace MN7.Store
 
         private void PurchaseSuccessful(MN7ItemData item)
         {
-            Debug.Log($"[MN7 Store] Rewarded-ad purchase successful: {item?.displayName}");
+            Debug.Log($"[MN7 Store] Store item acquired: {item?.displayName}");
             OnPurchaseSuccessful?.Invoke(item);
+        }
+
+        private void PurchaseFailed(MN7ItemData item)
+        {
+            if (item != null)
+                Debug.LogWarning($"[MN7 Store] Store item acquisition failed: {item.displayName}");
+            OnPurchaseFailed?.Invoke(item);
         }
     }
 }
