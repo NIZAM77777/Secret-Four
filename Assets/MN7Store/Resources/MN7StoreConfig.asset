@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 190f05375094e8048a609c8e573bb44e, type: 3}
+  m_Name: MN7StoreConfig
+  m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7StoreConfig
+  gameId: demo_game
+  saveKey: MN7_STORE_DATA
+  currencies:
+  - {fileID: 11400000, guid: 378aa51f550132947b24753d091a72a6, type: 2}
+  categories:
+  - categoryId: Skins
+    displayName: skins
+    sortOrder: 1
+  - categoryId: Color
+    displayName: color
+    sortOrder: 2
+  items:
+  - {fileID: 11400000, guid: 36dabbb9d6807b74985a7a297497203c, type: 2}
+  - {fileID: 11400000, guid: 81a441d2c60adc043973560c95f01331, type: 2}
+  - {fileID: 11400000, guid: 6b69ddf83ce915b418a7a85c2c1f8c22, type: 2}
+  - {fileID: 11400000, guid: 662c854a8c654f14ead4217902257e94, type: 2}
