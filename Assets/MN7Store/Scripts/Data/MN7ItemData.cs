@@ -5,6 +5,7 @@ namespace MN7.Store
 {
     public enum MN7PurchaseType
     {
+        Free,
         RewardedAd
     }
 
