@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
 using TMPro;
@@ -34,12 +35,16 @@ public class GameOverUI : MonoBehaviour
     private CoinConfig coinConfig;
 
 
+    private bool returningToMainMenu;
+
+
     // =====================================================
     // START
     // =====================================================
 
     private void Start()
     {
+        returningToMainMenu = false;
         Hide();
     }
 
@@ -218,14 +223,51 @@ public class GameOverUI : MonoBehaviour
                NetworkManager.Singleton.IsListening;
     }
 
+
     // =====================================================
     // MAIN MENU
     // =====================================================
 
     public void OnMainMenuPressed()
     {
+        if (returningToMainMenu)
+        {
+            return;
+        }
+
+        returningToMainMenu = true;
+
         Debug.Log("MAIN MENU BUTTON PRESSED");
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Mainmenu");
+        StartCoroutine(
+            ReturnToMainMenuAfterNetworkShutdown()
+        );
+    }
+
+
+    private IEnumerator ReturnToMainMenuAfterNetworkShutdown()
+    {
+        NetworkManager networkManager =
+            NetworkManager.Singleton;
+
+        if (networkManager != null &&
+            (networkManager.IsListening ||
+             networkManager.ShutdownInProgress))
+        {
+            Debug.Log(
+                "Shutting down network before returning to Main Menu..."
+            );
+
+            networkManager.Shutdown(true);
+
+            while (NetworkManager.Singleton != null &&
+                   (NetworkManager.Singleton.IsListening ||
+                    NetworkManager.Singleton.ShutdownInProgress))
+            {
+                yield return null;
+            }
+        }
+
+        SceneManager.LoadScene("Mainmenu");
     }
 }
