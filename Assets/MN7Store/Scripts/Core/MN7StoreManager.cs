@@ -3,15 +3,15 @@ using UnityEngine;
 
 namespace MN7.Store
 {
+    /// <summary>
+    /// Secret Four store runtime. Rewarded ads are the only payment method.
+    /// </summary>
     public class MN7StoreManager : MonoBehaviour
     {
         public static MN7StoreManager Instance { get; private set; }
 
         [Header("Configuration")]
         [SerializeField] private MN7StoreConfig storeConfig;
-
-        [Header("Features")]
-        [SerializeField] private MN7StoreFeatureConfig features = new();
 
         public MN7StoreState State { get; private set; } = MN7StoreState.Uninitialized;
         public bool IsInitialized => State == MN7StoreState.Initialized;
@@ -20,7 +20,6 @@ namespace MN7.Store
         public event Action OnStoreInitializationFailed;
 
         public MN7StoreConfig Config => storeConfig;
-        public MN7StoreFeatureConfig Features => features;
         public MN7StoreCatalog Catalog { get; private set; }
         public MN7InventoryManager Inventory { get; private set; }
         public MN7AdPurchaseProgress AdProgress { get; private set; }
@@ -59,15 +58,6 @@ namespace MN7.Store
                 return;
             }
 
-            if (features == null)
-                features = new MN7StoreFeatureConfig();
-
-            // Secret Four uses rewarded ads as its only store payment method.
-            features.freeItems = false;
-            features.adRewards = true;
-            features.coins = false;
-            features.iap = false;
-
             string effectiveSaveKey = storeConfig.GetEffectiveSaveKey();
             if (string.IsNullOrWhiteSpace(effectiveSaveKey))
             {
@@ -75,7 +65,7 @@ namespace MN7.Store
                 return;
             }
 
-            if (!MN7StoreValidator.ValidateConfig(storeConfig, features))
+            if (!MN7StoreValidator.ValidateConfig(storeConfig))
             {
                 InitializationFailed("Initialization stopped because the Store Config is invalid.");
                 return;
@@ -89,7 +79,7 @@ namespace MN7.Store
             Transactions = new MN7TransactionManager(saveManager, $"{effectiveSaveKey}_TRANSACTIONS");
             Selection = new MN7SelectionManager(storeConfig, saveManager, Catalog);
             Ads = new MN7AdManager();
-            Rewards = new MN7RewardManager(null, Inventory);
+            Rewards = new MN7RewardManager(Inventory);
 
             Purchases = new MN7PurchaseManager(
                 storeConfig,
@@ -97,21 +87,19 @@ namespace MN7.Store
                 Ads,
                 AdProgress,
                 Rewards,
-                Transactions
-            );
+                Transactions);
 
             Recovery = new MN7TransactionRecovery(
                 Transactions,
                 Purchases,
                 storeConfig,
-                AdProgress
-            );
+                AdProgress);
 
             Recovery.Recover();
             Transactions.CleanupCompletedTransactions(7L * 24L * 60L * 60L);
 
             State = MN7StoreState.Initialized;
-            Debug.Log($"[MN7 Store] Ads-only store initialized. Save namespace: {effectiveSaveKey}");
+            Debug.Log($"[MN7 Store] Rewarded-ads-only store initialized. Save namespace: {effectiveSaveKey}");
             OnStoreInitialized?.Invoke();
         }
 
@@ -137,7 +125,7 @@ namespace MN7.Store
 
 #if UNITY_EDITOR
         [ContextMenu("Validate Store Config")]
-        private void ValidateStoreConfig() => MN7StoreValidator.ValidateConfig(storeConfig, features);
+        private void ValidateStoreConfig() => MN7StoreValidator.ValidateConfig(storeConfig);
 
         [ContextMenu("Run Runtime Diagnostics")]
         private void RunRuntimeDiagnostics() => MN7StoreDiagnostics.ValidateRuntime();
@@ -158,7 +146,7 @@ namespace MN7.Store
             AdProgress?.ResetAll();
             Transactions?.ResetAllTransactions();
             Selection?.ResetToDefaults();
-            Debug.Log("[MN7 Store] Ads-only store data reset.");
+            Debug.Log("[MN7 Store] Rewarded-ads-only store data reset.");
         }
 #endif
     }
