@@ -138,8 +138,10 @@ public class NetworkDirectionManager : NetworkBehaviour
         PlayerAction action = turnManager.GetAction(player);
         Vector2Int position = action.position;
 
+        // Stay is a valid strategic choice, consistent with
+        // local games and all bot difficulty implementations.
         if (direction == MoveDirection.Stay)
-            return !HasAnyValidMovement(board, position, player);
+            return true;
 
         Vector2Int destination = GetDestination(position, direction);
         return CanMoveTo(board, destination, player);
