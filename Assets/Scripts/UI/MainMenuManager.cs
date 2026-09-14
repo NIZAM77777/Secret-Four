@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -22,6 +24,13 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private GameObject storePanel;
 
+    [Header("Store Buttons")]
+    [SerializeField]
+    private Button storeButton;
+
+    [SerializeField]
+    private Button storeCloseButton;
+
     [Header("Human Setup")]
     [SerializeField]
     private HumanSetupManager humanSetupManager;
@@ -29,6 +38,7 @@ public class MainMenuManager : MonoBehaviour
     private void Awake()
     {
         ResolveStorePanel();
+        AutoWireStoreButtons();
         CloseStore();
     }
 
@@ -39,12 +49,62 @@ public class MainMenuManager : MonoBehaviour
 
         GameObject found = GameObject.Find("StorePanel");
         if (found != null)
-        {
             storePanel = found;
-            return;
+    }
+
+    private void AutoWireStoreButtons()
+    {
+        if (storeButton == null)
+        {
+            GameObject found = GameObject.Find("StoreButton");
+            if (found != null)
+                storeButton = found.GetComponent<Button>();
         }
 
-        Debug.LogWarning("[Secret Four] StorePanel was not found in the Main Menu scene.");
+        if (storeCloseButton == null && storePanel != null)
+        {
+            Transform closeTransform = FindChildRecursive(storePanel.transform, "CloseButton");
+            if (closeTransform != null)
+                storeCloseButton = closeTransform.GetComponent<Button>();
+        }
+
+        if (storeButton != null)
+        {
+            storeButton.onClick.RemoveListener(OpenStore);
+            storeButton.onClick.AddListener(OpenStore);
+        }
+        else
+        {
+            Debug.LogWarning("[Secret Four] StoreButton was not found or has no Button component.");
+        }
+
+        if (storeCloseButton != null)
+        {
+            storeCloseButton.onClick.RemoveListener(CloseStore);
+            storeCloseButton.onClick.AddListener(CloseStore);
+        }
+        else
+        {
+            Debug.LogWarning("[Secret Four] StorePanel/CloseButton was not found or has no Button component.");
+        }
+    }
+
+    private static Transform FindChildRecursive(Transform parent, string targetName)
+    {
+        if (parent == null)
+            return null;
+
+        if (parent.name == targetName)
+            return parent;
+
+        foreach (Transform child in parent)
+        {
+            Transform result = FindChildRecursive(child, targetName);
+            if (result != null)
+                return result;
+        }
+
+        return null;
     }
 
     // =========================
@@ -207,6 +267,6 @@ public class MainMenuManager : MonoBehaviour
         if (storePanel != null)
             storePanel.SetActive(false);
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(gameSceneName);
+        SceneManager.LoadScene(gameSceneName);
     }
 }
