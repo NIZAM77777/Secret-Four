@@ -11,17 +11,20 @@ namespace MN7.Store
         public List<MN7TransactionData> transactions = new();
     }
 
+    /// <summary>
+    /// Persistent transaction tracking for rewarded-ad item unlocks.
+    /// </summary>
     public class MN7TransactionManager
     {
         private const int CurrentSaveVersion = MN7StoreSaveVersion.CurrentVersion;
         private const string DefaultSaveKey = "MN7_STORE_TRANSACTIONS";
-        private const string PaymentOperationSuffix = "_PAYMENT";
 
         private readonly MN7SaveManager saveManager;
         private readonly string saveKey;
         private readonly Dictionary<string, MN7TransactionData> transactions = new();
 
-        public MN7TransactionManager(MN7SaveManager saveManager) : this(saveManager, DefaultSaveKey) { }
+        public MN7TransactionManager(MN7SaveManager saveManager)
+            : this(saveManager, DefaultSaveKey) { }
 
         public MN7TransactionManager(MN7SaveManager saveManager, string saveKey)
         {
@@ -32,82 +35,25 @@ namespace MN7.Store
 
         public MN7TransactionData CreateTransaction(string itemId, MN7PurchaseType purchaseType)
         {
-            return CreateTransaction(itemId, purchaseType, null, null, 0);
-        }
-
-        /// <summary>
-        /// Creates or reuses a transaction tied to a store transaction ID.
-        /// This is critical for IAP because the store may redeliver the same
-        /// paid order after a crash before ConfirmPurchase was called.
-        /// </summary>
-        public MN7TransactionData CreateTransaction(
-            string itemId,
-            MN7PurchaseType purchaseType,
-            string externalTransactionId)
-        {
-            return CreateTransaction(itemId, purchaseType, externalTransactionId, null, 0);
-        }
-
-        /// <summary>
-        /// Creates a transaction and records the local-currency payment intent
-        /// before the debit is attempted. Recovery uses this information to
-        /// distinguish a completed debit from a purchase that never charged.
-        /// </summary>
-        public MN7TransactionData CreateTransaction(
-            string itemId,
-            MN7PurchaseType purchaseType,
-            string externalTransactionId,
-            string paymentCurrencyId,
-            int paymentAmount)
-        {
             if (string.IsNullOrWhiteSpace(itemId))
             {
                 Debug.LogError("[MN7 Store] Cannot create transaction. Item ID is empty.");
                 return null;
             }
 
-            string normalizedExternalId = externalTransactionId?.Trim();
-            string normalizedItemId = itemId.Trim();
-            string normalizedCurrencyId = paymentCurrencyId?.Trim();
-
-            if (paymentAmount < 0 ||
-                (paymentAmount > 0 && string.IsNullOrWhiteSpace(normalizedCurrencyId)))
+            if (purchaseType != MN7PurchaseType.RewardedAd)
             {
-                Debug.LogError("[MN7 Store] Cannot create transaction. Payment details are invalid.");
+                Debug.LogError("[MN7 Store] Only Rewarded Ad transactions are supported.");
                 return null;
             }
 
-            if (!string.IsNullOrWhiteSpace(normalizedExternalId))
-            {
-                MN7TransactionData existing = GetTransaction(normalizedExternalId);
-                if (existing != null)
-                {
-                    if (existing.itemId != normalizedItemId ||
-                        !string.Equals(existing.purchaseType, purchaseType.ToString(), StringComparison.Ordinal))
-                    {
-                        Debug.LogError(
-                            $"[MN7 Store] Store transaction ID collision: {normalizedExternalId}"
-                        );
-                        return null;
-                    }
-
-                    return existing;
-                }
-            }
-
-            string transactionId = string.IsNullOrWhiteSpace(normalizedExternalId)
-                ? GenerateTransactionId()
-                : normalizedExternalId;
-
             MN7TransactionData transaction = new()
             {
-                transactionId = transactionId,
-                itemId = normalizedItemId,
+                transactionId = GenerateTransactionId(),
+                itemId = itemId.Trim(),
                 purchaseType = purchaseType.ToString(),
                 timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 status = MN7TransactionStatus.Pending.ToString(),
-                paymentCurrencyId = normalizedCurrencyId,
-                paymentAmount = paymentAmount,
                 appliedRewardIndexes = new List<int>(),
                 completedRewardOperations = new List<string>()
             };
@@ -128,8 +74,7 @@ namespace MN7.Store
             }
 
             MN7TransactionStatus currentStatus = GetStatus(transactionId);
-            if (currentStatus == status)
-                return true;
+            if (currentStatus == status) return true;
 
             if (!CanChangeStatus(transactionId, status))
             {
@@ -139,7 +84,6 @@ namespace MN7.Store
 
             transaction.status = status.ToString();
             Save();
-            Debug.Log($"[MN7 Store] Transaction status: {transactionId} → {status}");
             return true;
         }
 
@@ -148,6 +92,7 @@ namespace MN7.Store
             MN7TransactionData transaction = GetTransaction(transactionId);
             if (transaction == null || string.IsNullOrWhiteSpace(transaction.status))
                 return MN7TransactionStatus.Failed;
+
             return Enum.TryParse(transaction.status, out MN7TransactionStatus status)
                 ? status
                 : MN7TransactionStatus.Failed;
@@ -155,50 +100,14 @@ namespace MN7.Store
 
         public MN7TransactionData GetTransaction(string transactionId)
         {
-            if (string.IsNullOrWhiteSpace(transactionId))
-                return null;
+            if (string.IsNullOrWhiteSpace(transactionId)) return null;
             transactions.TryGetValue(transactionId.Trim(), out MN7TransactionData transaction);
             return transaction;
         }
 
-        public IReadOnlyList<MN7TransactionData> GetAllTransactions() => new List<MN7TransactionData>(transactions.Values);
+        public IReadOnlyList<MN7TransactionData> GetAllTransactions() =>
+            new List<MN7TransactionData>(transactions.Values);
 
-        public bool IsRewardApplied(string transactionId, int rewardIndex)
-        {
-            if (rewardIndex < 0) return false;
-            MN7TransactionData transaction = GetTransaction(transactionId);
-            if (transaction == null) return false;
-            EnsureRewardLists(transaction);
-            return transaction.appliedRewardIndexes.Contains(rewardIndex);
-        }
-
-        public void MarkRewardApplied(string transactionId, int rewardIndex)
-        {
-            if (rewardIndex < 0) return;
-            MN7TransactionData transaction = GetTransaction(transactionId);
-            if (transaction == null) return;
-            EnsureRewardLists(transaction);
-            if (transaction.appliedRewardIndexes.Contains(rewardIndex)) return;
-            transaction.appliedRewardIndexes.Add(rewardIndex);
-            Save();
-        }
-
-        public bool AreAllRewardsApplied(string transactionId, int rewardCount)
-        {
-            MN7TransactionData transaction = GetTransaction(transactionId);
-            if (transaction == null) return false;
-            if (rewardCount <= 0) return true;
-            EnsureRewardLists(transaction);
-            for (int i = 0; i < rewardCount; i++)
-                if (!transaction.appliedRewardIndexes.Contains(i)) return false;
-            return true;
-        }
-
-        /// <summary>
-        /// Returns transactions that need startup recovery, including Pending
-        /// transactions. Pending local-currency transactions are resolved by
-        /// checking their persisted payment operation before rewards are given.
-        /// </summary>
         public List<MN7TransactionData> GetRecoverableTransactions()
         {
             List<MN7TransactionData> result = new();
@@ -216,9 +125,14 @@ namespace MN7.Store
             return result;
         }
 
-        public bool IsCompleted(string transactionId) => GetStatus(transactionId) == MN7TransactionStatus.Completed;
-        public bool IsFailed(string transactionId) => GetStatus(transactionId) == MN7TransactionStatus.Failed;
-        public bool IsPending(string transactionId) => GetStatus(transactionId) == MN7TransactionStatus.Pending;
+        public bool IsCompleted(string transactionId) =>
+            GetStatus(transactionId) == MN7TransactionStatus.Completed;
+
+        public bool IsFailed(string transactionId) =>
+            GetStatus(transactionId) == MN7TransactionStatus.Failed;
+
+        public bool IsPending(string transactionId) =>
+            GetStatus(transactionId) == MN7TransactionStatus.Pending;
 
         public bool IsRewardOperationCompleted(string transactionId, string operationId)
         {
@@ -233,27 +147,23 @@ namespace MN7.Store
             MN7TransactionData transaction = GetTransaction(transactionId);
             if (transaction == null || string.IsNullOrWhiteSpace(operationId) || rewardIndex < 0) return;
             EnsureRewardLists(transaction);
-            if (!transaction.completedRewardOperations.Contains(operationId)) transaction.completedRewardOperations.Add(operationId);
-            if (!transaction.appliedRewardIndexes.Contains(rewardIndex)) transaction.appliedRewardIndexes.Add(rewardIndex);
+            if (!transaction.completedRewardOperations.Contains(operationId))
+                transaction.completedRewardOperations.Add(operationId);
+            if (!transaction.appliedRewardIndexes.Contains(rewardIndex))
+                transaction.appliedRewardIndexes.Add(rewardIndex);
             Save();
         }
 
         public string GetRewardOperationId(string transactionId, int rewardIndex)
         {
             if (string.IsNullOrWhiteSpace(transactionId) || rewardIndex < 0) return string.Empty;
-            return $"{transactionId}_REWARD_{rewardIndex}";
-        }
-
-        public string GetPaymentOperationId(string transactionId)
-        {
-            if (string.IsNullOrWhiteSpace(transactionId)) return string.Empty;
-            return $"{transactionId.Trim()}{PaymentOperationSuffix}";
+            return $"{transactionId.Trim()}_REWARD_{rewardIndex}";
         }
 
         public bool RemoveTransaction(string transactionId)
         {
             if (string.IsNullOrWhiteSpace(transactionId) || !transactions.ContainsKey(transactionId)) return false;
-            if (GetStatus(transactionId) != MN7TransactionStatus.Completed) return false;
+            if (!IsCompleted(transactionId)) return false;
             transactions.Remove(transactionId);
             Save();
             return true;
@@ -266,12 +176,17 @@ namespace MN7.Store
             if (maxAgeSeconds < 0) return 0;
             long currentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             List<string> removeIds = new();
+
             foreach (MN7TransactionData transaction in transactions.Values)
             {
-                if (transaction == null || GetStatus(transaction.transactionId) != MN7TransactionStatus.Completed) continue;
-                if (currentTime - transaction.timestamp >= maxAgeSeconds) removeIds.Add(transaction.transactionId);
+                if (transaction == null || !IsCompleted(transaction.transactionId)) continue;
+                if (currentTime - transaction.timestamp >= maxAgeSeconds)
+                    removeIds.Add(transaction.transactionId);
             }
-            foreach (string id in removeIds) transactions.Remove(id);
+
+            foreach (string id in removeIds)
+                transactions.Remove(id);
+
             if (removeIds.Count > 0) Save();
             return removeIds.Count;
         }
@@ -284,7 +199,12 @@ namespace MN7.Store
 
         private void Save()
         {
-            if (saveManager == null) { Debug.LogError("[MN7 Store] Save Manager is null."); return; }
+            if (saveManager == null)
+            {
+                Debug.LogError("[MN7 Store] Save Manager is null.");
+                return;
+            }
+
             MN7TransactionSaveData saveData = new() { version = CurrentSaveVersion };
             foreach (MN7TransactionData transaction in transactions.Values)
             {
@@ -292,30 +212,36 @@ namespace MN7.Store
                 EnsureRewardLists(transaction);
                 saveData.transactions.Add(transaction);
             }
+
             saveManager.Save(saveKey, JsonUtility.ToJson(saveData));
         }
 
         private void Load()
         {
             transactions.Clear();
-            if (saveManager == null) { Debug.LogError("[MN7 Store] Save Manager is null."); return; }
+            if (saveManager == null) return;
+
             string json = saveManager.Load(saveKey);
             if (string.IsNullOrEmpty(json)) return;
+
             try
             {
                 MN7TransactionSaveData saveData = JsonUtility.FromJson<MN7TransactionSaveData>(json);
                 if (saveData == null || saveData.transactions == null) return;
+
                 if (!MN7SaveMigration.IsSupportedVersion(saveData.version))
                 {
                     Debug.LogError($"[MN7 Store] Unsupported transaction save version: {saveData.version}");
                     return;
                 }
+
                 foreach (MN7TransactionData transaction in saveData.transactions)
                 {
                     if (!IsValidTransaction(transaction)) continue;
                     EnsureRewardLists(transaction);
                     transactions[transaction.transactionId] = transaction;
                 }
+
                 if (saveData.version < CurrentSaveVersion)
                 {
                     MN7SaveMigration.LogMigration(saveData.version, CurrentSaveVersion, "transactions");
@@ -330,33 +256,43 @@ namespace MN7.Store
 
         private bool IsValidTransaction(MN7TransactionData transaction)
         {
-            if (transaction == null || string.IsNullOrWhiteSpace(transaction.transactionId) || string.IsNullOrWhiteSpace(transaction.itemId) || string.IsNullOrWhiteSpace(transaction.status)) return false;
-            if (!Enum.TryParse(transaction.status, out MN7TransactionStatus status)) return false;
-            if (transaction.paymentAmount < 0) return false;
-            if (transaction.paymentAmount > 0 && string.IsNullOrWhiteSpace(transaction.paymentCurrencyId)) return false;
-            return status == MN7TransactionStatus.Pending || status == MN7TransactionStatus.PaymentCommitted || status == MN7TransactionStatus.RewardsGranted || status == MN7TransactionStatus.Completed || status == MN7TransactionStatus.Failed;
+            if (transaction == null ||
+                string.IsNullOrWhiteSpace(transaction.transactionId) ||
+                string.IsNullOrWhiteSpace(transaction.itemId) ||
+                string.IsNullOrWhiteSpace(transaction.status))
+                return false;
+
+            if (!Enum.TryParse(transaction.status, out MN7TransactionStatus status))
+                return false;
+
+            if (transaction.purchaseType != MN7PurchaseType.RewardedAd.ToString())
+                return false;
+
+            return status == MN7TransactionStatus.Pending ||
+                   status == MN7TransactionStatus.PaymentCommitted ||
+                   status == MN7TransactionStatus.RewardsGranted ||
+                   status == MN7TransactionStatus.Completed ||
+                   status == MN7TransactionStatus.Failed;
         }
 
         private void EnsureRewardLists(MN7TransactionData transaction)
         {
-            if (transaction.appliedRewardIndexes == null) transaction.appliedRewardIndexes = new List<int>();
-            if (transaction.completedRewardOperations == null) transaction.completedRewardOperations = new List<string>();
+            if (transaction.appliedRewardIndexes == null)
+                transaction.appliedRewardIndexes = new List<int>();
+            if (transaction.completedRewardOperations == null)
+                transaction.completedRewardOperations = new List<string>();
         }
 
         private bool CanChangeStatus(string transactionId, MN7TransactionStatus newStatus)
         {
             MN7TransactionStatus currentStatus = GetStatus(transactionId);
-            switch (currentStatus)
+            return currentStatus switch
             {
-                case MN7TransactionStatus.Pending:
-                    return newStatus == MN7TransactionStatus.PaymentCommitted || newStatus == MN7TransactionStatus.Failed;
-                case MN7TransactionStatus.PaymentCommitted:
-                    return newStatus == MN7TransactionStatus.RewardsGranted || newStatus == MN7TransactionStatus.Failed;
-                case MN7TransactionStatus.RewardsGranted:
-                    return newStatus == MN7TransactionStatus.Completed;
-                default:
-                    return false;
-            }
+                MN7TransactionStatus.Pending => newStatus == MN7TransactionStatus.PaymentCommitted || newStatus == MN7TransactionStatus.Failed,
+                MN7TransactionStatus.PaymentCommitted => newStatus == MN7TransactionStatus.RewardsGranted || newStatus == MN7TransactionStatus.Failed,
+                MN7TransactionStatus.RewardsGranted => newStatus == MN7TransactionStatus.Completed,
+                _ => false
+            };
         }
 
         private string GenerateTransactionId()
@@ -367,6 +303,7 @@ namespace MN7.Store
                 transactionId = $"TX_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{Guid.NewGuid():N}";
             }
             while (transactions.ContainsKey(transactionId));
+
             return transactionId;
         }
     }
