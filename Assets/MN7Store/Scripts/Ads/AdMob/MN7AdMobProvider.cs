@@ -8,13 +8,8 @@ namespace MN7.Store
     public class MN7AdMobProvider : IMN7AdProvider
     {
         private readonly MN7AdMobConfig config;
-
-        private readonly Dictionary<string, RewardedAd> rewardedAds =
-            new();
-
-        private readonly HashSet<string> loadingPlacements =
-            new();
-
+        private readonly Dictionary<string, RewardedAd> rewardedAds = new();
+        private readonly HashSet<string> loadingPlacements = new();
         private bool initialized;
 
         public MN7AdMobProvider(MN7AdMobConfig config)
@@ -24,18 +19,14 @@ namespace MN7.Store
 
         public void Initialize()
         {
-            if (initialized)
-                return;
-
+            if (initialized) return;
             initialized = true;
 
-            MobileAds.Initialize(
-                initializationStatus =>
-                {
-                    Debug.Log("[MN7 Store] AdMob initialized.");
-                    LoadAllRewardedAds();
-                }
-            );
+            MobileAds.Initialize(initializationStatus =>
+            {
+                Debug.Log("[MN7 Store] AdMob initialized.");
+                LoadAllRewardedAds();
+            });
         }
 
         private void LoadAllRewardedAds()
@@ -46,8 +37,7 @@ namespace MN7.Store
                 return;
             }
 
-            if (config.rewardedPlacements == null)
-                return;
+            if (config.rewardedPlacements == null) return;
 
             HashSet<string> seenPlacements = new(StringComparer.OrdinalIgnoreCase);
 
@@ -80,17 +70,11 @@ namespace MN7.Store
         private void LoadRewardedAd(string placementId)
         {
             placementId = placementId?.Trim();
-            if (string.IsNullOrWhiteSpace(placementId))
-                return;
-
-            if (loadingPlacements.Contains(placementId))
-                return;
+            if (string.IsNullOrWhiteSpace(placementId) || loadingPlacements.Contains(placementId)) return;
 
             if (rewardedAds.TryGetValue(placementId, out RewardedAd existingAd))
             {
-                if (existingAd != null && existingAd.CanShowAd())
-                    return;
-
+                if (existingAd != null && existingAd.CanShowAd()) return;
                 rewardedAds.Remove(placementId);
             }
 
@@ -103,34 +87,26 @@ namespace MN7.Store
 
             loadingPlacements.Add(placementId);
 
-            RewardedAd.Load(
-                adUnitId,
-                new AdRequest(),
-                (RewardedAd ad, LoadAdError error) =>
+            RewardedAd.Load(adUnitId, new AdRequest(), (RewardedAd ad, LoadAdError error) =>
+            {
+                loadingPlacements.Remove(placementId);
+
+                if (error != null || ad == null)
                 {
-                    loadingPlacements.Remove(placementId);
-
-                    if (error != null || ad == null)
-                    {
-                        Debug.LogError($"[MN7 Store] Rewarded ad load failed: {placementId} - {error}");
-                        return;
-                    }
-
-                    rewardedAds[placementId] = ad;
-                    Debug.Log($"[MN7 Store] Rewarded ad loaded: {placementId}");
+                    Debug.LogError($"[MN7 Store] Rewarded ad load failed: {placementId} - {error}");
+                    return;
                 }
-            );
+
+                rewardedAds[placementId] = ad;
+                Debug.Log($"[MN7 Store] Rewarded ad loaded: {placementId}");
+            });
         }
 
         public bool IsRewardedAdReady(string placementId)
         {
             placementId = placementId?.Trim();
-            if (string.IsNullOrWhiteSpace(placementId))
-                return false;
-
-            if (!rewardedAds.TryGetValue(placementId, out RewardedAd ad) || ad == null)
-                return false;
-
+            if (string.IsNullOrWhiteSpace(placementId)) return false;
+            if (!rewardedAds.TryGetValue(placementId, out RewardedAd ad) || ad == null) return false;
             return ad.CanShowAd();
         }
 
@@ -163,9 +139,7 @@ namespace MN7.Store
 
             void Complete(MN7AdResult result)
             {
-                if (callbackSent)
-                    return;
-
+                if (callbackSent) return;
                 callbackSent = true;
                 onCompleted?.Invoke(result);
             }
@@ -175,9 +149,7 @@ namespace MN7.Store
                 Debug.Log($"[MN7 Store] Rewarded ad closed: {placementId}");
                 rewardedAds.Remove(placementId);
                 LoadRewardedAd(placementId);
-
-                if (!rewardEarned)
-                    Complete(MN7AdResult.Skipped);
+                if (!rewardEarned) Complete(MN7AdResult.Skipped);
             };
 
             ad.OnAdFullScreenContentFailed += (AdError error) =>
@@ -188,29 +160,23 @@ namespace MN7.Store
                 Complete(MN7AdResult.Failed);
             };
 
-            ad.Show(
-                reward =>
-                {
-                    rewardEarned = true;
-                    Debug.Log($"[MN7 Store] Rewarded ad completed: {placementId}");
-                    Complete(MN7AdResult.Completed);
-                }
-            );
+            ad.Show(reward =>
+            {
+                rewardEarned = true;
+                Debug.Log($"[MN7 Store] Rewarded ad completed: {placementId}");
+                Complete(MN7AdResult.Completed);
+            });
         }
 
         private string GetAdUnitId(string placementId)
         {
-            if (config == null || config.rewardedPlacements == null)
-                return null;
+            if (config == null || config.rewardedPlacements == null) return null;
 
             for (int i = 0; i < config.rewardedPlacements.Count; i++)
             {
                 MN7AdMobPlacement placement = config.rewardedPlacements[i];
-                if (placement == null)
-                    continue;
-
-                if (!string.Equals(placement.placementId?.Trim(), placementId, StringComparison.OrdinalIgnoreCase))
-                    continue;
+                if (placement == null) continue;
+                if (!string.Equals(placement.placementId?.Trim(), placementId, StringComparison.OrdinalIgnoreCase)) continue;
 
 #if UNITY_ANDROID
                 return placement.androidAdUnitId?.Trim();

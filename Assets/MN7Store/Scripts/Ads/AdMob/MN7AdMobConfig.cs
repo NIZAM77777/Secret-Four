@@ -23,7 +23,6 @@ namespace MN7.Store
     public class MN7AdMobConfig : ScriptableObject
     {
         [Header("AdMob Placements")]
-        public List<MN7AdMobPlacement> rewardedPlacements =
-            new();
+        public List<MN7AdMobPlacement> rewardedPlacements = new();
     }
 }

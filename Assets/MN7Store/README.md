@@ -1,50 +1,178 @@
-# MN7 Store — Reusable Unity Mobile Store
+# MN7 Store
 
-MN7 Store is a reusable, configuration-driven store system for Unity mobile games.
+**Reusable Unity store system for mobile games.**
 
-**System = how the store works. Data = what each game sells. Prefabs = how the store looks.**
+MN7 Store gives you one reusable store system that can be used in many games.
 
-Each game should provide its own Store Config, items, categories, currencies and optional Ads/IAP configuration.
+You decide what each game needs:
 
----
+- Free items
+- Rewarded ads
+- Coins / in-game currency
+- In-App Purchases (IAP)
+- Any combination of the above
 
-## 1. Import
-
-Copy/import the `MN7Store` folder into the Unity project.
-
-From `Assets/MN7Store/Prefabs/`:
-
-1. Add `MN7StoreSystem.prefab` to the game's first/bootstrap scene.
-2. Add `MN7StorePanel.prefab` to the game's Canvas.
-3. Keep only one `MN7StoreManager` active in the game.
-4. Do not create a second EventSystem if the game already has one.
-5. Store Panel, Category Bar and Item prefabs remain editable.
-
-`MN7StoreSystem` keeps the manager alive between scenes.
+You normally configure the store in the Unity Inspector. You do **not** need to change the MN7 Store source code for each game.
 
 ---
 
-## 2. Create the game's Store Config
+# 1. What you need
 
-Right-click → **Create → MN7 Store → Store Config**.
+## Basic store
 
-Set a unique Game ID, for example:
+For a normal store using free items and/or coins, you need:
+
+- Unity
+- TextMeshPro / Unity UI
+- MN7 Store
+
+No AdMob SDK is required if ads are not used.
+No Unity IAP package is required if IAP is not used.
+
+## If the game uses rewarded ads
+
+You also need:
+
+- Google Mobile Ads Unity SDK
+- Your game's AdMob App ID
+- Your game's rewarded Ad Unit IDs
+
+## If the game uses IAP
+
+You also need:
+
+- Unity In-App Purchasing package
+- Products configured in the target platform store
+- Matching product IDs in MN7 Store
+
+**Only install/configure the SDKs that the game actually uses.**
+
+---
+
+# 2. Add MN7 Store to the game
+
+From:
+
+`Assets/MN7Store/Prefabs/`
+
+Add these prefabs to the game:
+
+### `MN7StoreSystem.prefab`
+
+Add it to the game's first/bootstrap scene.
+
+This contains the store manager and keeps it alive between scenes.
+
+### `MN7StorePanel.prefab`
+
+Add it under the game's Canvas.
+
+If the game already has an EventSystem, **do not create another one**.
+
+Keep only **one MN7StoreSystem / MN7StoreManager** active for the game.
+
+---
+
+# 3. Create a Store Config for the game
+
+In Unity:
+
+**Right-click in Project → Create → MN7 Store → Store Config**
+
+Create one config for every game.
+
+Example:
 
 ```text
-Game ID = MY_GAME
+Game ID = SECRET_FOUR
 ```
 
-Then select `MN7StoreSystem → MN7StoreManager` and assign that Store Config.
+Then select:
 
-The Game ID creates an isolated store save namespace automatically. Never reuse another game's Game ID.
+`MN7StoreSystem → MN7StoreManager`
+
+and assign the game's Store Config.
+
+## Important: Game ID
+
+The Game ID separates save data between games.
+
+For example:
+
+```text
+Game A → GAME_A
+Game B → GAME_B
+Game C → SECRET_FOUR
+```
+
+Never use another game's Game ID.
+
+For a released game, always use a unique Game ID.
 
 ---
 
-## 3. Currency
+# 4. Choose what the game uses
 
-If the game uses coins, create:
+Select `MN7StoreSystem` and find **Store Features** on `MN7StoreManager`.
 
-**Create → MN7 Store → Currency Data**
+You will see:
+
+```text
+Free Items = ON / OFF
+Ad Rewards = ON / OFF
+Coins      = ON / OFF
+IAP        = ON / OFF
+```
+
+Turn ON only the features used by that game.
+
+### Example 1 — Ads only
+
+```text
+Free Items = ON
+Ad Rewards = ON
+Coins      = OFF
+IAP        = OFF
+```
+
+### Example 2 — Coins + Ads
+
+```text
+Free Items = ON
+Ad Rewards = ON
+Coins      = ON
+IAP        = OFF
+```
+
+### Example 3 — Coins + Ads + IAP
+
+```text
+Free Items = ON
+Ad Rewards = ON
+Coins      = ON
+IAP        = ON
+```
+
+### Example 4 — IAP only
+
+```text
+Free Items = OFF
+Ad Rewards = OFF
+Coins      = OFF
+IAP        = ON
+```
+
+Disabled features do not need to be configured for that game.
+
+---
+
+# 5. Add coins (only if the game uses coins)
+
+If **Coins = ON**:
+
+Create:
+
+**Right-click → Create → MN7 Store → Currency Data**
 
 Example:
 
@@ -54,17 +182,23 @@ Display Name    = Coins
 Starting Amount = 3000
 ```
 
-Add the currency to the game's Store Config.
+Add the Currency Data to the game's Store Config.
 
-If the game does not use coins, set **Coins = OFF** in Store Features. Do not leave currency rewards on items when Coins are disabled.
+If the game does not use coins:
+
+```text
+Coins = OFF
+```
+
+Do not configure currency purchase/reward routes for a game that has Coins disabled.
 
 ---
 
-## 4. Categories
+# 6. Add categories
 
-Categories are configured inside Store Config.
+Categories are created inside the Store Config.
 
-Set:
+For each category, set:
 
 ```text
 Category ID
@@ -72,19 +206,31 @@ Display Name
 Sort Order
 ```
 
-`ALL` is automatic. Never add `__ALL__` manually.
+Example:
 
-Category appearance belongs to the shared `MN7StoreCategoryButton` prefab, not to individual category data.
+```text
+Category ID  = SKINS
+Display Name = Skins
+Sort Order   = 0
+```
+
+## ALL category
+
+You do **not** create the ALL category yourself.
+
+MN7 Store creates it automatically.
+
+Do not add `__ALL__` as a normal category or item category.
 
 ---
 
-## 5. Store Items
+# 7. Create store items
 
 Create:
 
-**Create → MN7 Store → Store Item**
+**Right-click → Create → MN7 Store → Store Item**
 
-Set the item's:
+Set the basic information:
 
 ```text
 Item ID
@@ -92,20 +238,31 @@ Display Name
 Description
 Icon
 Category IDs
-Purchase Type
-Rewards
-Ownership Type
 ```
 
-Add each item to the Store Config.
+Then choose how the player gets the item.
 
-### Free
+---
+
+# 8. Free item
+
+Use this when the player gets an item for free.
 
 ```text
 Purchase Type = Free
 ```
 
-### Currency
+Make sure:
+
+```text
+Free Items = ON
+```
+
+---
+
+# 9. Coin item
+
+Use this when the player pays with in-game currency.
 
 ```text
 Purchase Type = Currency
@@ -113,7 +270,21 @@ Currency ID   = soft_currency
 Currency Cost = 100
 ```
 
-### Rewarded Ad
+Make sure:
+
+```text
+Coins = ON
+```
+
+The player must have enough currency before the purchase can complete.
+
+---
+
+# 10. Rewarded-ad item
+
+Use this when the player watches an ad to receive the item.
+
+Example:
 
 ```text
 Purchase Type    = Rewarded Ad
@@ -121,22 +292,75 @@ Required Ads     = 1
 Ad Placement ID = store_reward
 ```
 
-### Currency Or Ad
-
-Configure the currency and/or rewarded-ad route. The active Store Features determine which route is available.
-
-### IAP
+Make sure:
 
 ```text
-Purchase Type  = IAP
-IAP Product ID = exact store product ID
+Ad Rewards = ON
 ```
+
+The `Ad Placement ID` must match a placement in the MN7 Store AdMob Config.
 
 ---
 
-## 6. Permanent skins / characters / colors
+# 11. Currency OR Ad item
 
-For an item that should remain owned after purchase:
+Use this when the player can obtain an item using currency, an ad, or both.
+
+Configure the routes you want on the item.
+
+Then the Store Features decide which routes are available:
+
+```text
+Coins      = ON → currency route can be used
+Ad Rewards = ON → rewarded-ad route can be used
+```
+
+If a route's feature is OFF, that route is not available.
+
+---
+
+# 12. IAP item
+
+Use this when the player buys the item with a platform store purchase.
+
+Set:
+
+```text
+Purchase Type = IAP
+IAP Product ID = your_exact_product_id
+```
+
+Make sure:
+
+```text
+IAP = ON
+```
+
+The product ID in MN7 Store must exactly match the product ID configured in Google Play / App Store / the target platform.
+
+### IAP setup
+
+1. Install/enable Unity In-App Purchasing.
+2. Set `IAP = ON`.
+3. Configure the product in the platform store.
+4. Put the exact product ID on the MN7 Store item.
+5. Configure the MN7 Store Unity IAP provider.
+6. Initialize the IAP system.
+7. Test on a real device using the platform's testing system.
+
+If the game does not use IAP:
+
+```text
+IAP = OFF
+```
+
+You do not need the IAP provider for that game.
+
+---
+
+# 13. Skins, characters and colors
+
+For something that should stay owned after purchase, use:
 
 ```text
 Ownership Type     = Permanent
@@ -144,13 +368,13 @@ Selectable         = ON
 Selection Group ID = CharacterSkin
 ```
 
-A purchasable permanent selectable item must reward itself:
+A purchasable permanent selectable item should reward itself:
 
 ```text
 Rewards → Size = 1
-Reward Type   = Item
-Item ID       = exact same item ID
-Quantity      = 1
+Reward Type    = Item
+Item ID        = same item ID
+Quantity       = 1
 ```
 
 Example:
@@ -159,49 +383,74 @@ Example:
 blue_skin → blue_skin × 1
 ```
 
-This produces:
+The normal flow becomes:
 
 ```text
 Not owned → BUY
-Purchase → SELECT
-Select → SELECTED
+Purchased → SELECT
+Selected  → SELECTED
 ```
 
-For a starting item:
+For a default/free starting skin:
 
 ```text
 Default Owned    = ON
 Default Selected = ON
 ```
 
-Only one item in a selection group should be Default Selected.
+Only one item in the same selection group should normally be the default selected item.
 
 ---
 
-## 7. Store Features
+# 14. Reward items and currency
 
-On `MN7StoreManager` configure only what the game actually uses:
+Rewards are configured on the Store Item.
+
+You can reward items and, when Coins are enabled, currency.
+
+Examples:
 
 ```text
-Free Items = ON/OFF
-Ad Rewards = ON/OFF
-Coins      = ON/OFF
-IAP        = ON/OFF
+Item reward:
+Item ID  = blue_skin
+Quantity = 1
 ```
 
-Disabled features do not initialize their managers. Their purchase routes are unavailable and configuration warnings/errors explain what needs attention.
+```text
+Currency reward:
+Currency ID = soft_currency
+Amount      = 100
+```
+
+If `Coins = OFF`, do not configure currency rewards for the store.
 
 ---
 
-## 8. AdMob
+# 15. Rewarded Ads / AdMob setup
 
-Only add/configure the AdMob provider when **Ad Rewards** is enabled.
+Only do this section if:
 
-Create:
+```text
+Ad Rewards = ON
+```
 
-**Create → MN7 Store → AdMob Config**
+## Required SDK
 
-For each rewarded placement configure:
+Install the **Google Mobile Ads Unity SDK** in the game.
+
+The SDK is separate from MN7 Store.
+
+## AdMob App ID
+
+Configure the game's AdMob **App ID** in the Google Mobile Ads plugin settings.
+
+This is different from an Ad Unit ID.
+
+## MN7 Store AdMob Config
+
+Create/configure an MN7 Store AdMob Config.
+
+For each rewarded placement set:
 
 ```text
 Placement ID
@@ -209,72 +458,123 @@ Android Ad Unit ID
 iOS Ad Unit ID
 ```
 
-The Store Item's `Ad Placement ID` must exactly match an AdMob Config placement.
+Example:
 
-MN7 Store validates duplicate/empty placements and validates the platform ad unit ID at runtime.
+```text
+Placement ID       = store_reward
+Android Ad Unit ID = your Android rewarded ID
+iOS Ad Unit ID     = your iOS rewarded ID
+```
 
-The Google Mobile Ads SDK also requires the game's **AdMob App ID** in the Google Mobile Ads plugin settings. The App ID is separate from the MN7 Store rewarded placement IDs.
+Then an item using ads must have:
 
-Use test ads/test devices during development and production IDs only for release builds.
+```text
+Ad Placement ID = store_reward
+```
+
+The names must match exactly.
+
+### Important
+
+- Use test ads/test devices while developing.
+- Use production Ad Unit IDs only for release builds.
+- Do not put one game's production AdMob IDs into another game.
+- The MN7 Store package should remain reusable; each game supplies its own AdMob configuration.
+
+If the game does not use ads:
+
+```text
+Ad Rewards = OFF
+```
+
+No AdMob configuration is needed for the store.
 
 ---
 
-## 9. IAP
+# 16. IAP setup in simple terms
 
-If IAP is enabled:
+Only do this section if:
 
-1. Set `IAP = ON`.
-2. Give every IAP item an exact product ID.
-3. Configure the platform store product.
-4. Register the game's Unity IAP provider.
-5. Initialize IAP after the provider is configured.
-6. Test purchases/restores on a real device.
+```text
+IAP = ON
+```
 
-The validator detects empty and duplicate IAP product IDs.
+MN7 Store does not create your Google Play/App Store products for you.
 
-If IAP is not used, keep it OFF and do not configure IAP items/provider.
+You create the product in the platform store first, for example:
+
+```text
+Platform product ID = remove_ads
+```
+
+Then use exactly the same ID in the MN7 Store item:
+
+```text
+IAP Product ID = remove_ads
+```
+
+The IDs must match exactly.
+
+MN7 Store handles the store purchase flow through its IAP provider, while the platform handles the actual payment.
+
+Test IAP with the platform's official test account/test track/sandbox setup before release.
 
 ---
 
-## 10. Store UI
+# 17. Store UI
 
-`MN7StorePanel.prefab` contains the editable UI.
+The main reusable UI prefabs are in:
 
-The runtime creates item cards from Store Config and creates category buttons from Store Config.
+`Assets/MN7Store/Prefabs/`
 
-You can edit:
+Important prefabs:
 
-- Store Panel position/size
-- Category Bar position/size
-- Category button visuals
-- Item card visuals
+```text
+MN7StoreSystem.prefab
+MN7StorePanel.prefab
+MN7StoreCategoryBar.prefab
+MN7StoreCategoryButton.prefab
+MN7StoreItem.prefab
+MN7StoreItemActions.prefab
+```
+
+You can edit the prefabs to match your game's design:
+
+- Backgrounds
+- Icons
 - Fonts
-- Sprites
-- Grid size/spacing
-- Action button artwork
+- Text sizes
+- Buttons
+- Item card layout
+- Category button design
+- Grid spacing
+- Store panel size
 
-Do not manually create store item cards under Content.
+The store creates item cards and category buttons from your Store Config at runtime.
 
-The shared action buttons are bound by code. Their Unity `On Click()` lists intentionally do not need manually assigned functions.
+**Do not manually create one item card for every store item.**
 
-The Store UI also validates its required Item Container, Grid, Content Size Fitter, Item Prefab and Category Bar references.
+The action buttons are connected by MN7 Store code at runtime. You normally do not need to add functions to their Unity `On Click()` events.
 
 ---
 
-## 11. Connect the selected item to the actual game
+# 18. Connect selected skins/characters to your game
 
-MN7 Store does not assume how a game's character/skin system works.
+MN7 Store manages which item is selected. Your game decides how that selected item changes the actual character/visual.
 
-For a UI sprite, add `MN7SelectedSpriteApplier` to the game's target object and set:
+For a UI Image or 2D SpriteRenderer, you can use:
+
+`MN7SelectedSpriteApplier`
+
+Set the same selection group, for example:
 
 ```text
 Selection Group ID = CharacterSkin
-Target Image       = game's Image
 ```
 
-For a 2D SpriteRenderer, set the SpriteRenderer target.
+For a 3D game, your own game code can read the selected item and apply the correct model/material/visual.
 
-For a 3D game, the game can read the selected item and apply its own model/material/visual logic:
+Example:
 
 ```csharp
 MN7StoreManager.Instance.Selection.GetSelectedItem("CharacterSkin");
@@ -282,122 +582,287 @@ MN7StoreManager.Instance.Selection.GetSelectedItem("CharacterSkin");
 
 ---
 
-## 12. Validation before shipping
+# 19. Validate the store before testing
 
-Select `MN7StoreManager` and use:
+After configuration:
 
-**Inspector → ⋮ → Validate Store Config**
+1. Select `MN7StoreSystem` in the Hierarchy.
+2. On `MN7StoreManager`, open the component menu `⋮`.
+3. Select **Validate Store Config**.
+4. Fix every red error.
 
-Fix every red error before shipping.
+The validator checks things such as:
 
-The validator checks, among other things:
-
-- Game ID/save namespace
-- duplicate IDs
-- currencies
-- categories
-- item references
-- rewards
-- permanent selectable ownership
-- selection defaults
-- currency routes
-- rewarded-ad routes
+- Game ID
+- Duplicate IDs
+- Currency setup
+- Categories
+- Item references
+- Rewards
+- Selection setup
+- Currency purchase routes
+- Ad routes
 - IAP product IDs
-- disabled feature conflicts
+- Disabled-feature conflicts
 
-Then use:
-
-**Run Runtime Diagnostics**
-
-Runtime diagnostics are feature-aware: disabled Coins/Ads/IAP are not incorrectly reported as missing managers.
+Warnings may be acceptable depending on the game, but **red errors should be fixed before release**.
 
 ---
 
-## 13. Safe reset for development
+# 20. Run Runtime Diagnostics
 
-Store reset is intentionally Editor-only.
+Press **Play** and wait for MN7 Store to initialize.
 
-Use:
+Then on `MN7StoreManager`:
 
-**MN7StoreManager → Inspector → ⋮ → Reset Store Data**
+**Component menu `⋮` → Run Runtime Diagnostics**
 
-It resets MN7 Store data for the configured namespace. It does **not** call `PlayerPrefs.DeleteAll()` and therefore does not erase unrelated game data.
+This checks that the runtime setup is working.
 
----
-
-## 14. Crash-safe transactions
-
-Local currency purchases persist a transaction before the debit and use an idempotent payment operation ID.
-
-If the app stops after the debit but before `PaymentCommitted`, startup recovery can recognize the completed payment operation and continue reward processing.
-
-If the payment operation was never recorded, recovery does not charge the player later.
-
-Reward operations are also idempotent, preventing duplicate rewards during recovery.
-
-This is local crash-window protection. PlayerPrefs is not a secure/server-authoritative economy.
+It understands disabled features, so a game with Coins OFF does not need a Currency manager and a game with Ads OFF does not need an Ad manager.
 
 ---
 
-## 15. Public API guidance
+# 21. Test the features you enabled
 
-Use high-level purchase APIs for store purchases:
+Test only the systems used by the game.
+
+### If Free Items are ON
+
+- Free item purchase
+- Item ownership
+- Store refresh
+
+### If Coins are ON
+
+- Enough coins
+- Not enough coins
+- Successful purchase
+- Balance after purchase
+- Balance after restarting the game
+
+### If Ads are ON
+
+- Ad loads
+- Successful rewarded ad
+- Ad not ready
+- Ad failure
+- Reward is granted once
+
+### If IAP is ON
+
+- Successful purchase
+- Pending purchase
+- Failed purchase
+- Restore/recovery
+- Item is granted once
+
+### If selectable items are used
+
+- Purchase item
+- Select item
+- Selected state
+- Restart game
+- Confirm selection remains
+
+---
+
+# 22. Reset store data during development
+
+If you need to start the store again from its defaults, use:
+
+**MN7StoreManager → component menu `⋮` → Reset Store Data**
+
+This is an **Editor-only** development feature.
+
+It resets MN7 Store data for the current game's store namespace.
+
+It does **not** use `PlayerPrefs.DeleteAll()`, so it does not intentionally erase unrelated game PlayerPrefs.
+
+Do not use this as a player-facing reset button in a released game.
+
+---
+
+# 23. Important: what belongs to MN7 Store and what belongs to the game?
+
+## MN7 Store provides
+
+- Store logic
+- Purchase flow
+- Currency handling
+- Inventory handling
+- Selection handling
+- Reward handling
+- Transaction/recovery handling
+- Store UI
+- Category system
+- Optional Ads integration
+- Optional IAP integration
+- Validation and diagnostics
+
+## The game provides
+
+- Its own Store Config
+- Its own Game ID
+- Its own items
+- Its own currencies
+- Its own categories
+- Its own artwork
+- Its own AdMob App ID / Ad Unit IDs
+- Its own IAP product IDs
+- Its own game-specific character/skin application logic
+
+This is what makes MN7 Store reusable.
+
+---
+
+# 24. Quick setup examples
+
+## Game A — Ads only
 
 ```text
-MN7StoreManager.Instance.Purchases
+Free Items = ON
+Ad Rewards = ON
+Coins      = OFF
+IAP        = OFF
 ```
 
-Do not implement your own purchase flow by manually changing inventory/currency and then creating a fake completed transaction.
+Needs:
 
-Use Currency/Inventory APIs for legitimate game systems that award or consume resources, and use the Purchase Manager for store purchases so transaction/reward protection remains intact.
+```text
+Google Mobile Ads SDK
+AdMob App ID
+Rewarded Ad Unit IDs
+```
+
+Does not need:
+
+```text
+Currency setup
+Unity IAP
+```
+
+## Game B — Coins + Ads
+
+```text
+Free Items = ON
+Ad Rewards = ON
+Coins      = ON
+IAP        = OFF
+```
+
+Needs:
+
+```text
+Currency Data
+Google Mobile Ads SDK
+AdMob configuration
+```
+
+## Game C — Coins + Ads + IAP
+
+```text
+Free Items = ON
+Ad Rewards = ON
+Coins      = ON
+IAP        = ON
+```
+
+Needs:
+
+```text
+Currency Data
+Google Mobile Ads SDK
+AdMob configuration
+Unity IAP
+Platform store products
+```
+
+## Game D — IAP only
+
+```text
+Free Items = OFF
+Ad Rewards = OFF
+Coins      = OFF
+IAP        = ON
+```
+
+Needs:
+
+```text
+Unity IAP
+Platform store products
+```
+
+Does not need:
+
+```text
+AdMob SDK
+AdMob configuration
+```
 
 ---
 
-## 16. Final mobile release checklist
+# 25. Final release checklist
 
-Before shipping a game using MN7 Store:
+Before publishing a game using MN7 Store:
 
 ```text
 [ ] Unique Game ID
-[ ] Store Config assigned
-[ ] Currency IDs valid
-[ ] Categories valid
-[ ] Item IDs unique
-[ ] Rewards valid
-[ ] Permanent selectable items reward themselves ×1
-[ ] Selection defaults valid
-[ ] Features match the game's purchase routes
-[ ] AdMob placements match item Placement IDs
-[ ] Android/iOS ad unit IDs configured for the target platform
-[ ] AdMob App ID configured in Google Mobile Ads settings
-[ ] IAP product IDs exact and unique (if used)
+[ ] Correct Store Config assigned
+[ ] Features match the game
+[ ] Currency setup checked (if Coins are ON)
+[ ] Categories checked
+[ ] Item IDs are unique
+[ ] Rewards are valid
+[ ] Selectable items tested (if used)
+[ ] AdMob configured (if Ads are ON)
+[ ] AdMob App ID configured
+[ ] Ad Unit IDs configured for the target platform
+[ ] IAP configured (if IAP is ON)
+[ ] IAP product IDs exactly match the platform store
+[ ] Validate Store Config passes
 [ ] Runtime Diagnostics pass
-[ ] Store UI references pass
-[ ] Store persists after app restart
-[ ] Coin purchase tested
-[ ] Free purchase tested
-[ ] Rewarded-ad purchase tested
-[ ] Selection tested
-[ ] Category filtering tested
-[ ] Insufficient currency tested
-[ ] Ad-not-ready/failure tested
-[ ] IAP purchase/restore tested if enabled
-[ ] Android real-device build tested
-[ ] iOS real-device build tested if supported
+[ ] Purchase flows tested
+[ ] App restart/persistence tested
+[ ] Physical Android device tested
+[ ] Physical iOS device tested if the game supports iOS
 ```
 
 ---
 
-## Important reusable-asset rule
+# 26. One important rule
 
-**MN7 Store provides the reusable system. Each game provides its own data and platform configuration.**
+**Do not put game-specific production settings inside the reusable MN7 Store asset.**
 
-Never ship another game's production:
+Never reuse another game's:
 
 - Game ID
-- save data
+- Store save data
 - AdMob App ID
 - AdMob Ad Unit IDs
 - IAP product IDs
 
-into a different game.
+Each game should have its own configuration.
+
+---
+
+## In short
+
+```text
+1. Add MN7StoreSystem
+2. Add MN7StorePanel
+3. Create Store Config
+4. Give the game a unique Game ID
+5. Turn ON the features the game needs
+6. Add currencies/categories/items
+7. Configure AdMob only if Ads are used
+8. Configure Unity IAP only if IAP is used
+9. Validate
+10. Run diagnostics
+11. Test
+12. Build and release
+```
+
+**MN7 Store = reusable system.**
+**Each game = its own data + its own platform configuration.**

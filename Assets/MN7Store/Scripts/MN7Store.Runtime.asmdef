@@ -2,8 +2,7 @@
   "name": "MN7Store.Runtime",
   "rootNamespace": "MN7.Store",
   "references": [
-    "Unity.TextMeshPro",
-    "Unity.Purchasing"
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

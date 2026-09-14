@@ -1,0 +1,25 @@
+{
+  "name": "MN7Store.IAP",
+  "rootNamespace": "MN7.Store",
+  "references": [
+    "MN7Store.Runtime",
+    "Unity.Purchasing"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "MN7_STORE_IAP"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.purchasing",
+      "expression": "5.0",
+      "define": "MN7_STORE_IAP"
+    }
+  ],
+  "noEngineReferences": false
+}

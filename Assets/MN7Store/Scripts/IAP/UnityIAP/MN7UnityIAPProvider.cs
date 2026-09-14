@@ -50,9 +50,6 @@ namespace MN7.Store
                 return;
             }
             EnqueueCallback(product.definition.id, onResult);
-            // Unity IAP 5.4.x exposes PurchaseProduct(string) for a single product.
-            // StoreController.Purchase(Product) is not a valid IAP 5.4.x overload because
-            // that API expects a Cart, not a Product.
             storeController.PurchaseProduct(product.definition.id);
         }
 

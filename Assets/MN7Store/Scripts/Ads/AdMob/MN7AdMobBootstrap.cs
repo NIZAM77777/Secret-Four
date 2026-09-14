@@ -31,13 +31,10 @@ namespace MN7.Store
                 return;
             }
 
-            if (!ValidateConfig(store, adMobConfig))
-                return;
+            if (!ValidateConfig(store, adMobConfig)) return;
 
             provider = new MN7AdMobProvider(adMobConfig);
-            if (!RegisterProvider(store))
-                return;
-
+            if (!RegisterProvider(store)) return;
             provider.Initialize();
         }
 
