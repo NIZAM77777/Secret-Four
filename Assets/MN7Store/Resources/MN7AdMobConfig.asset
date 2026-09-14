@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f680a1507ceb83409dc818421c2e438, type: 3}
   m_Name: MN7AdMobConfig
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7AdMobConfig
-  rewardedPlacements: []
+  rewardedPlacements:
+  - placementId: store_reward
+    androidAdUnitId: ca-app-pub-3940256099942544/5224354917
+    iosAdUnitId: ca-app-pub-3940256099942544/1712485313
