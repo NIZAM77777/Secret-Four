@@ -1,14 +1,7 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class MainMenuManager : MonoBehaviour
 {
-    private const string StoreSceneName = "MN7StoreSystem";
-    private const string StorePanelName = "StorePanel";
-    private const string StoreButtonName = "StoreButton";
-
     [Header("Scenes")]
     [SerializeField]
     private string gameSceneName = "Game";
@@ -26,142 +19,74 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private GameObject playInRoomMenuPanel;
 
+    [SerializeField]
+    private GameObject storePanel;
+
     [Header("Human Setup")]
     [SerializeField]
     private HumanSetupManager humanSetupManager;
 
-    private Button storeButton;
-    private AsyncOperation storeSceneLoadOperation;
-    private bool showStoreWhenLoaded;
-
     private void Awake()
     {
-        AutoWireStoreButton();
-        EnsureStoreSystemLoaded(false);
+        ResolveStorePanel();
+        CloseStore();
     }
 
-    private void OnDestroy()
+    private void ResolveStorePanel()
     {
-        if (storeButton != null)
-            storeButton.onClick.RemoveListener(OpenStore);
-    }
+        if (storePanel != null)
+            return;
 
-    private void AutoWireStoreButton()
-    {
-        GameObject storeButtonObject = GameObject.Find(StoreButtonName);
-        if (storeButtonObject == null)
+        GameObject found = GameObject.Find("StorePanel");
+        if (found != null)
         {
-            Debug.LogWarning("[Secret Four] StoreButton was not found in the Main Menu.");
+            storePanel = found;
             return;
         }
 
-        storeButton = storeButtonObject.GetComponent<Button>();
-        if (storeButton == null)
-        {
-            Debug.LogError("[Secret Four] StoreButton exists but has no Button component.");
-            return;
-        }
-
-        storeButton.onClick.RemoveListener(OpenStore);
-        storeButton.onClick.AddListener(OpenStore);
+        Debug.LogWarning("[Secret Four] StorePanel was not found in the Main Menu scene.");
     }
 
     // =========================
     // STORE
     // =========================
 
+    /// <summary>Opens the Store panel from the Main Menu.</summary>
     public void OpenStore()
     {
-        EnsureStoreSystemLoaded(true);
+        ResolveStorePanel();
+
+        if (storePanel == null)
+        {
+            Debug.LogError("[Secret Four] Cannot open Store: StorePanel is missing.");
+            return;
+        }
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(true);
+
+        if (humanSetupPanel != null)
+            humanSetupPanel.SetActive(false);
+
+        if (botPanel != null)
+            botPanel.SetActive(false);
+
+        if (playInRoomMenuPanel != null)
+            playInRoomMenuPanel.SetActive(false);
+
+        storePanel.SetActive(true);
     }
 
+    /// <summary>Closes the Store panel and returns to the Main Menu.</summary>
     public void CloseStore()
     {
-        Scene storeScene = SceneManager.GetSceneByName(StoreSceneName);
-        if (storeScene.IsValid() && storeScene.isLoaded)
-            SetStorePanelVisible(storeScene, false);
-    }
+        ResolveStorePanel();
 
-    private void EnsureStoreSystemLoaded(bool showWhenReady)
-    {
-        showStoreWhenLoaded |= showWhenReady;
+        if (storePanel != null)
+            storePanel.SetActive(false);
 
-        Scene storeScene = SceneManager.GetSceneByName(StoreSceneName);
-        if (storeScene.IsValid() && storeScene.isLoaded)
-        {
-            RemoveStoreSceneEventSystems(storeScene);
-            SetStorePanelVisible(storeScene, showStoreWhenLoaded);
-            showStoreWhenLoaded = false;
-            return;
-        }
-
-        if (storeSceneLoadOperation != null && !storeSceneLoadOperation.isDone)
-            return;
-
-        storeSceneLoadOperation = SceneManager.LoadSceneAsync(
-            StoreSceneName,
-            LoadSceneMode.Additive
-        );
-
-        storeSceneLoadOperation.completed += _ =>
-        {
-            storeSceneLoadOperation = null;
-
-            Scene loadedStoreScene = SceneManager.GetSceneByName(StoreSceneName);
-            RemoveStoreSceneEventSystems(loadedStoreScene);
-            SetStorePanelVisible(loadedStoreScene, showStoreWhenLoaded);
-            showStoreWhenLoaded = false;
-        };
-    }
-
-    private static void SetStorePanelVisible(Scene storeScene, bool visible)
-    {
-        if (!storeScene.IsValid() || !storeScene.isLoaded)
-            return;
-
-        foreach (GameObject root in storeScene.GetRootGameObjects())
-        {
-            Transform panel = FindChildRecursive(root.transform, StorePanelName);
-            if (panel != null)
-            {
-                panel.gameObject.SetActive(visible);
-                return;
-            }
-        }
-    }
-
-    private static Transform FindChildRecursive(Transform parent, string targetName)
-    {
-        if (parent == null)
-            return null;
-
-        if (parent.name == targetName)
-            return parent;
-
-        foreach (Transform child in parent)
-        {
-            Transform result = FindChildRecursive(child, targetName);
-            if (result != null)
-                return result;
-        }
-
-        return null;
-    }
-
-    private static void RemoveStoreSceneEventSystems(Scene storeScene)
-    {
-        if (!storeScene.IsValid() || !storeScene.isLoaded)
-            return;
-
-        foreach (GameObject root in storeScene.GetRootGameObjects())
-        {
-            EventSystem[] eventSystems = root.GetComponentsInChildren<EventSystem>(true);
-            foreach (EventSystem eventSystem in eventSystems)
-            {
-                if (eventSystem != null)
-                    UnityEngine.Object.Destroy(eventSystem.gameObject);
-            }
-        }
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(true);
     }
 
     // =========================
@@ -279,7 +204,9 @@ public class MainMenuManager : MonoBehaviour
             return;
         }
 
-        CloseStore();
-        SceneManager.LoadScene(gameSceneName);
+        if (storePanel != null)
+            storePanel.SetActive(false);
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(gameSceneName);
     }
 }
