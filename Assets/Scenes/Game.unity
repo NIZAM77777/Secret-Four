@@ -562,6 +562,8 @@ MonoBehaviour:
   playerYNameText: {fileID: 1861807245}
   playerXImage: {fileID: 642434340}
   playerYImage: {fileID: 1104386529}
+  playerXDefaultSprite: {fileID: -3338749442709606003, guid: 72c241448c635e3478ec0f927c2b2dcf, type: 3}
+  playerYDefaultSprite: {fileID: 5848064539680731454, guid: 72c241448c635e3478ec0f927c2b2dcf, type: 3}
   turnText: {fileID: 1709459267}
   turnManager: {fileID: 1228661221}
   coinConfig: {fileID: 11400000, guid: f6bdd82f16b49e646933d8c1200ae75d, type: 2}
@@ -2264,7 +2266,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -3338749442709606003, guid: 72c241448c635e3478ec0f927c2b2dcf, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
   m_Name: DefaultY
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
-  itemId: coin1
+  itemId: coin2
   displayName: Default Y
   description: Default Y Secret Four player skin.
   icon: {fileID: 5848064539680731454, guid: 72c241448c635e3478ec0f927c2b2dcf, type: 3}
   purchaseType: 0
   categoryIds:
-  - X Coins
-  selectionGroupId: Opposite
+  - Y Coins
+  selectionGroupId: OPPOSITE
   selectable: 1
   defaultOwned: 1
   defaultSelected: 1
@@ -28,6 +28,6 @@ MonoBehaviour:
   requiredAds: 1
   adPlacementId: store_reward
   rewards:
-  - itemId: coin1
+  - itemId: coin2
     itemQuantity: 1
   ownershipType: 0

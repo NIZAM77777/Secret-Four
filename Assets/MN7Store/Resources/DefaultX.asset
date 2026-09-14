@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
   m_Name: DefaultX
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
-  itemId: coin2
+  itemId: coin1
   displayName: Default X
   description: 
   icon: {fileID: -3338749442709606003, guid: 72c241448c635e3478ec0f927c2b2dcf, type: 3}
   purchaseType: 0
   categoryIds:
-  - Y Coins
+  - X Coins
   selectionGroupId: PLAYER
   selectable: 1
   defaultOwned: 1
@@ -28,6 +28,6 @@ MonoBehaviour:
   requiredAds: 1
   adPlacementId: store_reward
   rewards:
-  - itemId: coin2
+  - itemId: coin1
     itemQuantity: 1
   ownershipType: 0
