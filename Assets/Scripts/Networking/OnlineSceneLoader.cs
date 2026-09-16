@@ -2,144 +2,109 @@ using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
 
-
 public class OnlineSceneLoader : MonoBehaviour
 {
     [Header("Scene Settings")]
-
-    [SerializeField]
-    private string gameSceneName = "GameScene";
-
+    [SerializeField] private string gameSceneName = "Game";
 
     private bool gameStarting;
-
 
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
     }
 
-
     private void Start()
     {
-        NetworkManager networkManager =
-            NetworkManager.Singleton;
+        NetworkManager networkManager = NetworkManager.Singleton;
 
         if (networkManager == null)
         {
-            Debug.LogError(
-                "OnlineSceneLoader: NetworkManager not found."
-            );
-
+            Debug.LogError("OnlineSceneLoader: NetworkManager not found.");
             return;
         }
 
-        networkManager.OnClientConnectedCallback +=
-            OnClientConnected;
-
-        networkManager.OnClientDisconnectCallback +=
-            OnClientDisconnected;
+        networkManager.OnClientConnectedCallback += OnClientConnected;
+        networkManager.OnClientDisconnectCallback += OnClientDisconnected;
     }
-
 
     private void OnDestroy()
     {
-        NetworkManager networkManager =
-            NetworkManager.Singleton;
+        NetworkManager networkManager = NetworkManager.Singleton;
 
         if (networkManager == null)
-        {
             return;
-        }
 
-        networkManager.OnClientConnectedCallback -=
-            OnClientConnected;
-
-        networkManager.OnClientDisconnectCallback -=
-            OnClientDisconnected;
+        networkManager.OnClientConnectedCallback -= OnClientConnected;
+        networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
     }
 
-
-    private void OnClientConnected(
-        ulong clientId)
+    private void OnClientConnected(ulong clientId)
     {
-        NetworkManager networkManager =
-            NetworkManager.Singleton;
+        NetworkManager networkManager = NetworkManager.Singleton;
 
-        if (networkManager == null ||
-            !networkManager.IsHost)
-        {
+        if (networkManager == null || !networkManager.IsHost)
             return;
-        }
 
-        // Ignore the Host itself.
+        // The host is already connected; only the second player starts the game.
         if (clientId == networkManager.LocalClientId)
+            return;
+
+        // Never start two scene transitions for the same room.
+        if (gameStarting)
+            return;
+
+        if (!networkManager.IsListening)
         {
+            Debug.LogWarning("OnlineSceneLoader: Network is no longer listening.");
             return;
         }
 
-        if (gameStarting)
+        if (networkManager.SceneManager == null)
         {
+            Debug.LogError("OnlineSceneLoader: Network SceneManager is missing.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(gameSceneName))
+        {
+            Debug.LogError("OnlineSceneLoader: Game scene name is missing.");
             return;
         }
 
         gameStarting = true;
 
-        Debug.Log(
-            "Player 2 connected!"
-        );
-
-        Debug.Log(
-            "Loading GameScene for both players..."
-        );
-
-        if (GameSession.Instance != null)
+        if (GameSession.Instance == null)
         {
-            GameSession.Instance.StartOnlineRoomGame();
-        }
-        else
-        {
-            Debug.LogError(
-                "OnlineSceneLoader: GameSession is missing."
-            );
-
+            Debug.LogError("OnlineSceneLoader: GameSession is missing.");
             gameStarting = false;
             return;
         }
+
+        Debug.Log("Player 2 connected! Starting Secret Four game...");
+
+        GameSession.Instance.StartOnlineRoomGame();
 
         networkManager.SceneManager.LoadScene(
             gameSceneName,
             LoadSceneMode.Single
         );
 
-        // This loader only exists to start the networked
-        // scene transition. A fresh instance is created
-        // with the next Main Menu scene, preventing stale
-        // callbacks/state from surviving into another room.
+        // This helper is only needed while starting the network scene.
         Destroy(gameObject);
     }
 
-
-    private void OnClientDisconnected(
-        ulong clientId)
+    private void OnClientDisconnected(ulong clientId)
     {
-        NetworkManager networkManager =
-            NetworkManager.Singleton;
+        NetworkManager networkManager = NetworkManager.Singleton;
 
-        if (networkManager == null ||
-            !networkManager.IsHost)
-        {
+        if (networkManager == null || !networkManager.IsHost)
             return;
-        }
 
-        // If the waiting client leaves before the game
-        // starts, allow the host to create another room.
-        if (!gameStarting &&
-            clientId != NetworkManager.ServerClientId)
+        if (!gameStarting && clientId != NetworkManager.ServerClientId)
         {
-            Debug.Log(
-                "Waiting client disconnected. Online scene loader is ready again."
-            );
+            Debug.Log("Waiting client disconnected. Ready for another player.");
+            gameStarting = false;
         }
     }
 }
