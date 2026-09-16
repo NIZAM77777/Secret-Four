@@ -1,37 +1,31 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using TMPro;
 
 public class DisconnectUIManager : MonoBehaviour
 {
     [Header("Disconnect Panel")]
-
-    [SerializeField]
-    private GameObject disconnectPanel;
-
-    [SerializeField]
-    private TMP_Text titleText;
-
-    [SerializeField]
-    private TMP_Text messageText;
+    [SerializeField] private GameObject disconnectPanel;
+    [SerializeField] private TMP_Text titleText;
+    [SerializeField] private TMP_Text messageText;
 
     [Header("Scene")]
-
-    [SerializeField]
-    private string mainMenuSceneName = "Mainmenu";
+    [SerializeField] private string mainMenuSceneName = "Mainmenu";
 
     private bool returningToMainMenu;
+    private bool disconnectShown;
 
-
-    public void ShowDisconnect(
-        string title,
-        string message)
+    public void ShowDisconnect(string title, string message)
     {
-        Debug.Log(
-            $"DISCONNECT: {title} | {message}"
-        );
+        // Do not show a network-disconnect screen after the player
+        // has intentionally chosen to leave the match.
+        if (returningToMainMenu || disconnectShown)
+            return;
+
+        disconnectShown = true;
+
+        Debug.Log($"DISCONNECT: {title} | {message}");
 
         if (disconnectPanel != null)
             disconnectPanel.SetActive(true);
@@ -43,7 +37,6 @@ public class DisconnectUIManager : MonoBehaviour
             messageText.text = message;
     }
 
-
     public void ReturnToMainMenu()
     {
         if (returningToMainMenu)
@@ -53,7 +46,6 @@ public class DisconnectUIManager : MonoBehaviour
         StartCoroutine(ReturnToMainMenuAfterShutdown());
     }
 
-
     private IEnumerator ReturnToMainMenuAfterShutdown()
     {
         Unity.Netcode.NetworkManager networkManager =
@@ -61,8 +53,7 @@ public class DisconnectUIManager : MonoBehaviour
 
         if (networkManager != null)
         {
-            if (networkManager.IsListening ||
-                networkManager.ShutdownInProgress)
+            if (networkManager.IsListening || networkManager.ShutdownInProgress)
             {
                 networkManager.Shutdown(true);
 
@@ -75,9 +66,7 @@ public class DisconnectUIManager : MonoBehaviour
             }
 
             if (networkManager != null)
-            {
                 Destroy(networkManager.gameObject);
-            }
         }
 
         SceneManager.LoadScene(mainMenuSceneName);
