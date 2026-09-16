@@ -49,7 +49,18 @@ public class NetworkPlayAgainManager : NetworkBehaviour
         ulong playerId = rpcParams.Receive.SenderClientId;
 
         // Only the two players in this match may request a rematch.
-        if (!NetworkManager.ConnectedClientsIds.Contains(playerId))
+        bool playerIsConnected = false;
+
+        foreach (ulong connectedClientId in NetworkManager.ConnectedClientsIds)
+        {
+            if (connectedClientId == playerId)
+            {
+                playerIsConnected = true;
+                break;
+            }
+        }
+
+        if (!playerIsConnected)
         {
             Debug.LogWarning($"Rejected play-again request from unknown client {playerId}.");
             return;
