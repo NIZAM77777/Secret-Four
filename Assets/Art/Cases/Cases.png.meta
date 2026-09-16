@@ -1,0 +1,335 @@
+fileFormatVersion: 2
+guid: 30d79a95e7a616c4eb108ae4d7352464
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2358686759142164845
+    second: Cases_0
+  - first:
+      213: 4380789623916515115
+    second: Cases_1
+  - first:
+      213: 8979238428575599574
+    second: Cases_2
+  - first:
+      213: -3406744587645152847
+    second: Cases_3
+  - first:
+      213: 6846836887140382467
+    second: Cases_4
+  - first:
+      213: 3889142424423384463
+    second: Cases_5
+  - first:
+      213: 3719621634940767118
+    second: Cases_6
+  - first:
+      213: -7567378488873699006
+    second: Cases_7
+  - first:
+      213: -8548524922369007807
+    second: Cases_8
+  - first:
+      213: 8185481753582668646
+    second: Cases_9
+  - first:
+      213: 823704870948759831
+    second: Cases_10
+  - first:
+      213: 1974940724926611181
+    second: Cases_11
+  - first:
+      213: 7282734809419226262
+    second: Cases_12
+  - first:
+      213: -920061695535384179
+    second: Cases_13
+  - first:
+      213: 2509379314806402676
+    second: Cases_14
+  - first:
+      213: 1786511964763631989
+    second: Cases_15
+  - first:
+      213: -4278290817419325251
+    second: Cases_16
+  - first:
+      213: 5225792385645867833
+    second: Cases_17
+  - first:
+      213: -7516972838066907583
+    second: Cases_18
+  - first:
+      213: -6276386095450865240
+    second: Cases_19
+  - first:
+      213: 2693725301547627452
+    second: Cases_20
+  - first:
+      213: 9191798321127923593
+    second: Cases_21
+  - first:
+      213: -6646571351090624049
+    second: Cases_22
+  - first:
+      213: -8239729038739905384
+    second: Cases_23
+  - first:
+      213: 7193303396937469416
+    second: Cases_24
+  - first:
+      213: 4850274997499979604
+    second: Cases_25
+  - first:
+      213: -3886218968474823408
+    second: Cases_26
+  - first:
+      213: 3083878284811884799
+    second: Cases_27
+  - first:
+      213: -1506379604031159695
+    second: Cases_28
+  - first:
+      213: 2820834157994294078
+    second: Cases_29
+  - first:
+      213: 854752242451298085
+    second: Cases_30
+  - first:
+      213: -1466225498096259507
+    second: Cases_31
+  - first:
+      213: 5904425582808248716
+    second: Cases_32
+  - first:
+      213: 4287827425986828238
+    second: Cases_33
+  - first:
+      213: 7245946691724190823
+    second: Cases_34
+  - first:
+      213: -8481166864426007381
+    second: Cases_35
+  - first:
+      213: 5425527814283202854
+    second: Cases_36
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Cases_0
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 192
+        width: 978
+        height: 370
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 396f9e0b3e2444fd0800000000000000
+      internalID: -2358686759142164845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cases_1
+      rect:
+        serializedVersion: 2
+        x: 1100
+        y: 192
+        width: 980
+        height: 370
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2fc249d3f0bbcc30800000000000000
+      internalID: 4380789623916515115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: c09c0d13899ea2f40b9921c5e2c226b3
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Cases_0: -2358686759142164845
+      Cases_1: 4380789623916515115
+      Cases_10: 823704870948759831
+      Cases_11: 1974940724926611181
+      Cases_12: 7282734809419226262
+      Cases_13: -920061695535384179
+      Cases_14: 2509379314806402676
+      Cases_15: 1786511964763631989
+      Cases_16: -4278290817419325251
+      Cases_17: 5225792385645867833
+      Cases_18: -7516972838066907583
+      Cases_19: -6276386095450865240
+      Cases_2: 8979238428575599574
+      Cases_20: 2693725301547627452
+      Cases_21: 9191798321127923593
+      Cases_22: -6646571351090624049
+      Cases_23: -8239729038739905384
+      Cases_24: 7193303396937469416
+      Cases_25: 4850274997499979604
+      Cases_26: -3886218968474823408
+      Cases_27: 3083878284811884799
+      Cases_28: -1506379604031159695
+      Cases_29: 2820834157994294078
+      Cases_3: -3406744587645152847
+      Cases_30: 854752242451298085
+      Cases_31: -1466225498096259507
+      Cases_32: 5904425582808248716
+      Cases_33: 4287827425986828238
+      Cases_34: 7245946691724190823
+      Cases_35: -8481166864426007381
+      Cases_36: 5425527814283202854
+      Cases_4: 6846836887140382467
+      Cases_5: 3889142424423384463
+      Cases_6: 3719621634940767118
+      Cases_7: -7567378488873699006
+      Cases_8: -8548524922369007807
+      Cases_9: 8185481753582668646
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

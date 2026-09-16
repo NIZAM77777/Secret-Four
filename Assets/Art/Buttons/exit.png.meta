@@ -1,31 +1,40 @@
 fileFormatVersion: 2
-guid: e382ceb29ffd947448204f9d45276217
+guid: ee950e76b65cb364085db9b6daa68db6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2538948153813613058
-    second: PlayRoom_0
+      213: -4781373940957465942
+    second: exit_0
   - first:
-      213: -2218416260764631095
-    second: PlayRoom_1
+      213: 2577959780943527813
+    second: exit_1
   - first:
-      213: 8605144760663074467
-    second: PlayRoom_2
+      213: -2035945475809686306
+    second: exit_2
   - first:
-      213: 4130159268622358568
-    second: PlayRoom_3
+      213: 4081774691252351251
+    second: exit_3
   - first:
-      213: -339402234440969368
-    second: PlayRoom_4
+      213: -2372692299797196044
+    second: exit_4
   - first:
-      213: -8432318976335737273
-    second: PlayRoom_5
+      213: 846275761093376264
+    second: exit_5
   - first:
-      213: -6282601662375419187
-    second: PlayRoom_6
+      213: 6333474260315182432
+    second: exit_6
   - first:
-      213: 8371085033568376789
-    second: PlayRoom_7
+      213: 4013095146722575819
+    second: exit_7
+  - first:
+      213: -1312372700444214371
+    second: exit_8
+  - first:
+      213: -7868034615966671825
+    second: exit_9
+  - first:
+      213: 1941298915720712020
+    second: exit_10
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -121,7 +130,7 @@ TextureImporter:
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 47
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -147,13 +156,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayRoom_0
+      name: exit_0
       rect:
         serializedVersion: 2
-        x: 44
-        y: 139
-        width: 2086
-        height: 450
+        x: 65
+        y: 123
+        width: 2032
+        height: 505
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,8 +171,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ef54ec42b18d3ccd0800000000000000
-      internalID: -2538948153813613058
+      spriteID: aa2bbe6cbb525adb0800000000000000
+      internalID: -4781373940957465942
       vertices: []
       indices: 
       edges: []
@@ -172,7 +181,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: bac7f4eab64e3c841ab206592071984e
+    spriteID: a46580925a2f0ea4a9c00e7d8b5ab1c7
     internalID: 0
     vertices: []
     indices: 
@@ -182,14 +191,17 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PlayRoom_0: -2538948153813613058
-      PlayRoom_1: -2218416260764631095
-      PlayRoom_2: 8605144760663074467
-      PlayRoom_3: 4130159268622358568
-      PlayRoom_4: -339402234440969368
-      PlayRoom_5: -8432318976335737273
-      PlayRoom_6: -6282601662375419187
-      PlayRoom_7: 8371085033568376789
+      exit_0: -4781373940957465942
+      exit_1: 2577959780943527813
+      exit_10: 1941298915720712020
+      exit_2: -2035945475809686306
+      exit_3: 4081774691252351251
+      exit_4: -2372692299797196044
+      exit_5: 846275761093376264
+      exit_6: 6333474260315182432
+      exit_7: 4013095146722575819
+      exit_8: -1312372700444214371
+      exit_9: -7868034615966671825
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
