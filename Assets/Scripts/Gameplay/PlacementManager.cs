@@ -103,6 +103,10 @@ public class PlacementManager : MonoBehaviour
         GameObject coin = Instantiate(coinPrefab, position, Quaternion.identity, coinParent);
         coin.name = $"{playerType}_Coin_{x}_{y}";
 
+        // Keep the coins visually matched to the reduced mobile board cells.
+        if (boardView != null)
+            coin.transform.localScale *= boardView.BoardVisualScale;
+
         Vector2Int boardPosition = new(x, y);
         coinVisuals[boardPosition] = coin;
 
