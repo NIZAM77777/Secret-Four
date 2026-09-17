@@ -5,17 +5,15 @@ public class BoardView : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private BoardManager boardManager;
-
     [SerializeField] private float cellSize = 1f;
-
     [SerializeField] private GameObject cellPrefab;
 
     [Header("Board Position")]
-    [Tooltip("Moves the entire board view vertically without changing logical board coordinates.")]
-    [SerializeField] private float boardVerticalOffset = 0f;
+    [Tooltip("Moves the entire board view vertically. Positive values move the board upward.")]
+    [SerializeField] private float boardVerticalOffset = 0.7f;
 
     [Header("Store Board Selection")]
-    [Tooltip("Store selection group used for board visuals.")]
+    [Tooltip("Selection group used by Secret Four Store board items.")]
     [SerializeField] private string boardSelectionGroup = "BOARD";
 
     private void Start()
@@ -47,6 +45,13 @@ public class BoardView : MonoBehaviour
         }
 
         Sprite selectedCellSprite = GetSelectedCellSprite();
+        if (selectedCellSprite == null)
+        {
+            Debug.LogError(
+                $"BoardView: No selected Store board sprite found for selection group '{boardSelectionGroup}'. " +
+                "Assign a selectable/default-selected board item in the MN7 Store."
+            );
+        }
 
         for (int y = 0; y < board.Height; y++)
         {
@@ -108,7 +113,10 @@ public class BoardView : MonoBehaviour
         {
             image.sprite = sprite;
             image.enabled = true;
+            return;
         }
+
+        Debug.LogError("BoardView: Cell prefab has no SpriteRenderer or UI Image for Store board visuals.");
     }
 
     private void ClearBoardView()
