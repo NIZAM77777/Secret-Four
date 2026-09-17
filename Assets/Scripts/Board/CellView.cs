@@ -23,16 +23,10 @@ public class CellView : MonoBehaviour
 
     /// <summary>
     /// Applies the visual supplied by the Secret Four Store board selection.
-    /// The Cell prefab's serialized/default sprite is never used as the board design.
+    /// No gameplay/default board sprite is selected here; the Store is the source of truth.
     /// </summary>
     public void ApplyStoreSprite(Sprite sprite)
     {
-        if (spriteRenderer != null)
-            spriteRenderer.enabled = false;
-
-        if (image != null)
-            image.enabled = false;
-
         if (sprite == null)
         {
             Debug.LogWarning($"CellView ({X},{Y}): selected Store board sprite is missing.");
@@ -42,7 +36,6 @@ public class CellView : MonoBehaviour
         if (spriteRenderer != null)
         {
             spriteRenderer.sprite = sprite;
-            spriteRenderer.enabled = true;
             return;
         }
 
