@@ -14,7 +14,7 @@ public class BoardView : MonoBehaviour
     [SerializeField] private float boardVerticalOffset = 0.7f;
 
     [Header("Store Board Selection")]
-    [Tooltip("Selection group used by Secret Four Store board items.")]
+    [Tooltip("Optional selection group used by Secret Four Store board items. If unavailable, the Cell prefab sprite is used.")]
     [SerializeField] private string boardSelectionGroup = "BOARD";
 
     private bool boardCreated;
@@ -57,21 +57,25 @@ public class BoardView : MonoBehaviour
 
     private IEnumerator InitializeWhenReady()
     {
-        // The Store lives across scenes. Wait until it has built its catalog/selection
-        // data before creating cells so the board never falls back to the Cell prefab sprite.
+        // The board must not depend on the Store existing. If Store is present,
+        // wait for it so it can optionally provide a BOARD selection. Otherwise
+        // immediately use the Cell prefab's own sprite.
         while (true)
         {
             MN7StoreManager store = MN7StoreManager.Instance;
 
             if (store == null)
             {
-                yield return null;
-                continue;
+                CreateBoardView();
+                initializationCoroutine = null;
+                yield break;
             }
 
             if (store.State == MN7StoreState.Failed)
             {
-                Debug.LogError("BoardView: MN7 Store failed to initialize. Board cells cannot be created because Store visuals are required.");
+                Debug.LogWarning("BoardView: MN7 Store failed to initialize. Using the Cell prefab sprite as the board visual.");
+                CreateBoardView();
+                initializationCoroutine = null;
                 yield break;
             }
 
@@ -131,15 +135,15 @@ public class BoardView : MonoBehaviour
             return;
         }
 
+        // A BOARD Store item is optional. If none exists, use the sprite already
+        // assigned to the Cell prefab so the board can never become invisible.
         Sprite selectedCellSprite = GetSelectedCellSprite();
-        if (selectedCellSprite == null)
+        Sprite defaultCellSprite = GetDefaultCellSprite();
+        Sprite cellSprite = selectedCellSprite != null ? selectedCellSprite : defaultCellSprite;
+
+        if (cellSprite == null)
         {
-            ClearBoardView();
-            boardCreated = false;
-            Debug.LogError(
-                $"BoardView: No selected Store board sprite found for selection group '{boardSelectionGroup}'. " +
-                "The board will remain empty because Secret Four uses Store board sprites only."
-            );
+            Debug.LogError("BoardView: Neither a Store board sprite nor a default Cell prefab sprite is available.");
             return;
         }
 
@@ -162,11 +166,11 @@ public class BoardView : MonoBehaviour
                 if (cellView != null)
                 {
                     cellView.Initialize(x, y);
-                    cellView.ApplyStoreSprite(selectedCellSprite);
+                    cellView.ApplyStoreSprite(cellSprite);
                 }
                 else
                 {
-                    ApplySpriteToCellObject(cell, selectedCellSprite);
+                    ApplySpriteToCellObject(cell, cellSprite);
                 }
             }
         }
@@ -188,6 +192,19 @@ public class BoardView : MonoBehaviour
         return selectedItem?.icon;
     }
 
+    private Sprite GetDefaultCellSprite()
+    {
+        if (cellPrefab == null)
+            return null;
+
+        SpriteRenderer spriteRenderer = cellPrefab.GetComponentInChildren<SpriteRenderer>(true);
+        if (spriteRenderer != null && spriteRenderer.sprite != null)
+            return spriteRenderer.sprite;
+
+        UnityEngine.UI.Image image = cellPrefab.GetComponentInChildren<UnityEngine.UI.Image>(true);
+        return image != null ? image.sprite : null;
+    }
+
     private void ApplySpriteToCellObject(GameObject cell, Sprite sprite)
     {
         if (cell == null || sprite == null)
@@ -197,6 +214,7 @@ public class BoardView : MonoBehaviour
         if (spriteRenderer != null)
         {
             spriteRenderer.sprite = sprite;
+            spriteRenderer.enabled = true;
             return;
         }
 
@@ -208,7 +226,7 @@ public class BoardView : MonoBehaviour
             return;
         }
 
-        Debug.LogError("BoardView: Cell prefab has no SpriteRenderer or UI Image for Store board visuals.");
+        Debug.LogError("BoardView: Cell prefab has no SpriteRenderer or UI Image for board visuals.");
     }
 
     private void ClearBoardView()
