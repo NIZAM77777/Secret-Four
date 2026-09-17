@@ -23,28 +23,27 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private GameObject storePanel;
 
+    [SerializeField]
+    private GameObject settingsPanel;
+
+    [SerializeField]
+    private GameObject howToPlayPanel;
+
     [Header("Human Setup")]
     [SerializeField]
     private HumanSetupManager humanSetupManager;
 
     private void Awake()
     {
-        CloseStore();
+        CloseAllPanels();
     }
 
     // =========================
-    // STORE
+    // PANEL MANAGEMENT
     // =========================
 
-    /// <summary>Opens the Store panel from the Main Menu.</summary>
-    public void OpenStore()
+    private void CloseAllPanels()
     {
-        if (storePanel == null)
-        {
-            Debug.LogError("[Secret Four] Cannot open Store: StorePanel is not assigned on MainMenuManager.");
-            return;
-        }
-
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(true);
 
@@ -57,17 +56,139 @@ public class MainMenuManager : MonoBehaviour
         if (playInRoomMenuPanel != null)
             playInRoomMenuPanel.SetActive(false);
 
-        storePanel.SetActive(true);
-    }
-
-    /// <summary>Closes the Store panel and returns to the Main Menu.</summary>
-    public void CloseStore()
-    {
         if (storePanel != null)
             storePanel.SetActive(false);
 
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
+        if (howToPlayPanel != null)
+            howToPlayPanel.SetActive(false);
+    }
+
+    private void ShowMainMenu()
+    {
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(true);
+
+        if (humanSetupPanel != null)
+            humanSetupPanel.SetActive(false);
+
+        if (botPanel != null)
+            botPanel.SetActive(false);
+
+        if (playInRoomMenuPanel != null)
+            playInRoomMenuPanel.SetActive(false);
+
+        if (storePanel != null)
+            storePanel.SetActive(false);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
+        if (howToPlayPanel != null)
+            howToPlayPanel.SetActive(false);
+    }
+
+    // =========================
+    // STORE
+    // =========================
+
+    public void OpenStore()
+    {
+        ShowMainMenu();
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (storePanel == null)
+        {
+            Debug.LogError(
+                "[Secret Four] Cannot open Store: StorePanel is not assigned."
+            );
+            return;
+        }
+
+        storePanel.SetActive(true);
+    }
+
+    public void CloseStore()
+    {
+        ShowMainMenu();
+    }
+
+    // =========================
+    // SETTINGS
+    // =========================
+
+    /// <summary>
+    /// Opens the Settings panel.
+    /// </summary>
+    public void OpenSettings()
+    {
+        ShowMainMenu();
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (settingsPanel == null)
+        {
+            Debug.LogError(
+                "[Secret Four] Cannot open Settings: SettingsPanel is not assigned."
+            );
+            return;
+        }
+
+        settingsPanel.SetActive(true);
+
+        Debug.Log("[Secret Four] Settings opened.");
+    }
+
+    /// <summary>
+    /// Closes Settings and returns to Main Menu.
+    /// </summary>
+    public void CloseSettings()
+    {
+        ShowMainMenu();
+
+        Debug.Log("[Secret Four] Returned from Settings.");
+    }
+
+    // =========================
+    // HOW TO PLAY
+    // =========================
+
+    /// <summary>
+    /// Opens the How To Play panel.
+    /// </summary>
+    public void OpenHowToPlay()
+    {
+        ShowMainMenu();
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (howToPlayPanel == null)
+        {
+            Debug.LogError(
+                "[Secret Four] Cannot open How To Play: HowToPlayPanel is not assigned."
+            );
+            return;
+        }
+
+        howToPlayPanel.SetActive(true);
+
+        Debug.Log("[Secret Four] How To Play opened.");
+    }
+
+    /// <summary>
+    /// Closes How To Play and returns to Main Menu.
+    /// </summary>
+    public void CloseHowToPlay()
+    {
+        ShowMainMenu();
+
+        Debug.Log("[Secret Four] Returned from How To Play.");
     }
 
     // =========================
@@ -135,7 +256,11 @@ public class MainMenuManager : MonoBehaviour
             return;
         }
 
-        GameSession.Instance.StartLocalHumanGame(player1Name, player2Name);
+        GameSession.Instance.StartLocalHumanGame(
+            player1Name,
+            player2Name
+        );
+
         LoadGameScene();
     }
 
@@ -153,6 +278,7 @@ public class MainMenuManager : MonoBehaviour
     {
         mainMenuPanel.SetActive(false);
         playInRoomMenuPanel.SetActive(true);
+
         Debug.Log("Play In Room menu opened.");
     }
 
@@ -160,6 +286,7 @@ public class MainMenuManager : MonoBehaviour
     {
         playInRoomMenuPanel.SetActive(false);
         mainMenuPanel.SetActive(true);
+
         Debug.Log("Returned to Main Menu.");
     }
 
@@ -187,6 +314,12 @@ public class MainMenuManager : MonoBehaviour
 
         if (storePanel != null)
             storePanel.SetActive(false);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
+        if (howToPlayPanel != null)
+            howToPlayPanel.SetActive(false);
 
         SceneManager.LoadScene(gameSceneName);
     }
