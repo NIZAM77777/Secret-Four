@@ -18,8 +18,8 @@ MonoBehaviour:
   icon: {fileID: -319469171194908686, guid: 708d4dee9a0e0024dac1168119e35b02, type: 3}
   purchaseType: 0
   categoryIds:
-  - Board
-  selectionGroupId: Board
+  - Boards
+  selectionGroupId: BOARD
   selectable: 1
   defaultOwned: 1
   defaultSelected: 1

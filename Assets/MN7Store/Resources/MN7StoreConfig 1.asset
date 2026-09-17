@@ -21,8 +21,8 @@ MonoBehaviour:
   - categoryId: Y Coins
     displayName: Y Coins
     sortOrder: 1
-  - categoryId: Board
-    displayName: Board
+  - categoryId: Boards
+    displayName: Boards
     sortOrder: 1
   items:
   - {fileID: 11400000, guid: 6b69ddf83ce915b418a7a85c2c1f8c22, type: 2}
