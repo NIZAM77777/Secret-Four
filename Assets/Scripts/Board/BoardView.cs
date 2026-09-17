@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using MN7.Store;
 
@@ -17,96 +16,8 @@ public class BoardView : MonoBehaviour
     [Tooltip("Selection group used by Secret Four Store board items.")]
     [SerializeField] private string boardSelectionGroup = "BOARD";
 
-    private bool boardCreated;
-    private Coroutine initializationCoroutine;
-
-    private void OnEnable()
+    private void Start()
     {
-        SubscribeToStore();
-        initializationCoroutine = StartCoroutine(InitializeWhenReady());
-    }
-
-    private void OnDisable()
-    {
-        UnsubscribeFromStore();
-
-        if (initializationCoroutine != null)
-        {
-            StopCoroutine(initializationCoroutine);
-            initializationCoroutine = null;
-        }
-    }
-
-    private void SubscribeToStore()
-    {
-        MN7StoreManager store = MN7StoreManager.Instance;
-        if (store != null)
-            store.OnStoreInitialized += HandleStoreInitialized;
-    }
-
-    private void UnsubscribeFromStore()
-    {
-        MN7StoreManager store = MN7StoreManager.Instance;
-        if (store != null)
-        {
-            store.OnStoreInitialized -= HandleStoreInitialized;
-            if (store.Selection != null)
-                store.Selection.OnSelectionChanged -= HandleSelectionChanged;
-        }
-    }
-
-    private IEnumerator InitializeWhenReady()
-    {
-        // The Store lives across scenes. Wait until it has built its catalog/selection
-        // data before creating cells so the board never falls back to the Cell prefab sprite.
-        while (true)
-        {
-            MN7StoreManager store = MN7StoreManager.Instance;
-
-            if (store == null)
-            {
-                yield return null;
-                continue;
-            }
-
-            if (store.State == MN7StoreState.Failed)
-            {
-                Debug.LogError("BoardView: MN7 Store failed to initialize. Board cells cannot be created because Store visuals are required.");
-                yield break;
-            }
-
-            if (!store.IsInitialized || store.Selection == null || store.Catalog == null)
-            {
-                yield return null;
-                continue;
-            }
-
-            store.Selection.OnSelectionChanged -= HandleSelectionChanged;
-            store.Selection.OnSelectionChanged += HandleSelectionChanged;
-
-            CreateBoardView();
-            initializationCoroutine = null;
-            yield break;
-        }
-    }
-
-    private void HandleStoreInitialized()
-    {
-        MN7StoreManager store = MN7StoreManager.Instance;
-        if (store?.Selection == null)
-            return;
-
-        store.Selection.OnSelectionChanged -= HandleSelectionChanged;
-        store.Selection.OnSelectionChanged += HandleSelectionChanged;
-
-        CreateBoardView();
-    }
-
-    private void HandleSelectionChanged(string group, string itemId)
-    {
-        if (!string.Equals(group, boardSelectionGroup, System.StringComparison.OrdinalIgnoreCase))
-            return;
-
         CreateBoardView();
     }
 
@@ -124,6 +35,8 @@ public class BoardView : MonoBehaviour
             return;
         }
 
+        ClearBoardView();
+
         Board board = boardManager.CurrentBoard;
         if (board == null)
         {
@@ -134,24 +47,21 @@ public class BoardView : MonoBehaviour
         Sprite selectedCellSprite = GetSelectedCellSprite();
         if (selectedCellSprite == null)
         {
-            ClearBoardView();
-            boardCreated = false;
             Debug.LogError(
                 $"BoardView: No selected Store board sprite found for selection group '{boardSelectionGroup}'. " +
-                "The board will remain empty because Secret Four uses Store board sprites only."
+                "Assign a selectable/default-selected board item in the MN7 Store."
             );
-            return;
         }
-
-        ClearBoardView();
 
         for (int y = 0; y < board.Height; y++)
         {
             for (int x = 0; x < board.Width; x++)
             {
+                Vector3 position = GetCellWorldPosition(x, y);
+
                 GameObject cell = Instantiate(
                     cellPrefab,
-                    GetCellWorldPosition(x, y),
+                    position,
                     Quaternion.identity,
                     transform
                 );
@@ -170,14 +80,12 @@ public class BoardView : MonoBehaviour
                 }
             }
         }
-
-        boardCreated = true;
     }
 
     private Sprite GetSelectedCellSprite()
     {
         MN7StoreManager store = MN7StoreManager.Instance;
-        if (store == null || !store.IsInitialized || store.Selection == null || store.Catalog == null)
+        if (store?.Selection == null || store.Catalog == null)
             return null;
 
         string selectedItemId = store.Selection.GetSelectedItemId(boardSelectionGroup);
