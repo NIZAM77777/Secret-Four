@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
-  m_Name: green
+  m_Name: DefaultBoarditem
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
-  itemId: board3
-  displayName: green
+  itemId: board1
+  displayName: Default Board
   description: 
-  icon: {fileID: 9107453845808349311, guid: 1665f39991ee58446aa9a356cb934b0e, type: 3}
-  purchaseType: 1
+  icon: {fileID: -319469171194908686, guid: 708d4dee9a0e0024dac1168119e35b02, type: 3}
+  purchaseType: 0
   categoryIds:
   - Boards
   selectionGroupId: BOARD
   selectable: 1
-  defaultOwned: 0
-  defaultSelected: 0
+  defaultOwned: 1
+  defaultSelected: 1
   sortPriority: 0
   customSortWeight: 0
   requiredAds: 1
   adPlacementId: store_reward
   rewards:
-  - itemId: board3
+  - itemId: board1
     itemQuantity: 1
   ownershipType: 0

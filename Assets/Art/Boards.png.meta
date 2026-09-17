@@ -72,7 +72,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 350
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -150,12 +150,12 @@ TextureImporter:
       name: Boards_0
       rect:
         serializedVersion: 2
-        x: 30
-        y: 523
-        width: 485
-        height: 462
+        x: 38
+        y: 533
+        width: 468
+        height: 437
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -169,37 +169,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Boards_1
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 351
-        width: 101
-        height: 105
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b87f922acfaaec640800000000000000
-      internalID: 5102203429886490507
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Boards_2
       rect:
         serializedVersion: 2
-        x: 270
-        y: 49
-        width: 491
-        height: 455
+        x: 278
+        y: 57
+        width: 474
+        height: 444
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -216,12 +194,12 @@ TextureImporter:
       name: Boards_3
       rect:
         serializedVersion: 2
-        x: 533
-        y: 522
-        width: 476
-        height: 452
+        x: 546
+        y: 539
+        width: 447
+        height: 426
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -238,12 +216,12 @@ TextureImporter:
       name: Boards_4
       rect:
         serializedVersion: 2
-        x: 809
-        y: 49
-        width: 676
-        height: 463
+        x: 817
+        y: 56
+        width: 459
+        height: 448
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -260,12 +238,12 @@ TextureImporter:
       name: Boards_5
       rect:
         serializedVersion: 2
-        x: 1028
-        y: 353
-        width: 489
-        height: 624
+        x: 1055
+        y: 536
+        width: 449
+        height: 436
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -278,55 +256,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: Boards_6
-      rect:
-        serializedVersion: 2
-        x: 68
-        y: 93
-        width: 127
-        height: 143
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 883b92099b6145e70800000000000000
-      internalID: 9102925733066027912
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Boards_7
-      rect:
-        serializedVersion: 2
-        x: 1448
-        y: 31
-        width: 17
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d7ed21864f9801c40800000000000000
-      internalID: 5481032429320986237
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: fc0291b74b00a4d4ab51906e9245c6d7
     internalID: 0
     vertices: []
     indices: 
