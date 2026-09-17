@@ -16,9 +16,6 @@ public class GameOverUI : MonoBehaviour
     private TMP_Text resultTitle;
 
     [SerializeField]
-    private TMP_Text resultSubtitle;
-
-    [SerializeField]
     private MatchManager matchManager;
 
     [Header("Online Multiplayer")]
@@ -55,9 +52,6 @@ public class GameOverUI : MonoBehaviour
         if (resultTitle != null)
             resultTitle.text = $"{winnerName} WINS!";
 
-        if (resultSubtitle != null)
-            resultSubtitle.text = "Four in a row!";
-
         SetupWinnerImage(winner);
     }
 
@@ -69,9 +63,6 @@ public class GameOverUI : MonoBehaviour
 
         if (resultTitle != null)
             resultTitle.text = "DRAW!";
-
-        if (resultSubtitle != null)
-            resultSubtitle.text = "No winner this time.";
 
         if (winnerImage != null)
             winnerImage.gameObject.SetActive(false);
@@ -96,11 +87,28 @@ public class GameOverUI : MonoBehaviour
 
     private void SetupWinnerImage(PlayerType winner)
     {
-        if (winnerImage == null || coinConfig == null)
+        if (winnerImage == null)
+        {
+            Debug.LogWarning("GameOverUI: Winner Image is not assigned.");
             return;
+        }
 
-        winnerImage.gameObject.SetActive(true);
-        winnerImage.sprite = coinConfig.GetSprite(winner);
+        Sprite sprite = null;
+
+        // Use the exact skin that belongs to the winning player.
+        // This keeps the result screen consistent with the gameplay coin visual.
+        sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(winner);
+
+        // Fall back to the original CoinConfig sprite when no store skin is selected.
+        if (sprite == null && coinConfig != null)
+            sprite = coinConfig.GetSprite(winner);
+
+        winnerImage.sprite = sprite;
+        winnerImage.preserveAspect = true;
+        winnerImage.gameObject.SetActive(sprite != null);
+
+        if (sprite == null)
+            Debug.LogWarning($"GameOverUI: No winner sprite available for {winner}.");
     }
 
 
