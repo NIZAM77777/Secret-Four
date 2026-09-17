@@ -22,15 +22,16 @@ public class BoardView : MonoBehaviour
     [SerializeField]
     private GameObject cellPrefab;
 
+    public float BoardVisualScale => Mathf.Max(0.01f, boardScale);
+
+    private float EffectiveCellSize =>
+        Mathf.Max(0.01f, cellSize * BoardVisualScale);
+
 
     private void Start()
     {
         CreateBoardView();
     }
-
-
-    private float EffectiveCellSize =>
-        Mathf.Max(0.01f, cellSize * boardScale);
 
 
     private void CreateBoardView()
@@ -65,12 +66,11 @@ public class BoardView : MonoBehaviour
                 );
 
                 cell.name = $"Cell_{x}_{y}";
+                cell.transform.localScale *= BoardVisualScale;
 
                 CellView cellView = cell.GetComponent<CellView>();
                 if (cellView != null)
-                {
                     cellView.Initialize(x, y);
-                }
             }
         }
     }
@@ -79,9 +79,7 @@ public class BoardView : MonoBehaviour
     private void ClearBoardView()
     {
         for (int i = transform.childCount - 1; i >= 0; i--)
-        {
             Destroy(transform.GetChild(i).gameObject);
-        }
     }
 
 
