@@ -1,38 +1,93 @@
+using System.Collections;
 using UnityEngine;
+using MN7.Store;
 
 public class BoardView : MonoBehaviour
 {
     [Header("References")]
-
-    [SerializeField]
-    private BoardManager boardManager;
-
-    [SerializeField]
-    private float cellSize = 1f;
+    [SerializeField] private BoardManager boardManager;
+    [SerializeField] private float cellSize = 1f;
 
     [Header("Mobile Board Layout")]
     [Tooltip("Scales the complete board without changing the logical board coordinates.")]
-    [SerializeField]
-    private float boardScale = 0.86f;
+    [SerializeField] private float boardScale = 0.86f;
 
     [Tooltip("Moves the complete board upward in world space so it clears the direction controls.")]
-    [SerializeField]
-    private float boardVerticalOffset = 0.9f;
+    [SerializeField] private float boardVerticalOffset = 0.9f;
 
-    [SerializeField]
-    private GameObject cellPrefab;
+    [SerializeField] private GameObject cellPrefab;
 
     public float BoardVisualScale => Mathf.Max(0.01f, boardScale);
 
-    private float EffectiveCellSize =>
-        Mathf.Max(0.01f, cellSize * BoardVisualScale);
-
+    private float EffectiveCellSize => Mathf.Max(0.01f, cellSize * BoardVisualScale);
 
     private void Start()
     {
         CreateBoardView();
+        BindStore();
     }
 
+    private void OnDestroy()
+    {
+        MN7StoreManager store = MN7StoreManager.Instance;
+        if (store != null)
+            store.OnStoreInitialized -= HandleStoreInitialized;
+
+        if (store?.Selection != null)
+            store.Selection.OnSelectionChanged -= HandleSelectionChanged;
+    }
+
+    private void BindStore()
+    {
+        MN7StoreManager store = MN7StoreManager.Instance;
+        if (store == null)
+        {
+            StartCoroutine(WaitForStore());
+            return;
+        }
+
+        store.OnStoreInitialized -= HandleStoreInitialized;
+        store.OnStoreInitialized += HandleStoreInitialized;
+
+        if (store.IsInitialized)
+            HandleStoreInitialized();
+        else if (store.Selection != null)
+            SubscribeToSelection(store);
+    }
+
+    private IEnumerator WaitForStore()
+    {
+        while (this != null && MN7StoreManager.Instance == null)
+            yield return null;
+
+        if (this != null)
+            BindStore();
+    }
+
+    private void HandleStoreInitialized()
+    {
+        MN7StoreManager store = MN7StoreManager.Instance;
+        if (store == null)
+            return;
+
+        SubscribeToSelection(store);
+        ApplySelectedBoardSkin();
+    }
+
+    private void SubscribeToSelection(MN7StoreManager store)
+    {
+        if (store.Selection == null)
+            return;
+
+        store.Selection.OnSelectionChanged -= HandleSelectionChanged;
+        store.Selection.OnSelectionChanged += HandleSelectionChanged;
+    }
+
+    private void HandleSelectionChanged(string group, string itemId)
+    {
+        if (string.Equals(group, SecretFourStoreIntegration.BoardSelectionGroup, System.StringComparison.OrdinalIgnoreCase))
+            ApplySelectedBoardSkin();
+    }
 
     private void CreateBoardView()
     {
@@ -51,6 +106,11 @@ public class BoardView : MonoBehaviour
         ClearBoardView();
 
         Board board = boardManager.CurrentBoard;
+        if (board == null)
+        {
+            Debug.LogError("BoardView: Current Board is null.");
+            return;
+        }
 
         for (int y = 0; y < board.Height; y++)
         {
@@ -73,8 +133,11 @@ public class BoardView : MonoBehaviour
                     cellView.Initialize(x, y);
             }
         }
-    }
 
+        // Apply immediately when the store is already ready. If it is not ready,
+        // HandleStoreInitialized will apply the selected board after initialization.
+        ApplySelectedBoardSkin();
+    }
 
     private void ClearBoardView()
     {
@@ -82,6 +145,20 @@ public class BoardView : MonoBehaviour
             Destroy(transform.GetChild(i).gameObject);
     }
 
+    /// <summary>
+    /// Applies the currently selected BOARD item to every board cell.
+    /// The selected item's icon is the cell/board skin used in gameplay.
+    /// </summary>
+    public void ApplySelectedBoardSkin()
+    {
+        Sprite selectedBoardSprite = SecretFourStoreIntegration.GetSelectedBoardSprite();
+        if (selectedBoardSprite == null)
+            return;
+
+        CellView[] cells = GetComponentsInChildren<CellView>(true);
+        foreach (CellView cell in cells)
+            cell.ApplyBoardSprite(selectedBoardSprite);
+    }
 
     public Vector3 GetCellWorldPosition(int x, int y)
     {
@@ -100,7 +177,6 @@ public class BoardView : MonoBehaviour
             0f
         );
     }
-
 
     public bool TryGetCellCoordinates(
         Vector3 worldPosition,
