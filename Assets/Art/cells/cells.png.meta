@@ -1,31 +1,19 @@
 fileFormatVersion: 2
-guid: 3fb34df977e194447bc2a8b8837c24ad
+guid: 1665f39991ee58446aa9a356cb934b0e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3400049872264784621
-    second: cell8_0
+      213: -1604013942635242318
+    second: cells_0
   - first:
-      213: 1081010729000223167
-    second: cell8_1
+      213: 3825975252855760597
+    second: cells_1
   - first:
-      213: -4933205729421265047
-    second: cell8_2
+      213: -8995565187821981192
+    second: cells_2
   - first:
-      213: 5783098915209107000
-    second: cell8_3
-  - first:
-      213: -7602020725941120456
-    second: cell8_4
-  - first:
-      213: -9019859980482426459
-    second: cell8_5
-  - first:
-      213: 7399689210707013715
-    second: cell8_6
-  - first:
-      213: -2966300195787634255
-    second: cell8_7
+      213: 9107453845808349311
+    second: cells_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -72,7 +60,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 400
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -147,13 +135,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cell8_0
+      name: cells_0
       rect:
         serializedVersion: 2
-        x: 115
-        y: 141
-        width: 1030
-        height: 980
+        x: 21
+        y: 161
+        width: 505
+        height: 477
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,20 +150,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3159b09c7a890d0d0800000000000000
-      internalID: -3400049872264784621
+      spriteID: 2bcd37e41d56db9e0800000000000000
+      internalID: -1604013942635242318
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cell8_4
+      name: cells_1
       rect:
         serializedVersion: 2
-        x: 1214
-        y: 1078
-        width: 10
-        height: 8
+        x: 552
+        y: 147
+        width: 491
+        height: 508
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -184,8 +172,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8325f1f4d62308690800000000000000
-      internalID: -7602020725941120456
+      spriteID: 5d627e9b838981530800000000000000
+      internalID: 3825975252855760597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cells_2
+      rect:
+        serializedVersion: 2
+        x: 1077
+        y: 159
+        width: 483
+        height: 469
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f1300a4f15592380800000000000000
+      internalID: -8995565187821981192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cells_3
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 162
+        width: 481
+        height: 471
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f700ca7f40d246e70800000000000000
+      internalID: 9107453845808349311
       vertices: []
       indices: 
       edges: []
@@ -194,7 +226,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 4a498bd08cad5f94b937721f73f363d1
+    spriteID: 035b3cb50271ea1478bac4b4f7634785
     internalID: 0
     vertices: []
     indices: 
@@ -204,14 +236,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      cell8_0: -3400049872264784621
-      cell8_1: 1081010729000223167
-      cell8_2: -4933205729421265047
-      cell8_3: 5783098915209107000
-      cell8_4: -7602020725941120456
-      cell8_5: -9019859980482426459
-      cell8_6: 7399689210707013715
-      cell8_7: -2966300195787634255
+      cells_0: -1604013942635242318
+      cells_1: 3825975252855760597
+      cells_2: -8995565187821981192
+      cells_3: 9107453845808349311
+      cells_4: -565224081
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

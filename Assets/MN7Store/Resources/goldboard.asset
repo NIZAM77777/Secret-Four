@@ -12,19 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
   m_Name: goldboard
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
-  itemId: item_001
-  displayName: New Item
+  itemId: board2
+  displayName: Gold
   description: 
-  icon: {fileID: 0}
-  purchaseType: 0
-  categoryIds: []
-  selectionGroupId: 
-  selectable: 0
+  icon: {fileID: -3400049872264784621, guid: 3fb34df977e194447bc2a8b8837c24ad, type: 3}
+  purchaseType: 1
+  categoryIds:
+  - Boards
+  selectionGroupId: BOARD
+  selectable: 1
   defaultOwned: 0
   defaultSelected: 0
   sortPriority: 0
   customSortWeight: 0
   requiredAds: 1
   adPlacementId: store_reward
-  rewards: []
+  rewards:
+  - itemId: board2
+    itemQuantity: 1
   ownershipType: 0
