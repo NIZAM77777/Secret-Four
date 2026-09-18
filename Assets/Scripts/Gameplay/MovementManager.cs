@@ -304,6 +304,10 @@ public class MovementManager : MonoBehaviour
         boardManager.CurrentBoard
             .DebugPrintBoard();
 
+        SynchronizeNetworkBoardAfterMove(
+            resolution,
+            true
+        );
 
         turnManager.SetState(
             GameState.CheckingResult
@@ -386,6 +390,10 @@ public class MovementManager : MonoBehaviour
         boardManager.CurrentBoard
             .DebugPrintBoard();
 
+        SynchronizeNetworkBoardAfterMove(
+            resolution,
+            false
+        );
 
         turnManager.SetState(
             GameState.CheckingResult
@@ -815,6 +823,71 @@ public class MovementManager : MonoBehaviour
     // =====================================================
     // GAME RESULT
     // =====================================================
+
+    private void SynchronizeNetworkBoardAfterMove(
+        MovementResolution resolution,
+        bool successfulMovement)
+    {
+        if (!IsOnlineGame() ||
+            NetworkGameState.Instance == null)
+        {
+            return;
+        }
+
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
+        MovementResult xResult = resolution.playerXResult;
+        MovementResult yResult = resolution.playerYResult;
+
+        if (successfulMovement)
+        {
+            NetworkGameState.Instance.MoveStoredSkin(
+                xResult.startPosition.x,
+                xResult.startPosition.y,
+                xResult.destination.x,
+                xResult.destination.y);
+
+            NetworkGameState.Instance.MoveStoredSkin(
+                yResult.startPosition.x,
+                yResult.startPosition.y,
+                yResult.destination.x,
+                yResult.destination.y);
+        }
+        else
+        {
+            Vector2Int xFinal =
+                resolution.playerXCollision == MovementCollisionType.None
+                    ? xResult.destination
+                    : xResult.startPosition;
+
+            Vector2Int yFinal =
+                resolution.playerYCollision == MovementCollisionType.None
+                    ? yResult.destination
+                    : yResult.startPosition;
+
+            if (xFinal != xResult.startPosition)
+            {
+                NetworkGameState.Instance.MoveStoredSkin(
+                    xResult.startPosition.x,
+                    xResult.startPosition.y,
+                    xFinal.x,
+                    xFinal.y);
+            }
+
+            if (yFinal != yResult.startPosition)
+            {
+                NetworkGameState.Instance.MoveStoredSkin(
+                    yResult.startPosition.x,
+                    yResult.startPosition.y,
+                    yFinal.x,
+                    yFinal.y);
+            }
+        }
+    }
+
 
     private bool CheckGameResult()
     {
