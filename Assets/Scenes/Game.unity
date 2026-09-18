@@ -2386,6 +2386,7 @@ GameObject:
   - component: {fileID: 689930980}
   - component: {fileID: 689930982}
   - component: {fileID: 689930981}
+  - component: {fileID: 689930983}
   m_Layer: 0
   m_Name: NetworkGameResultManager
   m_TagString: Untagged
@@ -2393,6 +2394,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &689930983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 689930979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b1f4c84c77a4d5f8d0e8a0ab9d9e1f4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkGameState
 --- !u!4 &689930980
 Transform:
   m_ObjectHideFlags: 0
