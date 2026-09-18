@@ -22,11 +22,14 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public static NetworkGameState Instance { get; private set; }
 
-    public NetworkVariable<int> CurrentState { get; } =
+    private NetworkVariable<int> currentState =
         new NetworkVariable<int>(
             (int)GameState.WaitingForPlayerXPlacement,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
+
+    public GameState CurrentAuthoritativeState =>
+        (GameState)currentState.Value;
 
     public NetworkVariable<int> WinnerState { get; } =
         new NetworkVariable<int>(
@@ -113,7 +116,7 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        CurrentState.OnValueChanged += OnNetworkValueChanged;
+        currentState.OnValueChanged += OnNetworkValueChanged;
         WinnerState.OnValueChanged += OnNetworkValueChanged;
         StateRevision.OnValueChanged += OnNetworkValueChanged;
         MoveId.OnValueChanged += OnNetworkValueChanged;
@@ -140,7 +143,7 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        CurrentState.OnValueChanged -= OnNetworkValueChanged;
+        currentState.OnValueChanged -= OnNetworkValueChanged;
         WinnerState.OnValueChanged -= OnNetworkValueChanged;
         StateRevision.OnValueChanged -= OnNetworkValueChanged;
         MoveId.OnValueChanged -= OnNetworkValueChanged;
@@ -243,12 +246,12 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public GameState GetAuthoritativeState()
     {
-        return (GameState)CurrentState.Value;
+        return (GameState)currentState.Value;
     }
 
     public bool IsPhase(GameState state)
     {
-        return CurrentState.Value == (int)state;
+        return currentState.Value == (int)state;
     }
 
     public bool CanRequestPlacement(PlayerType player)
@@ -279,7 +282,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         if (!IsServer)
             return;
 
-        CurrentState.Value = (int)state;
+        currentState.Value = (int)state;
         StateRevision.Value++;
     }
 
@@ -299,7 +302,7 @@ public sealed class NetworkGameState : NetworkBehaviour
             return;
 
         WinnerState.Value = winner == PlayerType.X ? WinnerX : WinnerY;
-        CurrentState.Value = (int)GameState.Won;
+        currentState.Value = (int)GameState.Won;
         StateRevision.Value++;
     }
 
@@ -309,7 +312,7 @@ public sealed class NetworkGameState : NetworkBehaviour
             return;
 
         WinnerState.Value = DrawResult;
-        CurrentState.Value = (int)GameState.Draw;
+        currentState.Value = (int)GameState.Draw;
         StateRevision.Value++;
     }
 
@@ -377,7 +380,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         RematchReadyMask.Value = 0;
         MoveId.Value = 0;
         MatchId.Value++;
-        CurrentState.Value = (int)GameState.WaitingForPlayerXPlacement;
+        currentState.Value = (int)GameState.WaitingForPlayerXPlacement;
         StateRevision.Value++;
         serverInitialized = true;
     }
@@ -418,7 +421,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         XHasChosenDirection.Value = xAction.hasChosenDirection;
         YHasChosenDirection.Value = yAction.hasChosenDirection;
 
-        CurrentState.Value = (int)turnManager.CurrentState;
+        currentState.Value = (int)turnManager.CurrentState;
         StateRevision.Value++;
     }
 
@@ -535,7 +538,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         boardManager.ApplySnapshot(BoardCells, BoardSkinIds);
 
         turnManager.ApplyAuthoritativeState(
-            (GameState)CurrentState.Value,
+            (GameState)currentState.Value,
             new Vector2Int(XPositionX.Value, XPositionY.Value),
             new Vector2Int(YPositionX.Value, YPositionY.Value),
             (MoveDirection)XDirection.Value,
@@ -559,7 +562,7 @@ public sealed class NetworkGameState : NetworkBehaviour
                 gameResultManager.ResetResult();
         }
 
-        GameState state = (GameState)CurrentState.Value;
+        GameState state = (GameState)currentState.Value;
         bool safeToRebuildVisuals =
             state == GameState.WaitingForPlayerXPlacement ||
             state == GameState.WaitingForPlayerYPlacement ||
