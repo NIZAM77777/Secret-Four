@@ -408,6 +408,8 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         EnsureBoardLists();
 
+        // The server snapshot owns the board occupancy. Skin entries are
+        // already stored separately and are only changed by accepted moves.
         Board board = boardManager.CurrentBoard;
 
         for (int x = 0; x < board.Width; x++)
