@@ -62,14 +62,7 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
             return;
 
         if (IsServer)
-        {
-            if (clientId != NetworkManager.ServerClientId &&
-                JoinerPlayerClientId.Value == ulong.MaxValue)
-            {
-                // The joining client submits its own profile immediately after spawn.
-            }
             return;
-        }
 
         if (clientId == NetworkManager.LocalClientId)
             SubmitLocalJoinerProfile();
@@ -101,6 +94,8 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         string skinId =
             SecretFourStoreIntegration.GetSelectedPlayerItemId(PlayerType.Y);
 
+        // The joiner's role is fixed by the network protocol:
+        // host = X/LEFT, joining client = Y/RIGHT.
         SubmitJoinerProfileRpc(
             playerName,
             skinId ?? string.Empty);
