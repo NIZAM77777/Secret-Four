@@ -547,26 +547,28 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         int winner = WinnerState.Value;
 
-        if (winner == WinnerX)
+        if (gameResultManager != null)
         {
-            gameResultManager?.SetWinner(PlayerType.X);
-        }
-        else if (winner == WinnerY)
-        {
-            gameResultManager?.SetWinner(PlayerType.Y);
-        }
-        else if (winner == DrawResult)
-        {
-            gameResultManager?.SetDraw();
+            if (winner == WinnerX && !gameResultManager.HasResult)
+                gameResultManager.SetWinner(PlayerType.X);
+            else if (winner == WinnerY && !gameResultManager.HasResult)
+                gameResultManager.SetWinner(PlayerType.Y);
+            else if (winner == DrawResult && !gameResultManager.HasResult)
+                gameResultManager.SetDraw();
+            else if (winner == NoWinner && gameResultManager.HasResult)
+                gameResultManager.ResetResult();
         }
 
         GameState state = (GameState)CurrentState.Value;
-        if (state == GameState.WaitingForPlayerXPlacement ||
+        bool safeToRebuildVisuals =
+            state == GameState.WaitingForPlayerXPlacement ||
             state == GameState.WaitingForPlayerYPlacement ||
             state == GameState.WaitingForPlayerXDirection ||
-            state == GameState.WaitingForPlayerYDirection)
+            state == GameState.WaitingForPlayerYDirection;
+
+        if (safeToRebuildVisuals && placementManager != null)
         {
-            placementManager?.RebuildFromNetworkState(
+            placementManager.RebuildFromNetworkState(
                 BoardCells,
                 BoardSkinIds,
                 new Vector2Int(XPositionX.Value, XPositionY.Value),
