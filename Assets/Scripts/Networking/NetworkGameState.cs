@@ -523,7 +523,7 @@ public sealed class NetworkGameState : NetworkBehaviour
             : new Vector2Int(YPositionX.Value, YPositionY.Value);
     }
 
-    public bool IsLocalPlayer(PlayerType player)
+    public bool IsLocalPlayerSide(PlayerType player)
     {
         if (NetworkManager.Singleton == null)
             return true;
