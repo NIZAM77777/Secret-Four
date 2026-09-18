@@ -81,11 +81,16 @@ public sealed class NetworkGameState : NetworkBehaviour
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
-    public NetworkList<byte> BoardCells { get; private set; }
-        = new NetworkList<byte>();
+    public NetworkList<byte> BoardCells { get; private set; } =
+        new NetworkList<byte>();
 
-    public NetworkList<FixedString64Bytes> BoardSkinIds { get; private set; }
-        = new NetworkList<FixedString64Bytes>();
+    public NetworkList<FixedString64Bytes> BoardSkinIds { get; private set; } =
+        new NetworkList<FixedString64Bytes>();
+
+    public bool IsPresentationPhase =>
+        IsPhase(GameState.RevealingDirections) ||
+        IsPhase(GameState.Moving) ||
+        IsPhase(GameState.CheckingResult);
 
     private BoardManager boardManager;
     private TurnManager turnManager;
