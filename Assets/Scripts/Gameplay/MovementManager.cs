@@ -53,6 +53,7 @@ public class MovementManager : MonoBehaviour
 
     private GameObject playerXCoin;
     private GameObject playerYCoin;
+    private int activeNetworkMoveId = -1;
 
 
     // =====================================================
@@ -102,6 +103,7 @@ public class MovementManager : MonoBehaviour
 
         playerXCoin = xCoin;
         playerYCoin = yCoin;
+        activeNetworkMoveId = moveId;
 
         movementInProgress = true;
 
@@ -152,7 +154,8 @@ public class MovementManager : MonoBehaviour
     public void ApplyNetworkResolution(
         MovementResolution resolution,
         GameObject xCoin,
-        GameObject yCoin)
+        GameObject yCoin,
+        int moveId = -1)
     {
         if (movementInProgress)
         {
@@ -309,9 +312,16 @@ public class MovementManager : MonoBehaviour
 
         if (CheckGameResult())
         {
+            if (IsOnlineGame())
+                ReportNetworkPresentationComplete();
             yield break;
         }
 
+        if (IsOnlineGame())
+        {
+            ReportNetworkPresentationComplete();
+            yield break;
+        }
 
         StartNextRoundCorrectly();
     }
@@ -384,9 +394,16 @@ public class MovementManager : MonoBehaviour
 
         if (CheckGameResult())
         {
+            if (IsOnlineGame())
+                ReportNetworkPresentationComplete();
             yield break;
         }
 
+        if (IsOnlineGame())
+        {
+            ReportNetworkPresentationComplete();
+            yield break;
+        }
 
         StartNextRoundCorrectly();
     }
@@ -860,6 +877,31 @@ public class MovementManager : MonoBehaviour
 
 
         return false;
+    }
+
+
+    private void ReportNetworkPresentationComplete()
+    {
+        if (!IsOnlineGame() ||
+            networkMovementManager == null ||
+            activeNetworkMoveId < 0)
+        {
+            return;
+        }
+
+        networkMovementManager.ReportPresentationComplete(
+            activeNetworkMoveId);
+
+        activeNetworkMoveId = -1;
+    }
+
+    public void ResetNetworkMovementState()
+    {
+        StopAllCoroutines();
+        movementInProgress = false;
+        playerXCoin = null;
+        playerYCoin = null;
+        activeNetworkMoveId = -1;
     }
 
 
