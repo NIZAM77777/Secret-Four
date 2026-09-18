@@ -427,6 +427,10 @@ public sealed class NetworkGameState : NetworkBehaviour
                 BoardCell cell = board.GetCell(x, y);
 
                 BoardCells[index] = GetCellCode(cell);
+
+                // Do not overwrite a valid stored skin when only the board
+                // occupancy changed. Skin identity is updated explicitly on
+                // placement and movement.
             }
         }
 
