@@ -100,6 +100,32 @@ public class PauseManager : MonoBehaviour
         isPaused = false;
         isBlockingInput = false;
 
+        // Never reload the online game scene locally. That would reset one
+        // device independently from the authoritative match.
+        if (Unity.Netcode.NetworkManager.Singleton != null &&
+            Unity.Netcode.NetworkManager.Singleton.IsListening)
+        {
+            NetworkPlayAgainManager playAgain =
+                FindFirstObjectByType<NetworkPlayAgainManager>();
+
+            if (playAgain != null)
+            {
+                Debug.Log(
+                    "ONLINE RESTART: requesting synchronized rematch."
+                );
+
+                playAgain.RequestPlayAgain();
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "ONLINE RESTART: NetworkPlayAgainManager is missing."
+                );
+            }
+
+            return;
+        }
+
         SceneManager.LoadScene(
             SceneManager.GetActiveScene().name
         );
