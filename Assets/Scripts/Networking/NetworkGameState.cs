@@ -256,6 +256,10 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public bool CanRequestPlacement(PlayerType player)
     {
+        if (OnlineMatchPlayerState.Instance != null &&
+            !OnlineMatchPlayerState.Instance.IsMatchReady())
+            return false;
+
         GameState state = GetAuthoritativeState();
 
         return (player == PlayerType.X && state == GameState.WaitingForPlayerXPlacement) ||
@@ -274,6 +278,10 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public bool CanRequestDirection(PlayerType player)
     {
+        if (OnlineMatchPlayerState.Instance != null &&
+            !OnlineMatchPlayerState.Instance.IsMatchReady())
+            return false;
+
         GameState state = GetAuthoritativeState();
 
         return (player == PlayerType.X && state == GameState.WaitingForPlayerXDirection) ||
