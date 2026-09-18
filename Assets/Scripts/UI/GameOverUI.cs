@@ -42,6 +42,16 @@ public class GameOverUI : MonoBehaviour
     }
 
 
+    public void SetWaitingForOpponent(bool waiting)
+    {
+        if (!waiting || !IsOnlineGame())
+            return;
+
+        if (resultTitle != null)
+            resultTitle.text = "WAITING FOR OPPONENT...";
+    }
+
+
     public void ShowWinner(PlayerType winner)
     {
         if (panel != null)
