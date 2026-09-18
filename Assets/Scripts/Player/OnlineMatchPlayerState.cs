@@ -4,6 +4,7 @@ using Unity.Netcode;
 public sealed class OnlineMatchPlayerState : NetworkBehaviour
 {
     public static OnlineMatchPlayerState Instance { get; private set; }
+    public static event System.Action OnAnyProfileChanged;
 
     public NetworkVariable<ulong> HostPlayerClientId { get; } =
         new NetworkVariable<ulong>(ulong.MaxValue);
@@ -40,6 +41,14 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
 
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+
+        HostPlayerClientId.OnValueChanged += OnProfileValueChanged;
+        JoinerPlayerClientId.OnValueChanged += OnProfileValueChanged;
+        HostPlayerName.OnValueChanged += OnProfileValueChanged;
+        JoinerPlayerName.OnValueChanged += OnProfileValueChanged;
+        HostSkinId.OnValueChanged += OnProfileValueChanged;
+        JoinerSkinId.OnValueChanged += OnProfileValueChanged;
+        MatchReady.OnValueChanged += OnProfileValueChanged;
 
         if (IsServer)
         {
@@ -122,6 +131,14 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
             NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
         }
 
+        HostPlayerClientId.OnValueChanged -= OnProfileValueChanged;
+        JoinerPlayerClientId.OnValueChanged -= OnProfileValueChanged;
+        HostPlayerName.OnValueChanged -= OnProfileValueChanged;
+        JoinerPlayerName.OnValueChanged -= OnProfileValueChanged;
+        HostSkinId.OnValueChanged -= OnProfileValueChanged;
+        JoinerSkinId.OnValueChanged -= OnProfileValueChanged;
+        MatchReady.OnValueChanged -= OnProfileValueChanged;
+
         if (Instance == this)
             Instance = null;
     }
@@ -202,9 +219,15 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
 
     public System.Action OnProfileChanged;
 
+    private void OnProfileValueChanged<T>(T previous, T current)
+    {
+        NotifyProfileChanged();
+    }
+
     private void NotifyProfileChanged()
     {
         OnProfileChanged?.Invoke();
+        OnAnyProfileChanged?.Invoke();
     }
 
     private string GetLocalPlayerNameOrDefault()
