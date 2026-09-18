@@ -130,7 +130,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         YHasChosenDirection.OnValueChanged += OnNetworkValueChanged;
         RematchReadyMask.OnValueChanged += OnNetworkValueChanged;
         BoardCells.OnListChanged += OnBoardListChanged;
-        BoardSkinIds.OnListChanged += OnBoardListChanged;
+        BoardSkinIds.OnListChanged += OnBoardSkinListChanged;
 
         if (IsServer)
             StartCoroutine(InitializeAuthoritativeStateWhenReady());
@@ -157,7 +157,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         YHasChosenDirection.OnValueChanged -= OnNetworkValueChanged;
         RematchReadyMask.OnValueChanged -= OnNetworkValueChanged;
         BoardCells.OnListChanged -= OnBoardListChanged;
-        BoardSkinIds.OnListChanged -= OnBoardListChanged;
+        BoardSkinIds.OnListChanged -= OnBoardSkinListChanged;
 
         if (Instance == this)
             Instance = null;
@@ -217,7 +217,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         ScheduleClientApply();
     }
 
-    private void OnBoardListChanged(NetworkListEvent<FixedString64Bytes> changeEvent)
+    private void OnBoardSkinListChanged(NetworkListEvent<FixedString64Bytes> changeEvent)
     {
         if (IsServer)
             return;
