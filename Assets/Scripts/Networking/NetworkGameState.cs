@@ -300,6 +300,52 @@ public sealed class NetworkGameState : NetworkBehaviour
         if (!IsServer)
             return;
 
+        SetAuthoritativePhase(state);
+    }
+
+    /// <summary>
+    /// Changes the authoritative match phase without reading any client-local
+    /// gameplay state. Every client observes the same phase through the
+    /// NetworkVariable and rebuilds presentation from the synchronized snapshot.
+    /// </summary>
+    public void SetAuthoritativePhase(GameState state)
+    {
+        if (!IsServer)
+            return;
+
+        if (currentState.Value == (int)state)
+            return;
+
+        currentState.Value = (int)state;
+        StateRevision.Value++;
+    }
+
+    /// <summary>
+    /// Commits a complete authoritative turn/round snapshot in one place.
+    /// This prevents a later local callback from overwriting a valid network
+    /// direction or phase with stale state.
+    /// </summary>
+    public void CommitAuthoritativePhase(
+        GameState state,
+        PlayerAction xAction,
+        PlayerAction yAction)
+    {
+        if (!IsServer || xAction == null || yAction == null)
+            return;
+
+        XPositionX.Value = xAction.position.x;
+        XPositionY.Value = xAction.position.y;
+        YPositionX.Value = yAction.position.x;
+        YPositionY.Value = yAction.position.y;
+
+        XDirection.Value = (int)xAction.direction;
+        YDirection.Value = (int)yAction.direction;
+
+        XHasPlaced.Value = xAction.hasPlaced;
+        YHasPlaced.Value = yAction.hasPlaced;
+        XHasChosenDirection.Value = xAction.hasChosenDirection;
+        YHasChosenDirection.Value = yAction.hasChosenDirection;
+
         currentState.Value = (int)state;
         StateRevision.Value++;
     }
