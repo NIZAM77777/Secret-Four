@@ -586,11 +586,11 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         if (gameResultManager != null)
         {
-            if (winner == WinnerX && !gameResultManager.HasResult)
+                if (winner == WinnerX)
                 gameResultManager.SetWinner(PlayerType.X);
-            else if (winner == WinnerY && !gameResultManager.HasResult)
+            else if (winner == WinnerY)
                 gameResultManager.SetWinner(PlayerType.Y);
-            else if (winner == DrawResult && !gameResultManager.HasResult)
+            else if (winner == DrawResult)
                 gameResultManager.SetDraw();
             else if (winner == NoWinner && gameResultManager.HasResult)
                 gameResultManager.ResetResult();
