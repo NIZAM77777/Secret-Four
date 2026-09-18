@@ -14,13 +14,18 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
+        if (NetworkGameState.Instance != null &&
+            !NetworkGameState.Instance.CanRequestPlacement(player))
+        {
+            Debug.Log("Local placement request ignored: authoritative state is not accepting this player.");
+            return;
+        }
+
         string selectedSkinId = SecretFourStoreIntegration.GetSelectedPlayerItemId(player);
         Debug.Log($"Network placement requested: ({x},{y}), player = {player}, skin = {selectedSkinId}");
         RequestPlaceCoinRpc(x, y, (int)player, selectedSkinId ?? string.Empty);
     }
 
-    // Compatibility overload for any older callers. The placement manager now supplies
-    // the explicit player so X and Y can use different selection groups.
     public void RequestPlaceCoin(int x, int y)
     {
         PlayerType player = GetCurrentPlayer();
@@ -28,8 +33,16 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void RequestPlaceCoinRpc(int x, int y, int requestedPlayerValue, string selectedSkinId, RpcParams rpcParams = default)
+    private void RequestPlaceCoinRpc(
+        int x,
+        int y,
+        int requestedPlayerValue,
+        string selectedSkinId,
+        RpcParams rpcParams = default)
     {
+        if (!IsServer)
+            return;
+
         if (placementManager == null)
         {
             Debug.LogError("PlacementManager is missing.");
@@ -45,8 +58,13 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
-        // Do not allow a client to submit a skin belonging to the other player's
-        // selection group. This keeps X/Y cosmetics independent online as well.
+        if (NetworkGameState.Instance != null &&
+            !NetworkGameState.Instance.CanRequestPlacement(player))
+        {
+            Debug.LogWarning($"HOST rejected placement because authoritative state is not accepting {player}.");
+            return;
+        }
+
         if (!SecretFourStoreIntegration.IsValidPlayerSkin(selectedSkinId, player))
         {
             Debug.LogWarning($"Rejected invalid {player} skin: {selectedSkinId}");
@@ -60,25 +78,38 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
         }
 
         Debug.Log($"HOST accepted placement: {player} → ({x},{y}), skin = {selectedSkinId}");
-        PlaceCoinRpc(x, y, (int)player, selectedSkinId);
-    }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    private void PlaceCoinRpc(int x, int y, int playerValue, string selectedSkinId)
-    {
-        if (placementManager == null)
+        if (!placementManager.ApplyCoinPlacement(
+            x,
+            y,
+            player,
+            selectedSkinId))
         {
-            Debug.LogError("PlacementManager is missing.");
+            Debug.LogWarning("HOST accepted placement could not be applied.");
             return;
         }
 
-        PlayerType player = (PlayerType)playerValue;
-        Debug.Log($"NETWORK MOVE RECEIVED: {player} → ({x},{y}), skin = {selectedSkinId}");
-        placementManager.ApplyCoinPlacement(x, y, player, selectedSkinId);
+        if (NetworkGameState.Instance != null)
+        {
+            NetworkGameState.Instance.CapturePlacementSkin(
+                x,
+                y,
+                selectedSkinId);
+
+            NetworkGameState.Instance.CaptureFromServer();
+        }
     }
 
     private PlayerType GetCurrentPlayer()
     {
+        if (NetworkGameState.Instance != null)
+        {
+            return NetworkGameState.Instance.IsPhase(
+                GameState.WaitingForPlayerXPlacement)
+                ? PlayerType.X
+                : PlayerType.Y;
+        }
+
         TurnManager turnManager = FindFirstObjectByType<TurnManager>();
         if (turnManager == null)
             return PlayerType.X;
@@ -96,8 +127,15 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
         if (boardManager == null || turnManager == null)
             return false;
 
-        if (!turnManager.CanPlaceCoin(player))
+        if (NetworkGameState.Instance != null)
+        {
+            if (!NetworkGameState.Instance.CanRequestPlacement(player))
+                return false;
+        }
+        else if (!turnManager.CanPlaceCoin(player))
+        {
             return false;
+        }
 
         Board board = boardManager.CurrentBoard;
         if (board == null || !board.IsInsideBoard(x, y) || !board.IsEmpty(x, y))
