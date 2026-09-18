@@ -33,6 +33,8 @@ public class GameHUD : MonoBehaviour
 
     private GameState lastState;
     private bool hasLastState;
+    private bool hasConfiguredGameMode;
+    private GameMode configuredGameMode;
 
     private void Start()
     {
@@ -44,6 +46,15 @@ public class GameHUD : MonoBehaviour
 
     private void Update()
     {
+        if (GameSession.Instance != null &&
+            (!hasConfiguredGameMode ||
+             configuredGameMode != GameSession.Instance.CurrentGameMode))
+        {
+            configuredGameMode = GameSession.Instance.CurrentGameMode;
+            hasConfiguredGameMode = true;
+            SetupBotDifficulty();
+        }
+
         Refresh(false);
     }
 
