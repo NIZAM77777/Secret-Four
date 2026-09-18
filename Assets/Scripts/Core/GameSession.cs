@@ -126,12 +126,22 @@ public class GameSession : MonoBehaviour
 
     public void StartOnlineRoomGame()
     {
-        CurrentGameMode =
-            GameMode.OnlineRoom;
+        CurrentGameMode = GameMode.OnlineRoom;
 
         Player1Name =
             PlayerNameManager.GetPlayerName();
 
-        Player2Name = "Opponent";
+        Player2Name = "Player 2";
+
+        LocalOnlinePlayerType =
+            Unity.Netcode.NetworkManager.Singleton != null &&
+            Unity.Netcode.NetworkManager.Singleton.IsClient &&
+            !Unity.Netcode.NetworkManager.Singleton.IsHost
+                ? PlayerType.Y
+                : PlayerType.X;
+
+        LocalOnlineSkinId =
+            SecretFourStoreIntegration.GetSelectedPlayerItemId(
+                LocalOnlinePlayerType);
     }
 }
