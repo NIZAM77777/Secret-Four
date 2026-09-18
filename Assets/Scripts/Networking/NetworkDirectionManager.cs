@@ -21,8 +21,13 @@ public class NetworkDirectionManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void RequestDirectionRpc(int directionValue, RpcParams rpcParams = default)
+    private void RequestDirectionRpc(
+        int directionValue,
+        RpcParams rpcParams = default)
     {
+        if (!IsServer)
+            return;
+
         if (turnManager == null || boardManager == null)
         {
             Debug.LogError("Network references are missing.");
@@ -45,7 +50,15 @@ public class NetworkDirectionManager : NetworkBehaviour
             return;
         }
 
-        if (!turnManager.CanChooseDirection(player))
+        if (NetworkGameState.Instance != null &&
+            !NetworkGameState.Instance.CanRequestDirection(player))
+        {
+            Debug.LogWarning($"HOST rejected direction because the authoritative state is not accepting {player}.");
+            return;
+        }
+
+        if (NetworkGameState.Instance == null &&
+            !turnManager.CanChooseDirection(player))
         {
             Debug.Log("Direction rejected.");
             return;
@@ -53,7 +66,8 @@ public class NetworkDirectionManager : NetworkBehaviour
 
         if (!IsDirectionValid(player, direction))
         {
-            Debug.LogWarning($"HOST rejected invalid direction: {player} → {direction}");
+            Debug.LogWarning(
+                $"HOST rejected invalid direction: {player} → {direction}");
             return;
         }
 
@@ -61,20 +75,26 @@ public class NetworkDirectionManager : NetworkBehaviour
         action.direction = direction;
         action.hasChosenDirection = true;
 
-        Debug.Log($"HOST secretly stored: {player} → {direction}");
         turnManager.DirectionChosen(player);
+
+        if (NetworkGameState.Instance != null)
+            NetworkGameState.Instance.CaptureFromServer();
+
+        Debug.Log($"HOST stored direction: {player} → {direction}");
 
         if (turnManager.CurrentState == GameState.RevealingDirections)
         {
-            RevealDirectionsRpc(
-                (int)turnManager.PlayerXAction.direction,
-                (int)turnManager.PlayerYAction.direction
-            );
+            if (NetworkGameState.Instance != null)
+                NetworkGameState.Instance.SetState(GameState.RevealingDirections);
 
             if (networkMovementManager != null)
+            {
                 networkMovementManager.RequestMovementResolution();
+            }
             else
+            {
                 Debug.LogError("NetworkMovementManager is missing.");
+            }
         }
         else
         {
@@ -95,41 +115,13 @@ public class NetworkDirectionManager : NetworkBehaviour
     private void DirectionAcceptedRpc(int playerValue)
     {
         PlayerType player = (PlayerType)playerValue;
-        Debug.Log($"{player} direction selected.");
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
-    private void RevealDirectionsRpc(int playerXDirection, int playerYDirection)
-    {
-        if (turnManager == null)
-        {
-            Debug.LogError("TurnManager is missing.");
-            return;
-        }
-
-        PlayerAction xAction = turnManager.PlayerXAction;
-        xAction.direction = (MoveDirection)playerXDirection;
-        xAction.hasChosenDirection = true;
-
-        PlayerAction yAction = turnManager.PlayerYAction;
-        yAction.direction = (MoveDirection)playerYDirection;
-        yAction.hasChosenDirection = true;
-
-        Debug.Log("DIRECTIONS REVEALED!");
-        Debug.Log($"X → {xAction.direction}");
-        Debug.Log($"Y → {yAction.direction}");
-
-        if (turnManager.CurrentState != GameState.RevealingDirections)
-            turnManager.SetState(GameState.RevealingDirections);
+        Debug.Log($"{player} direction accepted by host.");
     }
 
     private bool IsDirectionValid(PlayerType player, MoveDirection direction)
     {
         if (boardManager == null)
-        {
-            Debug.LogError("BoardManager is missing.");
             return false;
-        }
 
         Board board = boardManager.CurrentBoard;
         if (board == null)
@@ -138,8 +130,6 @@ public class NetworkDirectionManager : NetworkBehaviour
         PlayerAction action = turnManager.GetAction(player);
         Vector2Int position = action.position;
 
-        // Stay is a valid strategic choice, consistent with
-        // local games and all bot difficulty implementations.
         if (direction == MoveDirection.Stay)
             return true;
 
@@ -155,13 +145,13 @@ public class NetworkDirectionManager : NetworkBehaviour
         if (board.IsEmpty(destination.x, destination.y))
             return true;
 
-        PlayerType otherPlayer = player == PlayerType.X ? PlayerType.Y : PlayerType.X;
+        PlayerType otherPlayer =
+            player == PlayerType.X ? PlayerType.Y : PlayerType.X;
+
         PlayerAction otherAction = turnManager.GetAction(otherPlayer);
 
-        if (otherAction.hasPlaced && destination == otherAction.position)
-            return true;
-
-        return false;
+        return otherAction.hasPlaced &&
+               destination == otherAction.position;
     }
 
     private Vector2Int GetDestination(Vector2Int position, MoveDirection direction)
@@ -183,10 +173,17 @@ public class NetworkDirectionManager : NetworkBehaviour
 
     private PlayerType GetCurrentDirectionPlayer()
     {
-        if (turnManager.CurrentState == GameState.WaitingForPlayerXDirection)
-            return PlayerType.X;
+        if (NetworkGameState.Instance != null)
+        {
+            return NetworkGameState.Instance.IsPhase(
+                GameState.WaitingForPlayerXDirection)
+                ? PlayerType.X
+                : PlayerType.Y;
+        }
 
-        return PlayerType.Y;
+        return turnManager.CurrentState == GameState.WaitingForPlayerXDirection
+            ? PlayerType.X
+            : PlayerType.Y;
     }
 
     private bool IsPlayerAllowed(ulong senderId, PlayerType player)
