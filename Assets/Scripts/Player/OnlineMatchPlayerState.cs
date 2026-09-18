@@ -39,6 +39,12 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
     {
         Instance = this;
 
+        // The network scene can be loaded by the host for both devices, so
+        // every process must explicitly enter OnlineRoom mode here. This
+        // prevents the client from retaining a previous Bot/Easy session.
+        if (GameSession.Instance != null)
+            GameSession.Instance.StartOnlineRoomGame();
+
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
 
