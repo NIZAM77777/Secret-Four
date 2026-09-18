@@ -51,9 +51,18 @@ public class PlacementManager : MonoBehaviour
                 return;
             }
 
+            // In online mode the server owns validation. Do not reject the
+            // request using a potentially stale client-side board/state cache.
             if (!IsLocalPlayerAllowed(player))
             {
                 Debug.Log("It is not your turn.");
+                return;
+            }
+
+            if (NetworkGameState.Instance != null &&
+                !NetworkGameState.Instance.CanRequestPlacement(player))
+            {
+                Debug.Log("The authoritative match is processing another state.");
                 return;
             }
 
