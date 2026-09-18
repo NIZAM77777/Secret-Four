@@ -43,15 +43,6 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
 
             ApplyLocalHostSkin();
             RefreshReadyState();
-
-            // Host is already present; if a client is already connected, initialize it.
-            foreach (ulong clientId in NetworkManager.ConnectedClientsIds)
-            {
-                if (clientId != NetworkManager.ServerClientId)
-                {
-                    break;
-                }
-            }
         }
         else
         {
