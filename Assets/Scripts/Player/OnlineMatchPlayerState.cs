@@ -54,6 +54,8 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         {
             SubmitLocalJoinerProfile();
         }
+
+        NotifyProfileChanged();
     }
 
     private void OnClientConnected(ulong clientId)
@@ -148,6 +150,7 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         JoinerSkinId.Value = new FixedString128Bytes(skinId ?? string.Empty);
         JoinerReady.Value = true;
         RefreshReadyState();
+        NotifyProfileChanged();
     }
 
     public PlayerType GetSideForClient(ulong clientId)
@@ -195,6 +198,13 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
 
         return GetSideForClient(
             NetworkManager.Singleton.LocalClientId) == player;
+    }
+
+    public System.Action OnProfileChanged;
+
+    private void NotifyProfileChanged()
+    {
+        OnProfileChanged?.Invoke();
     }
 
     private string GetLocalPlayerNameOrDefault()
