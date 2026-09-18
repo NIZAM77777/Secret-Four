@@ -153,6 +153,23 @@ public class GameHUD : MonoBehaviour
 
     private void SetupPlayerImages()
     {
+        if (GameSession.Instance != null &&
+            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
+            OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsMatchReady())
+        {
+            PlayerType localSide =
+                OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
+                    ? PlayerType.X
+                    : PlayerType.Y;
+
+            SetupOnlinePlayerImages(
+                localSide,
+                localSide == PlayerType.X ? PlayerType.Y : PlayerType.X);
+
+            return;
+        }
+
         Sprite xSprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(PlayerType.X);
         Sprite ySprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(PlayerType.Y);
 
