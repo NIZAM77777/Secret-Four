@@ -113,49 +113,9 @@ public class NetworkMovementManager : NetworkBehaviour
             moveId);
     }
 
-    private void FinishAuthoritativeMove(int moveId)
+    public void CompleteAuthoritativeMove(int moveId)
     {
         if (!IsServer || moveId != activeMoveId)
-            return;
-
-        movementResolved = false;
-
-        NetworkGameState state = NetworkGameState.Instance;
-
-        if (state != null)
-            state.SetAuthoritativePhase(GameState.CheckingResult);
-
-        GameResultManager resultManager =
-            FindFirstObjectByType<GameResultManager>();
-
-        if (resultManager != null && resultManager.HasResult)
-        {
-            if (state != null)
-            {
-                if (resultManager.IsDraw)
-                    state.SetDraw();
-                else
-                    state.SetWinner(resultManager.Winner);
-            }
-
-            activeMoveId = -1;
-            return;
-        }
-
-        if (turnManager != null)
-            turnManager.StartNextRound();
-
-        if (state != null)
-            state.CommitAuthoritativePhase(
-                GameState.WaitingForPlayerXPlacement,
-                turnManager.PlayerXAction,
-                turnManager.PlayerYAction);
-
-        activeMoveId = -1;
-    }
-    public void ResetNetworkMoveState()
-    {
-        if (!IsServer)
             return;
 
         movementResolved = false;
