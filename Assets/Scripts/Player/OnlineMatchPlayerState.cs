@@ -166,6 +166,19 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         return PlayerType.X;
     }
 
+    public bool IsClientAssigned(ulong clientId)
+    {
+        return clientId == HostPlayerClientId.Value ||
+               clientId == JoinerPlayerClientId.Value;
+    }
+
+    public bool IsMatchReady()
+    {
+        return MatchReady.Value &&
+               HostPlayerClientId.Value != ulong.MaxValue &&
+               JoinerPlayerClientId.Value != ulong.MaxValue;
+    }
+
     public string GetName(PlayerType player)
     {
         return player == PlayerType.X
