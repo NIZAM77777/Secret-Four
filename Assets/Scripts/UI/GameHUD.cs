@@ -77,11 +77,60 @@ public class GameHUD : MonoBehaviour
             return;
         }
 
+        if (GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
+            OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.MatchReady.Value)
+        {
+            if (playerXNameText != null)
+                playerXNameText.text =
+                    OnlineMatchPlayerState.Instance.GetName(PlayerType.X);
+
+            if (playerYNameText != null)
+                playerYNameText.text =
+                    OnlineMatchPlayerState.Instance.GetName(PlayerType.Y);
+
+            SetupOnlinePlayerImages();
+            return;
+        }
+
         if (playerXNameText != null)
             playerXNameText.text = GameSession.Instance.Player1Name;
 
         if (playerYNameText != null)
             playerYNameText.text = GameSession.Instance.Player2Name;
+    }
+
+    private void SetupOnlinePlayerImages()
+    {
+        string xSkin =
+            OnlineMatchPlayerState.Instance.GetSkinId(PlayerType.X);
+
+        string ySkin =
+            OnlineMatchPlayerState.Instance.GetSkinId(PlayerType.Y);
+
+        Sprite xSprite =
+            SecretFourStoreIntegration.GetSpriteForItem(xSkin);
+
+        Sprite ySprite =
+            SecretFourStoreIntegration.GetSpriteForItem(ySkin);
+
+        if (xSprite == null && coinConfig != null)
+            xSprite = coinConfig.GetSprite(PlayerType.X);
+
+        if (ySprite == null && coinConfig != null)
+            ySprite = coinConfig.GetSprite(PlayerType.Y);
+
+        if (playerXImage != null)
+        {
+            playerXImage.sprite = xSprite;
+            playerXImage.enabled = xSprite != null;
+        }
+
+        if (playerYImage != null)
+        {
+            playerYImage.sprite = ySprite;
+            playerYImage.enabled = ySprite != null;
+        }
     }
 
     private void SetupPlayerImages()
