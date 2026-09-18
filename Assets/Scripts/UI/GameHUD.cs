@@ -248,14 +248,13 @@ public class GameHUD : MonoBehaviour
             case GameState.WaitingForPlayerYDirection:
                 turnText.text = $"{GetPlayerYName()} — Choose Direction";
                 break;
+            // These are internal resolution phases. They remain part of
+            // the authoritative game state, but are intentionally not exposed
+            // as player-facing turn messages.
             case GameState.RevealingDirections:
-                turnText.text = "Directions Revealed";
-                break;
             case GameState.Moving:
-                turnText.text = "Moving...";
-                break;
             case GameState.CheckingResult:
-                turnText.text = "Checking Result...";
+                turnText.text = "";
                 break;
             case GameState.Won:
                 turnText.text = "Game Over";
