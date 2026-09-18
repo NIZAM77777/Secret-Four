@@ -262,6 +262,16 @@ public sealed class NetworkGameState : NetworkBehaviour
                (player == PlayerType.Y && state == GameState.WaitingForPlayerYPlacement);
     }
 
+    public bool IsPlayerAllowed(ulong clientId, PlayerType player)
+    {
+        if (NetworkManager.Singleton == null)
+            return false;
+
+        return player == PlayerType.X
+            ? clientId == NetworkManager.ServerClientId
+            : player == PlayerType.Y && clientId != NetworkManager.ServerClientId;
+    }
+
     public bool CanRequestDirection(PlayerType player)
     {
         GameState state = GetAuthoritativeState();
@@ -423,6 +433,15 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         currentState.Value = (int)turnManager.CurrentState;
         StateRevision.Value++;
+    }
+
+    public string GetSkinAt(int x, int y)
+    {
+        int index = GetIndex(x, y);
+        if (index < 0 || index >= BoardSkinIds.Count)
+            return string.Empty;
+
+        return BoardSkinIds[index].ToString();
     }
 
     public void CapturePlacementSkin(int x, int y, string skinId)
