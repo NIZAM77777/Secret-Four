@@ -58,41 +58,10 @@ public class DirectionSelector : MonoBehaviour
     public void SelectDirection(
         MoveDirection direction)
     {
-        PlayerType player =
-            GetCurrentDirectionPlayer();
+        PlayerType player = GetCurrentDirectionPlayer();
 
-
-        if (!turnManager.CanChooseDirection(player))
-        {
-            Debug.Log(
-                "Direction cannot be selected right now."
-            );
-
-            return;
-        }
-
-
-        // =====================================
-        // VALIDATE DIRECTION
-        // =====================================
-
-        if (!IsDirectionValid(
-            player,
-            direction
-        ))
-        {
-            Debug.Log(
-                $"{direction} is not valid."
-            );
-
-            return;
-        }
-
-
-        // =====================================
-        // ONLINE MODE
-        // =====================================
-
+        // Online input is a request only. The server is the sole authority
+        // for the current turn and direction validity.
         if (IsOnlineGame())
         {
             if (networkDirectionManager == null)
@@ -104,7 +73,6 @@ public class DirectionSelector : MonoBehaviour
                 return;
             }
 
-
             if (!IsLocalPlayerAllowed(player))
             {
                 Debug.Log(
@@ -114,22 +82,57 @@ public class DirectionSelector : MonoBehaviour
                 return;
             }
 
+            if (NetworkGameState.Instance != null &&
+                !NetworkGameState.Instance.CanRequestDirection(player))
+            {
+                Debug.Log(
+                    "The authoritative match is processing another state."
+                );
 
-            networkDirectionManager
-                .RequestDirection(direction);
+                return;
+            }
+
+            if (!IsValidDirectionValue(direction))
+            {
+                Debug.LogWarning(
+                    $"Invalid direction request: {direction}"
+                );
+
+                return;
+            }
+
+            networkDirectionManager.RequestDirection(direction);
+            return;
+        }
+
+        if (!turnManager.CanChooseDirection(player))
+        {
+            Debug.Log(
+                "Direction cannot be selected right now."
+            );
 
             return;
         }
 
+        if (!IsDirectionValid(player, direction))
+        {
+            Debug.Log(
+                $"{direction} is not valid."
+            );
 
-        // =====================================
-        // LOCAL MODE
-        // =====================================
+            return;
+        }
 
-        ApplyDirection(
-            player,
-            direction
-        );
+        ApplyDirection(player, direction);
+    }
+
+    private bool IsValidDirectionValue(MoveDirection direction)
+    {
+        return direction == MoveDirection.Up ||
+               direction == MoveDirection.Down ||
+               direction == MoveDirection.Left ||
+               direction == MoveDirection.Right ||
+               direction == MoveDirection.Stay;
     }
 
 
