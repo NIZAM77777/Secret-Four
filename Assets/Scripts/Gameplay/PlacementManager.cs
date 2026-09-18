@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Collections;
 
 public class PlacementManager : MonoBehaviour
 {
@@ -227,8 +228,8 @@ public class PlacementManager : MonoBehaviour
     /// This is presentation only; the network state remains the source of truth.
     /// </summary>
     public void RebuildFromNetworkState(
-        System.Collections.Generic.IList<byte> boardCells,
-        System.Collections.Generic.IList<Unity.Collections.FixedString64Bytes> skinIds,
+        NetworkList<byte> boardCells,
+        NetworkList<FixedString64Bytes> skinIds,
         Vector2Int xPosition,
         Vector2Int yPosition,
         bool xHasPlaced,
