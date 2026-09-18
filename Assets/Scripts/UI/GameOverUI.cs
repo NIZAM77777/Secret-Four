@@ -81,17 +81,22 @@ public class GameOverUI : MonoBehaviour
 
     private string GetPlayerName(PlayerType player)
     {
-        if (GameSession.Instance == null)
+        if (GameSession.Instance != null &&
+            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
+            OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsMatchReady())
         {
-            return player == PlayerType.X
-                ? "Player 1"
-                : "Player 2";
+            return OnlineMatchPlayerState.Instance.GetName(player);
         }
 
-        if (player == PlayerType.X)
-            return GameSession.Instance.Player1Name;
+        if (GameSession.Instance != null)
+        {
+            return player == PlayerType.X
+                ? GameSession.Instance.Player1Name
+                : GameSession.Instance.Player2Name;
+        }
 
-        return GameSession.Instance.Player2Name;
+        return player == PlayerType.X ? "Player 1" : "Player 2";
     }
 
 
@@ -105,9 +110,22 @@ public class GameOverUI : MonoBehaviour
 
         Sprite sprite = null;
 
-        // Use the exact skin that belongs to the winning player.
-        // This keeps the result screen consistent with the gameplay coin visual.
-        sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(winner);
+        // Online matches must use the winning network player's skin.
+        // Local/Bot matches can use the local Store selection.
+        if (GameSession.Instance != null &&
+            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
+            OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsMatchReady())
+        {
+            string skinId =
+                OnlineMatchPlayerState.Instance.GetSkinId(winner);
+
+            sprite = SecretFourStoreIntegration.GetSpriteForItem(skinId);
+        }
+        else
+        {
+            sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(winner);
+        }
 
         // Fall back to the original CoinConfig sprite when no store skin is selected.
         if (sprite == null && coinConfig != null)
