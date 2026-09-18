@@ -31,50 +31,28 @@ public class NetworkGameResultManager : NetworkBehaviour
         {
             Debug.Log($"HOST: Winner is {winner}");
 
+            gameResultManager.SetWinner(winner);
+
             if (winGlowManager != null)
                 winGlowManager.GlowWinningCoins();
 
-            SendWinnerClientRpc((int)winner);
+            NetworkGameState.Instance?.SetWinner(winner);
+            NetworkGameState.Instance?.CaptureFromServer();
             return true;
         }
 
         if (winConditionChecker.IsBoardFull())
         {
             Debug.Log("HOST: Game is a draw.");
-            SendDrawClientRpc();
+
+            gameResultManager.SetDraw();
+            NetworkGameState.Instance?.SetDraw();
+            NetworkGameState.Instance?.CaptureFromServer();
             return true;
         }
 
+        NetworkGameState.Instance?.CaptureFromServer();
         return false;
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
-    private void SendWinnerClientRpc(int winnerValue)
-    {
-        if (!IsValidPlayerType(winnerValue))
-        {
-            Debug.LogWarning($"NETWORK RESULT: invalid winner value {winnerValue}");
-            return;
-        }
-
-        PlayerType winner = (PlayerType)winnerValue;
-
-        Debug.Log($"NETWORK RESULT: {winner} WINS");
-
-        if (winGlowManager != null)
-            winGlowManager.GlowWinningCoins();
-
-        if (gameResultManager != null)
-            gameResultManager.SetWinner(winner);
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
-    private void SendDrawClientRpc()
-    {
-        Debug.Log("NETWORK RESULT: DRAW");
-
-        if (gameResultManager != null)
-            gameResultManager.SetDraw();
     }
 
     public void StartNextRoundOnHost()
@@ -82,27 +60,17 @@ public class NetworkGameResultManager : NetworkBehaviour
         if (!IsServer)
             return;
 
-        if (gameResultManager != null && !gameResultManager.HasResult)
+        if (gameResultManager != null && gameResultManager.HasResult)
         {
-            Debug.LogWarning("Cannot start the next round before the match has a result.");
+            Debug.LogWarning("Cannot start the next round after a completed result.");
             return;
         }
 
-        StartNextRoundClientRpc();
+        // NetworkMovementManager advances the round only after all clients
+        // have finished presenting the authoritative movement result.
+        turnManager?.StartNextRound();
+        NetworkGameState.Instance?.CaptureFromServer();
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    private void StartNextRoundClientRpc()
-    {
-        if (turnManager == null)
-            return;
 
-        Debug.Log("NETWORK: START NEXT ROUND");
-        turnManager.StartNextRound();
-    }
-
-    private bool IsValidPlayerType(int value)
-    {
-        return value == (int)PlayerType.X || value == (int)PlayerType.Y;
-    }
 }
