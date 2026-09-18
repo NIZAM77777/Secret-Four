@@ -1,11 +1,13 @@
 using UnityEngine;
 using Unity.Netcode;
 
-
+/// <summary>
+/// Resolves the local online player side from the authoritative host/joiner
+/// assignment. Host is always X/LEFT, joining client is always Y/RIGHT.
+/// </summary>
 public class OnlinePlayerManager : MonoBehaviour
 {
     public static OnlinePlayerManager Instance;
-
 
     public enum OnlinePlayerType
     {
@@ -14,92 +16,95 @@ public class OnlinePlayerManager : MonoBehaviour
         PlayerY
     }
 
-
-    public OnlinePlayerType LocalPlayerType
-    {
-        get;
-        private set;
-    }
-
+    public OnlinePlayerType LocalPlayerType { get; private set; }
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
-        }
-    }
-
-
-    private void Start()
-    {
-        InvokeRepeating(
-            nameof(CheckPlayerAssignment),
-            0.5f,
-            0.5f
-        );
-    }
-
-
-    private void CheckPlayerAssignment()
-    {
-        if (NetworkManager.Singleton == null)
-        {
             return;
         }
 
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
-        if (!NetworkManager.Singleton.IsListening)
+    private void OnEnable()
+    {
+        if (NetworkManager.Singleton != null)
         {
-            return;
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
 
+        ResolveAssignment();
+    }
 
-        if (NetworkManager.Singleton.IsHost)
+    private void OnDisable()
+    {
+        if (NetworkManager.Singleton != null)
         {
-            if (LocalPlayerType !=
-                OnlinePlayerType.PlayerX)
-            {
-                LocalPlayerType =
-                    OnlinePlayerType.PlayerX;
-
-                Debug.Log(
-                    "ONLINE PLAYER ASSIGNMENT: HOST → PLAYER X"
-                );
-            }
-        }
-        else if (NetworkManager.Singleton.IsClient)
-        {
-            if (LocalPlayerType !=
-                OnlinePlayerType.PlayerY)
-            {
-                LocalPlayerType =
-                    OnlinePlayerType.PlayerY;
-
-                Debug.Log(
-                    "ONLINE PLAYER ASSIGNMENT: CLIENT → PLAYER Y"
-                );
-            }
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
     }
 
+    private void OnClientConnected(ulong clientId)
+    {
+        ResolveAssignment();
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        ResolveAssignment();
+    }
+
+    private void ResolveAssignment()
+    {
+        NetworkManager networkManager = NetworkManager.Singleton;
+
+        if (networkManager == null || !networkManager.IsListening)
+        {
+            LocalPlayerType = OnlinePlayerType.None;
+            return;
+        }
+
+        if (OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsClientAssigned(
+                networkManager.LocalClientId))
+        {
+            PlayerType side =
+                OnlineMatchPlayerState.Instance.GetSideForClient(
+                    networkManager.LocalClientId);
+
+            LocalPlayerType =
+                side == PlayerType.X
+                    ? OnlinePlayerType.PlayerX
+                    : OnlinePlayerType.PlayerY;
+
+            return;
+        }
+
+        // During the tiny interval before the profile NetworkObject is ready,
+        // NGO host/client role remains the deterministic fallback.
+        LocalPlayerType =
+            networkManager.IsHost
+                ? OnlinePlayerType.PlayerX
+                : networkManager.IsClient
+                    ? OnlinePlayerType.PlayerY
+                    : OnlinePlayerType.None;
+    }
 
     public bool IsLocalPlayerX()
     {
-        return LocalPlayerType ==
-               OnlinePlayerType.PlayerX;
+        ResolveAssignment();
+        return LocalPlayerType == OnlinePlayerType.PlayerX;
     }
-
 
     public bool IsLocalPlayerY()
     {
-        return LocalPlayerType ==
-               OnlinePlayerType.PlayerY;
+        ResolveAssignment();
+        return LocalPlayerType == OnlinePlayerType.PlayerY;
     }
 }
