@@ -95,6 +95,37 @@ public class TurnManager : MonoBehaviour
         currentState = newState;
     }
 
+    /// <summary>
+    /// Applies the authoritative network snapshot to the local presentation cache.
+    /// This method does not perform a transition or trigger gameplay logic.
+    /// </summary>
+    public void ApplyAuthoritativeState(
+        GameState state,
+        Vector2Int xPosition,
+        Vector2Int yPosition,
+        MoveDirection xDirection,
+        MoveDirection yDirection,
+        bool xHasPlaced,
+        bool yHasPlaced,
+        bool xHasChosenDirection,
+        bool yHasChosenDirection)
+    {
+        if (PlayerXAction == null || PlayerYAction == null)
+            return;
+
+        PlayerXAction.position = xPosition;
+        PlayerXAction.direction = xDirection;
+        PlayerXAction.hasPlaced = xHasPlaced;
+        PlayerXAction.hasChosenDirection = xHasChosenDirection;
+
+        PlayerYAction.position = yPosition;
+        PlayerYAction.direction = yDirection;
+        PlayerYAction.hasPlaced = yHasPlaced;
+        PlayerYAction.hasChosenDirection = yHasChosenDirection;
+
+        currentState = state;
+    }
+
     public void StartNextRound()
     {
         PlayerXAction.Reset();
