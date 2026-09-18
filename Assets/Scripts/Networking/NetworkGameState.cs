@@ -415,6 +415,52 @@ public sealed class NetworkGameState : NetworkBehaviour
         BoardSkinIds[index] = new FixedString64Bytes(skinId ?? string.Empty);
     }
 
+    public void MoveStoredSkin(
+        int startX,
+        int startY,
+        int destinationX,
+        int destinationY)
+    {
+        if (!IsServer)
+            return;
+
+        EnsureBoardLists();
+
+        int startIndex = GetIndex(startX, startY);
+        int destinationIndex = GetIndex(destinationX, destinationY);
+
+        if (startIndex < 0 || destinationIndex < 0 ||
+            startIndex >= BoardSkinIds.Count ||
+            destinationIndex >= BoardSkinIds.Count)
+        {
+            return;
+        }
+
+        FixedString64Bytes skin = BoardSkinIds[startIndex];
+        BoardSkinIds[destinationIndex] = skin;
+
+        if (startIndex != destinationIndex)
+            BoardSkinIds[startIndex] = new FixedString64Bytes();
+    }
+
+    public void ApplyAuthoritativeBoardState(
+        System.Collections.Generic.IList<byte> cells,
+        System.Collections.Generic.IList<FixedString64Bytes> skins)
+    {
+        if (!IsServer)
+            return;
+
+        EnsureBoardLists();
+
+        int count = Mathf.Min(BoardCells.Count, cells?.Count ?? 0);
+        for (int i = 0; i < count; i++)
+        {
+            BoardCells[i] = cells[i];
+            if (skins != null && i < skins.Count)
+                BoardSkinIds[i] = skins[i];
+        }
+    }
+
     public void SetSkinAt(int x, int y, string skinId)
     {
         if (!IsServer)
