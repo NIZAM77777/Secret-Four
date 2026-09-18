@@ -316,7 +316,7 @@ public class MovementManager : MonoBehaviour
             if (!CheckGameResult())
                 StartNextRoundCorrectly();
 
-            return;
+            yield break;
         }
 
         // Online result evaluation and next-round transition are authoritative.
@@ -399,7 +399,7 @@ public class MovementManager : MonoBehaviour
             if (!CheckGameResult())
                 StartNextRoundCorrectly();
 
-            return;
+            yield break;
         }
 
         // Online result evaluation and next-round transition are authoritative.
