@@ -202,4 +202,69 @@ public class PlacementManager : MonoBehaviour
     {
         return coinVisuals.Values;
     }
+
+    /// <summary>
+    /// Rebuilds the local visual cache from the authoritative network board state.
+    /// This is presentation only; the network state remains the source of truth.
+    /// </summary>
+    public void RebuildFromNetworkState(
+        System.Collections.Generic.IList<byte> boardCells,
+        System.Collections.Generic.IList<Unity.Collections.FixedString64Bytes> skinIds,
+        Vector2Int xPosition,
+        Vector2Int yPosition,
+        bool xHasPlaced,
+        bool yHasPlaced)
+    {
+        if (boardManager == null || boardManager.CurrentBoard == null || boardView == null)
+            return;
+
+        ClearAllCoins();
+
+        Board board = boardManager.CurrentBoard;
+
+        for (int x = 0; x < board.Width; x++)
+        {
+            for (int y = 0; y < board.Height; y++)
+            {
+                int index = x * board.Height + y;
+                if (index < 0 || index >= boardCells.Count)
+                    continue;
+
+                PlayerType? player = null;
+                if (boardCells[index] == 1)
+                    player = PlayerType.X;
+                else if (boardCells[index] == 2)
+                    player = PlayerType.Y;
+
+                if (!player.HasValue)
+                    continue;
+
+                string skinId = string.Empty;
+                if (skinIds != null && index < skinIds.Count)
+                    skinId = skinIds[index].ToString();
+
+                CreateCoinVisual(
+                    x,
+                    y,
+                    player.Value,
+                    string.IsNullOrWhiteSpace(skinId) ? null : skinId);
+
+                GameObject coin = GetCoinAtPosition(new Vector2Int(x, y));
+
+                if (player.Value == PlayerType.X &&
+                    xHasPlaced &&
+                    xPosition == new Vector2Int(x, y))
+                {
+                    PlayerXCoin = coin;
+                }
+
+                if (player.Value == PlayerType.Y &&
+                    yHasPlaced &&
+                    yPosition == new Vector2Int(x, y))
+                {
+                    PlayerYCoin = coin;
+                }
+            }
+        }
+    }
 }
