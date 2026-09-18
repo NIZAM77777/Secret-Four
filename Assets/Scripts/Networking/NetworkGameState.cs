@@ -526,12 +526,18 @@ public sealed class NetworkGameState : NetworkBehaviour
     public bool IsLocalPlayerSide(PlayerType player)
     {
         if (NetworkManager.Singleton == null)
-            return true;
-
-        if (NetworkManager.Singleton.IsServer)
             return player == PlayerType.X;
 
-        return player == PlayerType.Y;
+        if (OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsClientAssigned(
+                NetworkManager.Singleton.LocalClientId))
+        {
+            return OnlineMatchPlayerState.Instance.IsLocalSide(player);
+        }
+
+        return NetworkManager.Singleton.IsServer
+            ? player == PlayerType.X
+            : player == PlayerType.Y;
     }
 
     private void ApplyAuthoritativeStateToClient()
