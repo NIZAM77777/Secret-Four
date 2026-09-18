@@ -9,14 +9,13 @@ public class NetworkPlayAgainManager : NetworkBehaviour
     [SerializeField] private BoardManager boardManager;
     [SerializeField] private PlacementManager placementManager;
     [SerializeField] private DirectionButtonController directionButtonController;
-
-    private bool hostReady;
-    private bool clientReady;
+    [SerializeField] private MovementManager movementManager;
+    [SerializeField] private NetworkMovementManager networkMovementManager;
 
     public override void OnNetworkSpawn()
     {
-        hostReady = false;
-        clientReady = false;
+        if (IsServer && NetworkGameState.Instance != null)
+            NetworkGameState.Instance.SetRematchMask(0);
 
         if (NetworkManager != null)
             NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
@@ -36,7 +35,6 @@ public class NetworkPlayAgainManager : NetworkBehaviour
             return;
         }
 
-        Debug.Log($"PLAYER {NetworkManager.LocalClientId} REQUESTED PLAY AGAIN");
         RequestPlayAgainRpc();
     }
 
@@ -48,79 +46,62 @@ public class NetworkPlayAgainManager : NetworkBehaviour
 
         ulong playerId = rpcParams.Receive.SenderClientId;
 
-        // Only the two players in this match may request a rematch.
-        bool playerIsConnected = false;
-
-        foreach (ulong connectedClientId in NetworkManager.ConnectedClientsIds)
-        {
-            if (connectedClientId == playerId)
-            {
-                playerIsConnected = true;
-                break;
-            }
-        }
-
-        if (!playerIsConnected)
+        if (!NetworkManager.ConnectedClientsIds.Contains(playerId))
         {
             Debug.LogWarning($"Rejected play-again request from unknown client {playerId}.");
             return;
         }
 
-        // A rematch is only valid after the current match has finished.
-        if (gameResultManager == null || !gameResultManager.HasResult)
+        NetworkGameState state = NetworkGameState.Instance;
+        if (state == null)
+        {
+            Debug.LogError("NetworkGameState is missing.");
+            return;
+        }
+
+        if (!state.IsCurrentMatchOver())
         {
             Debug.LogWarning("Rejected play-again request because the match is still active.");
             return;
         }
 
+        byte mask = state.RematchReadyMask.Value;
         if (playerId == NetworkManager.ServerClientId)
-        {
-            hostReady = true;
-            Debug.Log("HOST IS READY FOR PLAY AGAIN");
-        }
+            mask = (byte)(mask | 1);
         else
+            mask = (byte)(mask | 2);
+
+        state.SetRematchMask(mask);
+        UpdateReadyStatusRpc(mask);
+
+        if (mask == 3)
+            StartAuthoritativeRematch();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void UpdateReadyStatusRpc(byte mask)
+    {
+        if (mask == 1 || mask == 2)
         {
-            clientReady = true;
-            Debug.Log("CLIENT IS READY FOR PLAY AGAIN");
+            GameOverUI ui = FindFirstObjectByType<GameOverUI>();
+            if (ui != null)
+                ui.SetWaitingForOpponent(true);
         }
-
-        UpdateReadyStatusRpc(hostReady, clientReady);
-        CheckBothPlayersReady();
     }
 
-    private void CheckBothPlayersReady()
+    private void StartAuthoritativeRematch()
     {
-        if (!IsServer || !hostReady || !clientReady)
+        if (!IsServer)
             return;
 
-        if (gameResultManager == null || !gameResultManager.HasResult)
-            return;
-
-        Debug.Log("BOTH PLAYERS READY!");
-
-        hostReady = false;
-        clientReady = false;
-
-        RestartMatchRpc();
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
-    private void UpdateReadyStatusRpc(bool hostIsReady, bool clientIsReady)
-    {
-        Debug.Log($"PLAY AGAIN STATUS → HOST: {hostIsReady} | CLIENT: {clientIsReady}");
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
-    private void RestartMatchRpc()
-    {
-        Debug.Log("NETWORK → NEW MATCH STARTING");
-        ResetCompleteMatch();
-    }
-
-    private void ResetCompleteMatch()
-    {
         if (gameResultManager != null)
             gameResultManager.ResetResult();
+
+        if (movementManager != null)
+            movementManager.ResetNetworkMovementState();
+
+        if (networkMovementManager != null)
+            networkMovementManager.ResetNetworkMoveState();
 
         if (boardManager != null)
             boardManager.ResetBoard();
@@ -134,7 +115,9 @@ public class NetworkPlayAgainManager : NetworkBehaviour
         if (directionButtonController != null)
             directionButtonController.ResetButtons();
 
-        Debug.Log("===== NEW MATCH READY =====");
+        NetworkGameState.Instance.ResetServerMatch();
+
+        Debug.Log("===== AUTHORITATIVE ONLINE REMATCH STARTED =====");
     }
 
     private void OnClientDisconnected(ulong clientId)
@@ -142,11 +125,10 @@ public class NetworkPlayAgainManager : NetworkBehaviour
         if (!IsServer || NetworkManager == null)
             return;
 
-        // Clear stale rematch readiness if the second player leaves.
         if (clientId != NetworkManager.ServerClientId)
         {
-            clientReady = false;
-            Debug.Log("CLIENT DISCONNECTED. PLAY AGAIN READY STATE CLEARED.");
+            NetworkGameState.Instance?.SetRematchMask(0);
+            Debug.Log("CLIENT DISCONNECTED. REMATCH READY STATE CLEARED.");
         }
     }
 }
