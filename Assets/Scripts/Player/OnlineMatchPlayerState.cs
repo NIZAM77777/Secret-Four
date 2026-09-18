@@ -113,7 +113,9 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         if (!IsServer)
             return;
 
-        RefreshReadyState();
+        MatchReady.Value =
+            HostPlayerClientId.Value != ulong.MaxValue &&
+            JoinerPlayerClientId.Value != ulong.MaxValue;
     }
 
     public override void OnNetworkDespawn()
