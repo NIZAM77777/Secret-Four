@@ -55,6 +55,20 @@ public class NetworkGameResultManager : NetworkBehaviour
         return false;
     }
 
+    public void ResolveAfterAuthoritativeMovement()
+    {
+        if (!IsServer)
+            return;
+
+        if (NetworkGameState.Instance != null)
+            NetworkGameState.Instance.SetAuthoritativePhase(GameState.CheckingResult);
+
+        bool resultFound = CheckGameResultOnHost();
+        if (resultFound)
+            return;
+
+        StartNextRoundOnHost();
+    }
     public void StartNextRoundOnHost()
     {
         if (!IsServer)
@@ -66,8 +80,7 @@ public class NetworkGameResultManager : NetworkBehaviour
             return;
         }
 
-        // NetworkMovementManager advances the round only after all clients
-        // have finished presenting the authoritative movement result.
+        // The server advances the round after the authoritative result check.
         turnManager?.StartNextRound();
         NetworkGameState.Instance?.CaptureFromServer();
     }
