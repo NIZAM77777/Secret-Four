@@ -85,6 +85,9 @@ public class OnlineSceneLoader : MonoBehaviour
 
         GameSession.Instance.StartOnlineRoomGame();
 
+        // Online player profiles are initialized in the networked Game scene
+        // before gameplay begins. The scene itself is started only after the
+        // joiner has connected.
         networkManager.SceneManager.LoadScene(
             gameSceneName,
             LoadSceneMode.Single
