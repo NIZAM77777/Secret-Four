@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -12,7 +11,6 @@ public class NetworkMovementManager : NetworkBehaviour
 
     private bool movementResolved;
     private int activeMoveId = -1;
-    private readonly HashSet<ulong> presentationCompleteClients = new();
 
     public bool IsMoveActive => movementResolved;
 
@@ -49,10 +47,15 @@ public class NetworkMovementManager : NetworkBehaviour
         }
 
         movementResolved = true;
-        presentationCompleteClients.Clear();
 
         NetworkGameState state = NetworkGameState.Instance;
         activeMoveId = state != null ? state.BeginMove() : 0;
+
+        if (state != null)
+            state.CommitAuthoritativePhase(
+                GameState.Moving,
+                turnManager.PlayerXAction,
+                turnManager.PlayerYAction);
 
         MovementResolution resolution =
             movementRuleResolver.Resolve(
@@ -110,59 +113,17 @@ public class NetworkMovementManager : NetworkBehaviour
             moveId);
     }
 
-    public void ReportPresentationComplete(int moveId)
-    {
-        if (!IsSpawned || moveId != activeMoveId)
-            return;
-
-        if (IsServer)
-        {
-            MarkPresentationComplete(NetworkManager.ServerClientId, moveId);
-            return;
-        }
-
-        ReportPresentationCompleteRpc(moveId);
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void ReportPresentationCompleteRpc(
-        int moveId,
-        RpcParams rpcParams = default)
-    {
-        if (!IsServer)
-            return;
-
-        MarkPresentationComplete(
-            rpcParams.Receive.SenderClientId,
-            moveId);
-    }
-
-    private void MarkPresentationComplete(ulong clientId, int moveId)
-    {
-        if (!IsServer || moveId != activeMoveId || !movementResolved)
-            return;
-
-        presentationCompleteClients.Add(clientId);
-
-        int expectedClients = NetworkManager.ConnectedClientsIds.Count;
-        if (expectedClients <= 0 || presentationCompleteClients.Count < expectedClients)
-            return;
-
-        FinishAuthoritativeMove(moveId);
-    }
-
     private void FinishAuthoritativeMove(int moveId)
     {
         if (!IsServer || moveId != activeMoveId)
             return;
 
         movementResolved = false;
-        presentationCompleteClients.Clear();
 
         NetworkGameState state = NetworkGameState.Instance;
 
         if (state != null)
-            state.CaptureFromServer();
+            state.SetAuthoritativePhase(GameState.CheckingResult);
 
         GameResultManager resultManager =
             FindFirstObjectByType<GameResultManager>();
@@ -185,21 +146,13 @@ public class NetworkMovementManager : NetworkBehaviour
             turnManager.StartNextRound();
 
         if (state != null)
-            state.CaptureFromServer();
+            state.CommitAuthoritativePhase(
+                GameState.WaitingForPlayerXPlacement,
+                turnManager.PlayerXAction,
+                turnManager.PlayerYAction);
 
         activeMoveId = -1;
     }
-
-    public void ResetNetworkMoveState()
-    {
-        if (!IsServer)
-            return;
-
-        movementResolved = false;
-        activeMoveId = -1;
-        presentationCompleteClients.Clear();
-    }
-
     private MovementResultData GetMovementResultData(MovementResult result)
     {
         return new MovementResultData
