@@ -324,6 +324,13 @@ public class MovementManager : MonoBehaviour
             networkGameResultManager != null)
         {
             networkGameResultManager.ResolveAfterAuthoritativeMovement();
+
+            if (networkMovementManager != null)
+            {
+                networkMovementManager.CompleteAuthoritativeMove(
+                    activeNetworkMoveId
+                );
+            }
         }
     }
 
@@ -407,6 +414,13 @@ public class MovementManager : MonoBehaviour
             networkGameResultManager != null)
         {
             networkGameResultManager.ResolveAfterAuthoritativeMovement();
+
+            if (networkMovementManager != null)
+            {
+                networkMovementManager.CompleteAuthoritativeMove(
+                    activeNetworkMoveId
+                );
+            }
         }
     }
 
