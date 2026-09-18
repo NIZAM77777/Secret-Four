@@ -28,6 +28,12 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
     public NetworkVariable<bool> MatchReady { get; } =
         new NetworkVariable<bool>(false);
 
+    public NetworkVariable<bool> HostReady { get; } =
+        new NetworkVariable<bool>(false);
+
+    public NetworkVariable<bool> JoinerReady { get; } =
+        new NetworkVariable<bool>(false);
+
     public override void OnNetworkSpawn()
     {
         Instance = this;
@@ -79,6 +85,7 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
             JoinerPlayerClientId.Value = ulong.MaxValue;
             JoinerPlayerName.Value = new FixedString64Bytes("Player 2");
             JoinerSkinId.Value = new FixedString128Bytes();
+            JoinerReady.Value = false;
             RefreshReadyState();
         }
     }
@@ -104,9 +111,10 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         if (!IsServer)
             return;
 
+        HostReady.Value =
+            HostPlayerClientId.Value != ulong.MaxValue;
         MatchReady.Value =
-            HostPlayerClientId.Value != ulong.MaxValue &&
-            JoinerPlayerClientId.Value != ulong.MaxValue;
+            HostReady.Value && JoinerReady.Value;
     }
 
     public override void OnNetworkDespawn()
@@ -143,10 +151,8 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         JoinerPlayerName.Value = new FixedString64Bytes(
             string.IsNullOrWhiteSpace(playerName) ? "Player 2" : playerName.Trim());
         JoinerSkinId.Value = new FixedString128Bytes(skinId ?? string.Empty);
-
-        MatchReady.Value =
-            HostPlayerClientId.Value != ulong.MaxValue &&
-            JoinerPlayerClientId.Value != ulong.MaxValue;
+        JoinerReady.Value = true;
+        RefreshReadyState();
     }
 
     public PlayerType GetSideForClient(ulong clientId)
