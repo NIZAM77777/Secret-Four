@@ -309,25 +309,22 @@ public class MovementManager : MonoBehaviour
             true
         );
 
-        turnManager.SetState(
-            GameState.CheckingResult
-        );
-
-
-        if (CheckGameResult())
+        if (!IsOnlineGame())
         {
-            if (IsOnlineGame())
-                ReportNetworkPresentationComplete();
-            yield break;
+            turnManager.SetState(GameState.CheckingResult);
+
+            if (!CheckGameResult())
+                StartNextRoundCorrectly();
+
+            return;
         }
 
-        if (IsOnlineGame())
+        // Online result evaluation and next-round transition are authoritative.
+        if (NetworkManager.Singleton.IsServer &&
+            networkGameResultManager != null)
         {
-            ReportNetworkPresentationComplete();
-            yield break;
+            networkGameResultManager.ResolveAfterAuthoritativeMovement();
         }
-
-        StartNextRoundCorrectly();
     }
 
 
@@ -395,25 +392,22 @@ public class MovementManager : MonoBehaviour
             false
         );
 
-        turnManager.SetState(
-            GameState.CheckingResult
-        );
-
-
-        if (CheckGameResult())
+        if (!IsOnlineGame())
         {
-            if (IsOnlineGame())
-                ReportNetworkPresentationComplete();
-            yield break;
+            turnManager.SetState(GameState.CheckingResult);
+
+            if (!CheckGameResult())
+                StartNextRoundCorrectly();
+
+            return;
         }
 
-        if (IsOnlineGame())
+        // Online result evaluation and next-round transition are authoritative.
+        if (NetworkManager.Singleton.IsServer &&
+            networkGameResultManager != null)
         {
-            ReportNetworkPresentationComplete();
-            yield break;
+            networkGameResultManager.ResolveAfterAuthoritativeMovement();
         }
-
-        StartNextRoundCorrectly();
     }
 
 
@@ -952,21 +946,6 @@ public class MovementManager : MonoBehaviour
         return false;
     }
 
-
-    private void ReportNetworkPresentationComplete()
-    {
-        if (!IsOnlineGame() ||
-            networkMovementManager == null ||
-            activeNetworkMoveId < 0)
-        {
-            return;
-        }
-
-        networkMovementManager.ReportPresentationComplete(
-            activeNetworkMoveId);
-
-        activeNetworkMoveId = -1;
-    }
 
     public void ResetNetworkMovementState()
     {
