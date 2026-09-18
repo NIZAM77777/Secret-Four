@@ -69,6 +69,7 @@ public class NetworkGameResultManager : NetworkBehaviour
 
         StartNextRoundOnHost();
     }
+
     public void StartNextRoundOnHost()
     {
         if (!IsServer)
@@ -80,10 +81,30 @@ public class NetworkGameResultManager : NetworkBehaviour
             return;
         }
 
-        // The server advances the round after the authoritative result check.
+        // Reset the local turn/action cache first.
         turnManager?.StartNextRound();
-        NetworkGameState.Instance?.CaptureFromServer();
+
+        // IMPORTANT:
+        // CaptureFromServer intentionally preserves an authoritative
+        // presentation phase such as CheckingResult. Therefore merely
+        // changing TurnManager.CurrentState is not enough to advance the
+        // network match into Round 2.
+        //
+        // Commit the new round as a complete authoritative snapshot so both
+        // clients receive:
+        //   - WaitingForPlayerXPlacement
+        //   - cleared X/Y round actions
+        //   - cleared placement/direction flags
+        // in the same network revision.
+        NetworkGameState state = NetworkGameState.Instance;
+        if (state != null)
+        {
+            state.CommitAuthoritativePhase(
+                GameState.WaitingForPlayerXPlacement,
+                turnManager.PlayerXAction,
+                turnManager.PlayerYAction);
+        }
+
+        Debug.Log("===== AUTHORITATIVE ONLINE NEXT ROUND STARTED =====");
     }
-
-
 }
