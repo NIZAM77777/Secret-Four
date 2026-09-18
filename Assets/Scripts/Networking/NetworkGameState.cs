@@ -497,7 +497,21 @@ public sealed class NetworkGameState : NetworkBehaviour
         XHasChosenDirection.Value = xAction.hasChosenDirection;
         YHasChosenDirection.Value = yAction.hasChosenDirection;
 
-        currentState.Value = (int)turnManager.CurrentState;
+        // During authoritative movement/result resolution, TurnManager can
+        // still be in its local presentation state. Do not let a board
+        // snapshot overwrite the authoritative network phase (for example,
+        // Won -> Moving or CheckingResult -> Moving).
+        GameState authoritativeState = CurrentAuthoritativeState;
+        bool preserveAuthoritativePhase =
+            authoritativeState == GameState.RevealingDirections ||
+            authoritativeState == GameState.Moving ||
+            authoritativeState == GameState.CheckingResult ||
+            authoritativeState == GameState.Won ||
+            authoritativeState == GameState.Draw;
+
+        if (!preserveAuthoritativePhase)
+            currentState.Value = (int)turnManager.CurrentState;
+
         StateRevision.Value++;
     }
 
