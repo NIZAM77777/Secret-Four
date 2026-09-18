@@ -51,12 +51,23 @@ public class GameHUD : MonoBehaviour
     {
         if (MN7StoreManager.Instance?.Selection != null)
             MN7StoreManager.Instance.Selection.OnSelectionChanged += OnStoreSelectionChanged;
+
+        OnlineMatchPlayerState.OnAnyProfileChanged += OnOnlineProfileChanged;
     }
 
     private void OnDisable()
     {
         if (MN7StoreManager.Instance?.Selection != null)
             MN7StoreManager.Instance.Selection.OnSelectionChanged -= OnStoreSelectionChanged;
+
+        OnlineMatchPlayerState.OnAnyProfileChanged -= OnOnlineProfileChanged;
+    }
+
+    private void OnOnlineProfileChanged()
+    {
+        SetupPlayers();
+        SetupPlayerImages();
+        Refresh(true);
     }
 
     private void OnStoreSelectionChanged(string selectionGroupId, string itemId)
@@ -79,7 +90,7 @@ public class GameHUD : MonoBehaviour
 
         if (GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
             OnlineMatchPlayerState.Instance != null &&
-            OnlineMatchPlayerState.Instance.MatchReady.Value)
+            OnlineMatchPlayerState.Instance.IsMatchReady())
         {
             if (playerXNameText != null)
                 playerXNameText.text =
@@ -280,18 +291,32 @@ public class GameHUD : MonoBehaviour
 
     private string GetPlayerXName()
     {
-        if (GameSession.Instance == null)
-            return "Player 1";
+        if (GameSession.Instance != null &&
+            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
+            OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsMatchReady())
+        {
+            return OnlineMatchPlayerState.Instance.GetName(PlayerType.X);
+        }
 
-        return GameSession.Instance.Player1Name;
+        return GameSession.Instance != null
+            ? GameSession.Instance.Player1Name
+            : "Player 1";
     }
 
     private string GetPlayerYName()
     {
-        if (GameSession.Instance == null)
-            return "Player 2";
+        if (GameSession.Instance != null &&
+            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
+            OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsMatchReady())
+        {
+            return OnlineMatchPlayerState.Instance.GetName(PlayerType.Y);
+        }
 
-        return GameSession.Instance.Player2Name;
+        return GameSession.Instance != null
+            ? GameSession.Instance.Player2Name
+            : "Player 2";
     }
 
     private void SetupBotDifficulty()
