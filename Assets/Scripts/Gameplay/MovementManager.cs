@@ -103,7 +103,6 @@ public class MovementManager : MonoBehaviour
 
         playerXCoin = xCoin;
         playerYCoin = yCoin;
-        activeNetworkMoveId = moveId;
 
         movementInProgress = true;
 
@@ -169,6 +168,7 @@ public class MovementManager : MonoBehaviour
 
         playerXCoin = xCoin;
         playerYCoin = yCoin;
+        activeNetworkMoveId = moveId;
 
         movementInProgress = true;
 
