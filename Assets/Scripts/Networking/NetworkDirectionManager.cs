@@ -77,28 +77,32 @@ public class NetworkDirectionManager : NetworkBehaviour
 
         turnManager.DirectionChosen(player);
 
-        if (NetworkGameState.Instance != null)
-            NetworkGameState.Instance.CaptureFromServer();
+        NetworkGameState state = NetworkGameState.Instance;
+        if (state != null)
+        {
+            // Commit the accepted direction and phase as one authoritative
+            // snapshot so the selecting client and remote client consume the
+            // exact same direction state.
+            state.CommitAuthoritativePhase(
+                turnManager.CurrentState,
+                turnManager.PlayerXAction,
+                turnManager.PlayerYAction);
+        }
 
         Debug.Log($"HOST stored direction: {player} → {direction}");
 
         if (turnManager.CurrentState == GameState.RevealingDirections)
         {
-            if (NetworkGameState.Instance != null)
-                NetworkGameState.Instance.SetState(GameState.RevealingDirections);
+            if (state != null)
+                state.CommitAuthoritativePhase(
+                    GameState.RevealingDirections,
+                    turnManager.PlayerXAction,
+                    turnManager.PlayerYAction);
 
             if (networkMovementManager != null)
-            {
                 networkMovementManager.RequestMovementResolution();
-            }
             else
-            {
                 Debug.LogError("NetworkMovementManager is missing.");
-            }
-        }
-        else
-        {
-            DirectionAcceptedRpc((int)player);
         }
     }
 
