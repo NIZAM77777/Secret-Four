@@ -92,15 +92,24 @@ public class GameHUD : MonoBehaviour
             OnlineMatchPlayerState.Instance != null &&
             OnlineMatchPlayerState.Instance.IsMatchReady())
         {
+            PlayerType localSide =
+                OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
+                    ? PlayerType.X
+                    : PlayerType.Y;
+
+            PlayerType leftSide = localSide;
+            PlayerType rightSide =
+                localSide == PlayerType.X ? PlayerType.Y : PlayerType.X;
+
             if (playerXNameText != null)
                 playerXNameText.text =
-                    OnlineMatchPlayerState.Instance.GetName(PlayerType.X);
+                    OnlineMatchPlayerState.Instance.GetName(leftSide);
 
             if (playerYNameText != null)
                 playerYNameText.text =
-                    OnlineMatchPlayerState.Instance.GetName(PlayerType.Y);
+                    OnlineMatchPlayerState.Instance.GetName(rightSide);
 
-            SetupOnlinePlayerImages();
+            SetupOnlinePlayerImages(leftSide, rightSide);
             return;
         }
 
@@ -111,36 +120,34 @@ public class GameHUD : MonoBehaviour
             playerYNameText.text = GameSession.Instance.Player2Name;
     }
 
-    private void SetupOnlinePlayerImages()
+    private void SetupOnlinePlayerImages(
+        PlayerType leftSide,
+        PlayerType rightSide)
     {
-        string xSkin =
-            OnlineMatchPlayerState.Instance.GetSkinId(PlayerType.X);
+        Sprite leftSprite =
+            SecretFourStoreIntegration.GetSpriteForItem(
+                OnlineMatchPlayerState.Instance.GetSkinId(leftSide));
 
-        string ySkin =
-            OnlineMatchPlayerState.Instance.GetSkinId(PlayerType.Y);
+        Sprite rightSprite =
+            SecretFourStoreIntegration.GetSpriteForItem(
+                OnlineMatchPlayerState.Instance.GetSkinId(rightSide));
 
-        Sprite xSprite =
-            SecretFourStoreIntegration.GetSpriteForItem(xSkin);
+        if (leftSprite == null && coinConfig != null)
+            leftSprite = coinConfig.GetSprite(leftSide);
 
-        Sprite ySprite =
-            SecretFourStoreIntegration.GetSpriteForItem(ySkin);
-
-        if (xSprite == null && coinConfig != null)
-            xSprite = coinConfig.GetSprite(PlayerType.X);
-
-        if (ySprite == null && coinConfig != null)
-            ySprite = coinConfig.GetSprite(PlayerType.Y);
+        if (rightSprite == null && coinConfig != null)
+            rightSprite = coinConfig.GetSprite(rightSide);
 
         if (playerXImage != null)
         {
-            playerXImage.sprite = xSprite;
-            playerXImage.enabled = xSprite != null;
+            playerXImage.sprite = leftSprite;
+            playerXImage.enabled = leftSprite != null;
         }
 
         if (playerYImage != null)
         {
-            playerYImage.sprite = ySprite;
-            playerYImage.enabled = ySprite != null;
+            playerYImage.sprite = rightSprite;
+            playerYImage.enabled = rightSprite != null;
         }
     }
 
@@ -238,13 +245,56 @@ public class GameHUD : MonoBehaviour
     {
         GameState state = turnManager.CurrentState;
 
-        bool xActive =
+        PlayerType activeSide =
             state == GameState.WaitingForPlayerXPlacement ||
-            state == GameState.WaitingForPlayerXDirection;
+            state == GameState.WaitingForPlayerXDirection
+                ? PlayerType.X
+                : state == GameState.WaitingForPlayerYPlacement ||
+                  state == GameState.WaitingForPlayerYDirection
+                    ? PlayerType.Y
+                    : PlayerType.X;
 
-        bool yActive =
-            state == GameState.WaitingForPlayerYPlacement ||
-            state == GameState.WaitingForPlayerYDirection;
+        if (GameSession.Instance != null &&
+            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
+            OnlineMatchPlayerState.Instance != null &&
+            OnlineMatchPlayerState.Instance.IsMatchReady())
+        {
+            PlayerType localSide =
+                OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
+                    ? PlayerType.X
+                    : PlayerType.Y;
+
+            PlayerType leftSide = localSide;
+            PlayerType rightSide =
+                localSide == PlayerType.X ? PlayerType.Y : PlayerType.X;
+
+            if (activeSide == leftSide)
+            {
+                SetImageAlpha(playerXImage, activeAlpha);
+                SetTextAlpha(playerXNameText, activeAlpha);
+                SetImageAlpha(playerYImage, inactiveAlpha);
+                SetTextAlpha(playerYNameText, inactiveAlpha);
+            }
+            else if (activeSide == rightSide)
+            {
+                SetImageAlpha(playerXImage, inactiveAlpha);
+                SetTextAlpha(playerXNameText, inactiveAlpha);
+                SetImageAlpha(playerYImage, activeAlpha);
+                SetTextAlpha(playerYNameText, activeAlpha);
+            }
+            else
+            {
+                SetImageAlpha(playerXImage, activeAlpha);
+                SetTextAlpha(playerXNameText, activeAlpha);
+                SetImageAlpha(playerYImage, activeAlpha);
+                SetTextAlpha(playerYNameText, activeAlpha);
+            }
+
+            return;
+        }
+
+        bool xActive = activeSide == PlayerType.X;
+        bool yActive = activeSide == PlayerType.Y;
 
         if (xActive)
         {
