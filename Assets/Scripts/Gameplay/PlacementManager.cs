@@ -81,9 +81,19 @@ public class PlacementManager : MonoBehaviour
     {
         Debug.Log($"PLACE ATTEMPT ({x},{y}) | Player = {player} | State = {turnManager.CurrentState}");
 
-        if (!turnManager.CanPlaceCoin(player))
+        bool online = IsOnlineGame();
+
+        if (!online && !turnManager.CanPlaceCoin(player))
         {
             Debug.Log("Coin cannot be placed right now.");
+            return false;
+        }
+
+        if (online &&
+            NetworkGameState.Instance != null &&
+            !NetworkGameState.Instance.CanRequestPlacement(player))
+        {
+            Debug.Log("Coin cannot be applied because the authoritative state rejected it.");
             return false;
         }
 
