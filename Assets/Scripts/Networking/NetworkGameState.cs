@@ -280,6 +280,13 @@ public sealed class NetworkGameState : NetworkBehaviour
                (player == PlayerType.Y && state == GameState.WaitingForPlayerYDirection);
     }
 
+    public bool HasAuthoritativeState()
+    {
+        return IsSpawned &&
+               NetworkManager != null &&
+               NetworkManager.IsListening;
+    }
+
     public bool IsCurrentMatchOver()
     {
         return WinnerState.Value != NoWinner ||
