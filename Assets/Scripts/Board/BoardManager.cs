@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
+using Unity.Collections;
 
 public class BoardManager : MonoBehaviour
 {
@@ -45,8 +46,8 @@ public class BoardManager : MonoBehaviour
 
 
     public void ApplySnapshot(
-        IList<byte> boardCells,
-        IList<Unity.Collections.FixedString64Bytes> skinIds)
+        NetworkList<byte> boardCells,
+        NetworkList<FixedString64Bytes> skinIds)
     {
         if (board == null || boardCells == null)
             return;
