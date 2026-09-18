@@ -321,6 +321,27 @@ public sealed class NetworkGameState : NetworkBehaviour
         WinnerState.Value = NoWinner;
     }
 
+    public void ClearServerSkinState()
+    {
+        if (!IsServer)
+            return;
+
+        EnsureBoardLists();
+
+        for (int i = 0; i < BoardSkinIds.Count; i++)
+            BoardSkinIds[i] = new FixedString64Bytes();
+    }
+
+    public void RefreshClientPresentationAfterMove()
+    {
+        if (IsServer)
+            return;
+
+        lastAppliedRevision = -1;
+        ScheduleClientApply();
+    }
+
+
     public void SetRematchMask(byte mask)
     {
         if (!IsServer)
