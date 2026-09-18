@@ -32,6 +32,9 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
     {
         Instance = this;
 
+        NetworkManager.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+
         if (IsServer)
         {
             HostPlayerClientId.Value = NetworkManager.ServerClientId;
@@ -39,11 +42,88 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
                 GetLocalPlayerNameOrDefault());
 
             ApplyLocalHostSkin();
+            RefreshReadyState();
+
+            // Host is already present; if a client is already connected, initialize it.
+            foreach (ulong clientId in NetworkManager.ConnectedClientsIds)
+            {
+                if (clientId != NetworkManager.ServerClientId)
+                {
+                    break;
+                }
+            }
         }
+        else
+        {
+            SubmitLocalJoinerProfile();
+        }
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if (!IsSpawned)
+            return;
+
+        if (IsServer)
+        {
+            if (clientId != NetworkManager.ServerClientId &&
+                JoinerPlayerClientId.Value == ulong.MaxValue)
+            {
+                // The joining client submits its own profile immediately after spawn.
+            }
+            return;
+        }
+
+        if (clientId == NetworkManager.LocalClientId)
+            SubmitLocalJoinerProfile();
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        if (!IsServer)
+            return;
+
+        if (clientId == JoinerPlayerClientId.Value)
+        {
+            JoinerPlayerClientId.Value = ulong.MaxValue;
+            JoinerPlayerName.Value = new FixedString64Bytes("Player 2");
+            JoinerSkinId.Value = new FixedString128Bytes();
+            RefreshReadyState();
+        }
+    }
+
+    private void SubmitLocalJoinerProfile()
+    {
+        if (NetworkManager.Singleton == null ||
+            NetworkManager.Singleton.IsServer)
+            return;
+
+        string playerName = PlayerNameManager.GetPlayerName();
+
+        string skinId =
+            SecretFourStoreIntegration.GetSelectedPlayerItemId(PlayerType.Y);
+
+        SubmitJoinerProfileRpc(
+            playerName,
+            skinId ?? string.Empty);
+    }
+
+    private void RefreshReadyState()
+    {
+        if (!IsServer)
+            return;
+
+        RefreshReadyState();
     }
 
     public override void OnNetworkDespawn()
     {
+        if (NetworkManager != null)
+        {
+            NetworkManager.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+
         if (Instance == this)
             Instance = null;
     }
