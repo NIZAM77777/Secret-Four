@@ -153,6 +153,15 @@ public class NetworkMovementManager : NetworkBehaviour
 
         activeMoveId = -1;
     }
+    public void ResetNetworkMoveState()
+    {
+        if (!IsServer)
+            return;
+
+        movementResolved = false;
+        activeMoveId = -1;
+    }
+
     private MovementResultData GetMovementResultData(MovementResult result)
     {
         return new MovementResultData
