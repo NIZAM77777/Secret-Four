@@ -397,7 +397,13 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public void CaptureFromServer()
     {
-        if (!IsServer || boardManager == null || boardManager.CurrentBoard == null || turnManager == null)
+        if (!IsServer || !serverInitialized &&
+            (boardManager == null || boardManager.CurrentBoard == null || turnManager == null))
+            return;
+
+        boardManager ??= FindFirstObjectByType<BoardManager>();
+        turnManager ??= FindFirstObjectByType<TurnManager>();
+        if (boardManager == null || boardManager.CurrentBoard == null || turnManager == null)
             return;
 
         EnsureBoardLists();
