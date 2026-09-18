@@ -523,20 +523,6 @@ public sealed class NetworkGameState : NetworkBehaviour
         }
     }
 
-    public void SetSkinAt(int x, int y, string skinId)
-    {
-        if (!IsServer)
-            return;
-
-        EnsureBoardLists();
-
-        int index = GetIndex(x, y);
-        if (index < 0 || index >= BoardSkinIds.Count)
-            return;
-
-        BoardSkinIds[index] = new FixedString64Bytes(skinId ?? string.Empty);
-    }
-
     public Vector2Int GetStoredPosition(PlayerType player)
     {
         return player == PlayerType.X
