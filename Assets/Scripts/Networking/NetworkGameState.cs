@@ -451,6 +451,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         MatchId.Value++;
         currentState.Value = (int)GameState.WaitingForPlayerXPlacement;
         StateRevision.Value++;
+        directionButtonController?.RefreshForCurrentTurn();
         serverInitialized = true;
     }
 
