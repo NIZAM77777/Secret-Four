@@ -36,7 +36,7 @@ public class DirectionButtonController : MonoBehaviour
             return;
 
         if (NetworkManager.Singleton != null &&
-            Network.Netcode.NetworkManager.Singleton.IsListening &&
+            NetworkManager.Singleton.IsListening &&
             GameSession.Instance != null &&
             GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom)
         {
@@ -46,13 +46,13 @@ public class DirectionButtonController : MonoBehaviour
                     : turnManager.CurrentState;
 
             PlayerType localPlayer =
-                Network.Netcode.NetworkManager.Singleton.IsHost
+                NetworkManager.Singleton.IsHost
                     ? PlayerType.X
                     : PlayerType.Y;
 
             if (OnlineMatchPlayerState.Instance != null &&
                 OnlineMatchPlayerState.Instance.IsClientAssigned(
-                    Network.Netcode.NetworkManager.Singleton.LocalClientId))
+                    NetworkManager.Singleton.LocalClientId))
             {
                 localPlayer =
                     OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
