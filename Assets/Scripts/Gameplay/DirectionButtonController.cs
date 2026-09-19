@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
 
 public class DirectionButtonController : MonoBehaviour
 {
@@ -34,7 +35,7 @@ public class DirectionButtonController : MonoBehaviour
         if (turnManager == null)
             return;
 
-        if (Network.Netcode.NetworkManager.Singleton != null &&
+        if (NetworkManager.Singleton != null &&
             Network.Netcode.NetworkManager.Singleton.IsListening &&
             GameSession.Instance != null &&
             GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom)
