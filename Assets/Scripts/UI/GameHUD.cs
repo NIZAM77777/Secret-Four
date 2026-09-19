@@ -103,14 +103,11 @@ public class GameHUD : MonoBehaviour
             OnlineMatchPlayerState.Instance != null &&
             OnlineMatchPlayerState.Instance.IsMatchReady())
         {
-            PlayerType localSide =
-                OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
-                    ? PlayerType.X
-                    : PlayerType.Y;
-
-            PlayerType leftSide = localSide;
-            PlayerType rightSide =
-                localSide == PlayerType.X ? PlayerType.Y : PlayerType.X;
+            // Online HUD uses a stable shared layout on both devices:
+            // Host/X is always LEFT and Joiner/Y is always RIGHT.
+            // Do not mirror the layout around the local player.
+            PlayerType leftSide = PlayerType.X;
+            PlayerType rightSide = PlayerType.Y;
 
             if (playerXNameText != null)
                 playerXNameText.text =
@@ -169,14 +166,10 @@ public class GameHUD : MonoBehaviour
             OnlineMatchPlayerState.Instance != null &&
             OnlineMatchPlayerState.Instance.IsMatchReady())
         {
-            PlayerType localSide =
-                OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
-                    ? PlayerType.X
-                    : PlayerType.Y;
-
+            // Keep the online HUD identical on both devices.
             SetupOnlinePlayerImages(
-                localSide,
-                localSide == PlayerType.X ? PlayerType.Y : PlayerType.X);
+                PlayerType.X,
+                PlayerType.Y);
 
             return;
         }
@@ -286,14 +279,10 @@ public class GameHUD : MonoBehaviour
             OnlineMatchPlayerState.Instance != null &&
             OnlineMatchPlayerState.Instance.IsMatchReady())
         {
-            PlayerType localSide =
-                OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
-                    ? PlayerType.X
-                    : PlayerType.Y;
-
-            PlayerType leftSide = localSide;
-            PlayerType rightSide =
-                localSide == PlayerType.X ? PlayerType.Y : PlayerType.X;
+            // X is always the left player and Y is always the right
+            // player in the shared online room UI.
+            PlayerType leftSide = PlayerType.X;
+            PlayerType rightSide = PlayerType.Y;
 
             if (activeSide == leftSide)
             {
