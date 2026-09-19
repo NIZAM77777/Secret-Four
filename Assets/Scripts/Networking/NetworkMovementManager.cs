@@ -9,6 +9,9 @@ public class NetworkMovementManager : NetworkBehaviour
     [SerializeField] private MovementRuleResolver movementRuleResolver;
     [SerializeField] private PlacementManager placementManager;
 
+    [Header("Reveal Timing")]
+    [SerializeField] private float revealDelay = 2f;
+
     private bool movementResolved;
     private int activeMoveId = -1;
 
@@ -62,6 +65,12 @@ public class NetworkMovementManager : NetworkBehaviour
                 turnManager.PlayerXAction,
                 turnManager.PlayerYAction);
 
+        // Keep RevealingDirections authoritative for the full reveal window.
+        // Previously the server changed the network phase to Moving immediately,
+        // so clients could skip the reveal state and display inconsistent
+        // direction/movement presentation.
+        StartCoroutine(CommitMovingPhaseAfterReveal());
+
         // The resolution is calculated exactly once by the server.
         // Clients only receive this immutable result for presentation.
         SendResolutionClientRpc(
@@ -111,6 +120,19 @@ public class NetworkMovementManager : NetworkBehaviour
             placementManager.PlayerXCoin,
             placementManager.PlayerYCoin,
             moveId);
+    }
+
+    private System.Collections.IEnumerator CommitMovingPhaseAfterReveal()
+    {
+        yield return new WaitForSeconds(revealDelay);
+
+        if (!IsServer || !movementResolved || NetworkGameState.Instance == null)
+            yield break;
+
+        NetworkGameState.Instance.CommitAuthoritativePhase(
+            GameState.Moving,
+            turnManager.PlayerXAction,
+            turnManager.PlayerYAction);
     }
 
     public void CompleteAuthoritativeMove(int moveId)
