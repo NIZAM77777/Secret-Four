@@ -351,6 +351,8 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         currentState.Value = (int)state;
         StateRevision.Value++;
+
+        directionButtonController?.RefreshForCurrentTurn();
     }
 
     public int BeginMove()
