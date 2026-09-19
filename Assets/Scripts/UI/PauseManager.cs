@@ -42,7 +42,13 @@ public class PauseManager : MonoBehaviour
         // Room games are controlled by the authoritative network match and
         // intentionally have no pause button/panel presentation.
         if (IsOnlineRoom())
+        {
+            GameObject pauseButton = GameObject.Find("PauseButton");
+            if (pauseButton != null)
+                pauseButton.SetActive(false);
+
             enabled = false;
+        }
     }
 
     public void PauseGame()
