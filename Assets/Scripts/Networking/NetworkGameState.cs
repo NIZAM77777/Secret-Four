@@ -99,6 +99,7 @@ public sealed class NetworkGameState : NetworkBehaviour
     private TurnManager turnManager;
     private PlacementManager placementManager;
     private GameResultManager gameResultManager;
+    private DirectionButtonController directionButtonController;
 
     private int lastAppliedRevision = -1;
     private bool applyScheduled;
@@ -112,6 +113,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         turnManager = FindFirstObjectByType<TurnManager>();
         placementManager = FindFirstObjectByType<PlacementManager>();
         gameResultManager = FindFirstObjectByType<GameResultManager>();
+        directionButtonController = FindFirstObjectByType<DirectionButtonController>();
     }
 
     public override void OnNetworkSpawn()
@@ -176,6 +178,7 @@ public sealed class NetworkGameState : NetworkBehaviour
             turnManager = turnManager != null ? turnManager : FindFirstObjectByType<TurnManager>();
             placementManager = placementManager != null ? placementManager : FindFirstObjectByType<PlacementManager>();
             gameResultManager = gameResultManager != null ? gameResultManager : FindFirstObjectByType<GameResultManager>();
+            directionButtonController = directionButtonController != null ? directionButtonController : FindFirstObjectByType<DirectionButtonController>();
             yield return null;
         }
 
@@ -724,6 +727,8 @@ public sealed class NetworkGameState : NetworkBehaviour
                 XHasPlaced.Value,
                 YHasPlaced.Value);
         }
+
+        directionButtonController?.RefreshForCurrentTurn();
     }
 
     private byte GetCellCode(BoardCell cell)
