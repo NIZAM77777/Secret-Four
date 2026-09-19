@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 4bdb25c4a3165de4e99689cf4c2135ec
+guid: 800304c5e35bc4a48996ab0a2ab7da60
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1640681757205653147
-    second: win3_0
-  - first:
-      213: -1929798530761045548
-    second: win3_1
+      213: -239827690676602538
+    second: Pausepanel_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -129,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: win3_0
+      name: Pausepanel_0
       rect:
         serializedVersion: 2
-        x: 145
-        y: 91
-        width: 1241
-        height: 923
+        x: 0
+        y: 19
+        width: 1009
+        height: 1517
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5691b4072a02b39e0800000000000000
-      internalID: -1640681757205653147
+      spriteID: 6593be96cf5fbacf0800000000000000
+      internalID: -239827690676602538
       vertices: []
       indices: 
       edges: []
@@ -154,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 38e02ee536ef7d148aeab339e2a6fb1d
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -164,8 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      win3_0: -1640681757205653147
-      win3_1: -1929798530761045548
+      Pausepanel_0: -239827690676602538
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
