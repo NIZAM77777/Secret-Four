@@ -29,6 +29,77 @@ public class DirectionButtonController : MonoBehaviour
     private BoardManager boardManager;
 
 
+    public void RefreshForCurrentTurn()
+    {
+        if (turnManager == null)
+            return;
+
+        if (Network.Netcode.NetworkManager.Singleton != null &&
+            Network.Netcode.NetworkManager.Singleton.IsListening &&
+            GameSession.Instance != null &&
+            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom)
+        {
+            GameState state =
+                NetworkGameState.Instance != null
+                    ? NetworkGameState.Instance.GetAuthoritativeState()
+                    : turnManager.CurrentState;
+
+            PlayerType localPlayer =
+                Network.Netcode.NetworkManager.Singleton.IsHost
+                    ? PlayerType.X
+                    : PlayerType.Y;
+
+            if (OnlineMatchPlayerState.Instance != null &&
+                OnlineMatchPlayerState.Instance.IsClientAssigned(
+                    Network.Netcode.NetworkManager.Singleton.LocalClientId))
+            {
+                localPlayer =
+                    OnlineMatchPlayerState.Instance.IsLocalSide(PlayerType.X)
+                        ? PlayerType.X
+                        : PlayerType.Y;
+            }
+
+            bool localDirectionTurn =
+                (localPlayer == PlayerType.X &&
+                 state == GameState.WaitingForPlayerXDirection) ||
+                (localPlayer == PlayerType.Y &&
+                 state == GameState.WaitingForPlayerYDirection);
+
+            if (!localDirectionTurn)
+            {
+                SetAllInteractable(false);
+                return;
+            }
+
+            UpdateDirectionButtons(localPlayer);
+            return;
+        }
+
+        PlayerType player =
+            turnManager.CurrentState == GameState.WaitingForPlayerXDirection
+                ? PlayerType.X
+                : PlayerType.Y;
+
+        if (turnManager.CanChooseDirection(player))
+            UpdateDirectionButtons(player);
+        else
+            SetAllInteractable(false);
+    }
+
+    private void SetAllInteractable(bool interactable)
+    {
+        if (upButton != null)
+            upButton.interactable = interactable;
+        if (downButton != null)
+            downButton.interactable = interactable;
+        if (leftButton != null)
+            leftButton.interactable = interactable;
+        if (rightButton != null)
+            rightButton.interactable = interactable;
+        if (stayButton != null)
+            stayButton.interactable = interactable;
+    }
+
     public void UpdateDirectionButtons(
     PlayerType player)
     {
