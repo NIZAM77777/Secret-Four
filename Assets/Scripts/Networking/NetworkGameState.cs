@@ -560,10 +560,16 @@ public sealed class NetworkGameState : NetworkBehaviour
         }
 
         FixedString64Bytes skin = BoardSkinIds[startIndex];
-        BoardSkinIds[destinationIndex] = skin;
 
-        if (startIndex != destinationIndex)
-            BoardSkinIds[startIndex] = new FixedString64Bytes();
+        if (startIndex == destinationIndex)
+            return;
+
+        // Do not overwrite an occupant's stored skin here. Simultaneous
+        // two-coin movement can legitimately swap X and Y, so movement
+        // applies each player's stored skin only after both origins have
+        // been accounted for by the movement coordinator.
+        BoardSkinIds[destinationIndex] = skin;
+        BoardSkinIds[startIndex] = new FixedString64Bytes();
     }
 
     public void ApplyAuthoritativeBoardState(
