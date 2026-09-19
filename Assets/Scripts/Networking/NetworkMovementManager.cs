@@ -56,7 +56,7 @@ public class NetworkMovementManager : NetworkBehaviour
 
         if (state != null)
             state.CommitAuthoritativePhase(
-                GameState.Moving,
+                GameState.RevealingDirections,
                 turnManager.PlayerXAction,
                 turnManager.PlayerYAction);
 
