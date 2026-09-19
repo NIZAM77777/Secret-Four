@@ -852,17 +852,26 @@ public class MovementManager : MonoBehaviour
 
         if (successfulMovement)
         {
-            NetworkGameState.Instance.MoveStoredSkin(
-                xResult.startPosition.x,
-                xResult.startPosition.y,
-                xResult.destination.x,
-                xResult.destination.y);
+            // Preserve each coin's exact skin while the two authoritative
+            // occupants move. A direct X->Y followed by Y->X can overwrite the
+            // destination skin during a swap.
+            if (xResult.startPosition != yResult.destination)
+            {
+                NetworkGameState.Instance.MoveStoredSkin(
+                    xResult.startPosition.x,
+                    xResult.startPosition.y,
+                    xResult.destination.x,
+                    xResult.destination.y);
+            }
 
-            NetworkGameState.Instance.MoveStoredSkin(
-                yResult.startPosition.x,
-                yResult.startPosition.y,
-                yResult.destination.x,
-                yResult.destination.y);
+            if (yResult.startPosition != xResult.destination)
+            {
+                NetworkGameState.Instance.MoveStoredSkin(
+                    yResult.startPosition.x,
+                    yResult.startPosition.y,
+                    yResult.destination.x,
+                    yResult.destination.y);
+            }
         }
         else
         {
