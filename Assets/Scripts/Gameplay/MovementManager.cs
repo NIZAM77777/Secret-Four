@@ -850,59 +850,25 @@ public class MovementManager : MonoBehaviour
         MovementResult xResult = resolution.playerXResult;
         MovementResult yResult = resolution.playerYResult;
 
-        if (successfulMovement)
-        {
-            // Preserve each coin's exact skin while the two authoritative
-            // occupants move. A direct X->Y followed by Y->X can overwrite the
-            // destination skin during a swap.
-            if (xResult.startPosition != yResult.destination)
-            {
-                NetworkGameState.Instance.MoveStoredSkin(
-                    xResult.startPosition.x,
-                    xResult.startPosition.y,
-                    xResult.destination.x,
-                    xResult.destination.y);
-            }
+        Vector2Int xFinal =
+            successfulMovement ||
+            resolution.playerXCollision == MovementCollisionType.None
+                ? xResult.destination
+                : xResult.startPosition;
 
-            if (yResult.startPosition != xResult.destination)
-            {
-                NetworkGameState.Instance.MoveStoredSkin(
-                    yResult.startPosition.x,
-                    yResult.startPosition.y,
-                    yResult.destination.x,
-                    yResult.destination.y);
-            }
-        }
-        else
-        {
-            Vector2Int xFinal =
-                resolution.playerXCollision == MovementCollisionType.None
-                    ? xResult.destination
-                    : xResult.startPosition;
+        Vector2Int yFinal =
+            successfulMovement ||
+            resolution.playerYCollision == MovementCollisionType.None
+                ? yResult.destination
+                : yResult.startPosition;
 
-            Vector2Int yFinal =
-                resolution.playerYCollision == MovementCollisionType.None
-                    ? yResult.destination
-                    : yResult.startPosition;
-
-            if (xFinal != xResult.startPosition)
-            {
-                NetworkGameState.Instance.MoveStoredSkin(
-                    xResult.startPosition.x,
-                    xResult.startPosition.y,
-                    xFinal.x,
-                    xFinal.y);
-            }
-
-            if (yFinal != yResult.startPosition)
-            {
-                NetworkGameState.Instance.MoveStoredSkin(
-                    yResult.startPosition.x,
-                    yResult.startPosition.y,
-                    yFinal.x,
-                    yFinal.y);
-            }
-        }
+        // Move both stored skins atomically. This preserves identity even when
+        // X and Y exchange cells during the same simultaneous move.
+        NetworkGameState.Instance.MoveStoredSkins(
+            xResult.startPosition,
+            xFinal,
+            yResult.startPosition,
+            yFinal);
     }
 
 
