@@ -559,17 +559,65 @@ public sealed class NetworkGameState : NetworkBehaviour
             return;
         }
 
-        FixedString64Bytes skin = BoardSkinIds[startIndex];
-
         if (startIndex == destinationIndex)
             return;
 
-        // Do not overwrite an occupant's stored skin here. Simultaneous
-        // two-coin movement can legitimately swap X and Y, so movement
-        // applies each player's stored skin only after both origins have
-        // been accounted for by the movement coordinator.
+        FixedString64Bytes skin = BoardSkinIds[startIndex];
+
         BoardSkinIds[destinationIndex] = skin;
         BoardSkinIds[startIndex] = new FixedString64Bytes();
+    }
+
+    /// <summary>
+    /// Moves both round skins atomically. This is required for simultaneous
+    /// movement because X and Y can legally swap positions. Both source skins
+    /// are captured before either source cell is cleared.
+    /// </summary>
+    public void MoveStoredSkins(
+        Vector2Int xStart,
+        Vector2Int xDestination,
+        Vector2Int yStart,
+        Vector2Int yDestination)
+    {
+        if (!IsServer)
+            return;
+
+        EnsureBoardLists();
+
+        int xStartIndex = GetIndex(xStart.x, xStart.y);
+        int xDestinationIndex = GetIndex(xDestination.x, xDestination.y);
+        int yStartIndex = GetIndex(yStart.x, yStart.y);
+        int yDestinationIndex = GetIndex(yDestination.x, yDestination.y);
+
+        if (xStartIndex < 0 || xDestinationIndex < 0 ||
+            yStartIndex < 0 || yDestinationIndex < 0 ||
+            xStartIndex >= BoardSkinIds.Count ||
+            xDestinationIndex >= BoardSkinIds.Count ||
+            yStartIndex >= BoardSkinIds.Count ||
+            yDestinationIndex >= BoardSkinIds.Count)
+        {
+            return;
+        }
+
+        FixedString64Bytes xSkin = BoardSkinIds[xStartIndex];
+        FixedString64Bytes ySkin = BoardSkinIds[yStartIndex];
+
+        // Clear both distinct moving origins first.
+        if (xStartIndex != xDestinationIndex)
+            BoardSkinIds[xStartIndex] = new FixedString64Bytes();
+
+        if (yStartIndex != yDestinationIndex &&
+            yStartIndex != xStartIndex)
+        {
+            BoardSkinIds[yStartIndex] = new FixedString64Bytes();
+        }
+
+        // Write destinations only after both source skins have been captured.
+        if (xStartIndex != xDestinationIndex)
+            BoardSkinIds[xDestinationIndex] = xSkin;
+
+        if (yStartIndex != yDestinationIndex)
+            BoardSkinIds[yDestinationIndex] = ySkin;
     }
 
     public void ApplyAuthoritativeBoardState(
