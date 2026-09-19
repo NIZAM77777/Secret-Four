@@ -19,6 +19,16 @@ public class PauseManager : MonoBehaviour
     private bool isBlockingInput;
     private bool returningToMainMenu;
 
+    /// <summary>
+    /// Online Room matches must not expose local pause UI. A player pausing one
+    /// device would otherwise imply that the shared network match is paused.
+    /// </summary>
+    private bool IsOnlineRoom()
+    {
+        return GameSession.Instance != null &&
+               GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom;
+    }
+
     private void Start()
     {
         Time.timeScale = 1f;
@@ -28,6 +38,11 @@ public class PauseManager : MonoBehaviour
 
         if (pausePanel != null)
             pausePanel.SetActive(false);
+
+        // Room games are controlled by the authoritative network match and
+        // intentionally have no pause button/panel presentation.
+        if (IsOnlineRoom())
+            enabled = false;
     }
 
     public void PauseGame()
