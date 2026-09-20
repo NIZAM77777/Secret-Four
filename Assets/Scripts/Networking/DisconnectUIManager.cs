@@ -18,8 +18,6 @@ public class DisconnectUIManager : MonoBehaviour
 
     public void ShowDisconnect(string title, string message)
     {
-        // Do not show a network-disconnect screen after the player
-        // has intentionally chosen to leave the match.
         if (returningToMainMenu || disconnectShown)
             return;
 
@@ -35,6 +33,24 @@ public class DisconnectUIManager : MonoBehaviour
 
         if (messageText != null)
             messageText.text = message;
+    }
+
+    /// <summary>
+    /// Use this when the player intentionally leaves the online match.
+    /// The remote player is informed before the local NetworkManager shuts down.
+    /// </summary>
+    public void LeaveOnlineMatch()
+    {
+        if (returningToMainMenu)
+            return;
+
+        NetworkDisconnectManager disconnectManager =
+            FindFirstObjectByType<NetworkDisconnectManager>();
+
+        if (disconnectManager != null)
+            disconnectManager.NotifyIntentionalLeave();
+
+        ReturnToMainMenu();
     }
 
     public void ReturnToMainMenu()
