@@ -56,12 +56,17 @@ public class NetworkDisconnectManager
 
     private void OnLocalTransportFailure()
     {
-        if (disconnectUIManager == null)
+        if (disconnectUIManager == null ||
+            NetworkManager == null ||
+            !NetworkManager.IsListening)
             return;
 
+        // This callback only reports a failure of this device's local
+        // transport. The remote player will receive the normal disconnect
+        // callback and therefore gets the appropriate opponent message.
         disconnectUIManager.ShowDisconnect(
             "CONNECTION LOST",
-            "Your network connection was lost."
+            "Your network connection was lost. Please check your internet connection."
         );
     }
 
