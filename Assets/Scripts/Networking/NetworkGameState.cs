@@ -456,6 +456,8 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         WinnerState.Value = NoWinner;
         RematchReadyMask.Value = 0;
+        lastAppliedClientState = GameState.WaitingForPlayerXPlacement;
+        hasAppliedClientState = false;
         MoveId.Value = 0;
         MatchId.Value++;
         currentState.Value = (int)GameState.WaitingForPlayerXPlacement;
