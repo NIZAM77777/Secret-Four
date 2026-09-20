@@ -105,6 +105,14 @@ public sealed class NetworkGameState : NetworkBehaviour
     private bool applyScheduled;
     private bool serverInitialized;
 
+    // A normal online move updates the existing coin transforms locally.
+    // When the server immediately advances into the next placement phase,
+    // do not let that state snapshot rebuild/destroy the animated coin
+    // objects in the same transition and cause a visible jump.
+    private GameState lastAppliedClientState =
+        GameState.WaitingForPlayerXPlacement;
+    private bool hasAppliedClientState;
+
     private void Awake()
     {
         Instance = this;
@@ -721,7 +729,25 @@ public sealed class NetworkGameState : NetworkBehaviour
             state == GameState.WaitingForPlayerXDirection ||
             state == GameState.WaitingForPlayerYDirection;
 
-        if (safeToRebuildVisuals && placementManager != null)
+        // During a normal no-result move, MovementManager has already animated
+        // the existing coin objects to their final positions before the host
+        // advances the authoritative state into the next round. Rebuilding the
+        // same board here would Destroy/Instantiate those objects and can make
+        // the final movement frame visually jump. Keep the existing presentation
+        // for this one transition; the next ordinary safe-state update can still
+        // rebuild from the authoritative snapshot when needed.
+        bool comingDirectlyFromPresentation =
+            hasAppliedClientState &&
+            (lastAppliedClientState == GameState.RevealingDirections ||
+             lastAppliedClientState == GameState.Moving ||
+             lastAppliedClientState == GameState.CheckingResult);
+
+        bool skipRebuildAfterMovement =
+            safeToRebuildVisuals && comingDirectlyFromPresentation;
+
+        if (safeToRebuildVisuals &&
+            !skipRebuildAfterMovement &&
+            placementManager != null)
         {
             placementManager.RebuildFromNetworkState(
                 BoardCells,
@@ -733,6 +759,8 @@ public sealed class NetworkGameState : NetworkBehaviour
         }
 
         directionButtonController?.RefreshForCurrentTurn();
+        lastAppliedClientState = state;
+        hasAppliedClientState = true;
     }
 
     private byte GetCellCode(BoardCell cell)
