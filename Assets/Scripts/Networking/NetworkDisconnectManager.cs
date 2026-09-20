@@ -1,124 +1,186 @@
 using UnityEngine;
 using Unity.Netcode;
 
-public class NetworkDisconnectManager
-    : NetworkBehaviour
+public class NetworkDisconnectManager : NetworkBehaviour
 {
     [Header("References")]
+    [SerializeField] private DisconnectUIManager disconnectUIManager;
 
-    [SerializeField]
-    private DisconnectUIManager disconnectUIManager;
-
-
-    // =====================================================
-    // NETWORK START
-    // =====================================================
+    private bool intentionalLeaveRequested;
+    private bool localDisconnectHandled;
 
     public override void OnNetworkSpawn()
     {
-        NetworkManager.OnClientDisconnectCallback +=
-            OnClientDisconnected;
+        NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+        NetworkManager.OnTransportFailure += OnLocalTransportFailure;
 
-        // Handles a local transport/network failure on this device. This is
-        // different from the remote disconnect callback: the player whose
-        // connection actually failed should see a local "connection lost"
-        // message, while the remaining player sees the opponent message.
-        NetworkManager.OnTransportFailure +=
-            OnLocalTransportFailure;
-
-
-        Debug.Log(
-            "Network Disconnect Manager started."
-        );
+        Debug.Log("Network Disconnect Manager started.");
     }
-
-
-    // =====================================================
-    // NETWORK STOP
-    // =====================================================
 
     public override void OnNetworkDespawn()
     {
         if (NetworkManager != null)
         {
-            NetworkManager.OnClientDisconnectCallback -=
-                OnClientDisconnected;
-
-            NetworkManager.OnTransportFailure -=
-                OnLocalTransportFailure;
+            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+            NetworkManager.OnTransportFailure -= OnLocalTransportFailure;
         }
     }
 
+    /// <summary>
+    /// Marks a deliberate leave before shutting down the local network.
+    /// The server tells the other player that this was a normal leave,
+    /// instead of treating it as an unknown connection failure.
+    /// </summary>
+    public void NotifyIntentionalLeave()
+    {
+        if (!IsSpawned || NetworkManager == null || !NetworkManager.IsListening)
+            return;
 
-    // =====================================================
-    // LOCAL TRANSPORT FAILURE
-    // =====================================================
+        intentionalLeaveRequested = true;
+
+        if (IsServer)
+        {
+            NotifyRemotePlayerOfLeave();
+            return;
+        }
+
+        RequestIntentionalLeaveServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestIntentionalLeaveServerRpc(ServerRpcParams rpcParams = default)
+    {
+        if (!IsServer)
+            return;
+
+        NotifyRemotePlayerOfLeave(rpcParams.Receive.SenderClientId);
+    }
+
+    private void NotifyRemotePlayerOfLeave(ulong leavingClientId = ulong.MaxValue)
+    {
+        if (!IsServer)
+            return;
+
+        if (leavingClientId == ulong.MaxValue)
+            leavingClientId = NetworkManager.ServerClientId;
+
+        ShowRemoteLeaveClientRpc(
+            leavingClientId,
+            new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = GetOtherClientIds(leavingClientId)
+                }
+            }
+        );
+    }
+
+    private ulong[] GetOtherClientIds(ulong leavingClientId)
+    {
+        var clients = NetworkManager.ConnectedClientsIds;
+
+        if (clients == null || clients.Count == 0)
+            return new ulong[0];
+
+        var result = new System.Collections.Generic.List<ulong>();
+
+        foreach (ulong clientId in clients)
+        {
+            if (clientId != leavingClientId)
+                result.Add(clientId);
+        }
+
+        return result.ToArray();
+    }
+
+    [ClientRpc]
+    private void ShowRemoteLeaveClientRpc(
+        ulong leavingClientId,
+        ClientRpcParams clientRpcParams = default)
+    {
+        if (disconnectUIManager == null || localDisconnectHandled)
+            return;
+
+        localDisconnectHandled = true;
+
+        bool localIsHost = NetworkManager != null && NetworkManager.IsHost;
+
+        if (leavingClientId == NetworkManager.ServerClientId)
+        {
+            disconnectUIManager.ShowDisconnect(
+                "HOST LEFT THE GAME",
+                "The host left the game."
+            );
+        }
+        else
+        {
+            disconnectUIManager.ShowDisconnect(
+                "PLAYER LEFT THE GAME",
+                "The other player left the game."
+            );
+        }
+    }
 
     private void OnLocalTransportFailure()
     {
         if (disconnectUIManager == null ||
             NetworkManager == null ||
-            !NetworkManager.IsListening)
+            !NetworkManager.IsListening ||
+            intentionalLeaveRequested ||
+            localDisconnectHandled)
             return;
 
-        // This callback only reports a failure of this device's local
-        // transport. The remote player will receive the normal disconnect
-        // callback and therefore gets the appropriate opponent message.
+        localDisconnectHandled = true;
+
         disconnectUIManager.ShowDisconnect(
             "CONNECTION LOST",
             "Your network connection was lost. Please check your internet connection."
         );
     }
 
-
-    // =====================================================
-    // CLIENT DISCONNECTED
-    // =====================================================
-
-    private void OnClientDisconnected(
-        ulong clientId)
+    private void OnClientDisconnected(ulong clientId)
     {
-        Debug.Log(
-            $"CLIENT DISCONNECTED: {clientId}"
-        );
+        Debug.Log($"CLIENT DISCONNECTED: {clientId}");
 
+        if (disconnectUIManager == null ||
+            NetworkManager == null ||
+            intentionalLeaveRequested ||
+            localDisconnectHandled)
+            return;
 
-        if (disconnectUIManager == null)
+        // The local client lost its own connection. This covers cases where
+        // NGO reports the disconnect without raising OnTransportFailure.
+        if (clientId == NetworkManager.LocalClientId)
         {
-            Debug.LogError(
-                "DisconnectUIManager missing."
+            localDisconnectHandled = true;
+
+            disconnectUIManager.ShowDisconnect(
+                "CONNECTION LOST",
+                "Your network connection was lost. Please check your internet connection."
             );
 
             return;
         }
 
-
-        // =============================================
-        // HOST DETECTS CLIENT LEAVING
-        // =============================================
-
-        if (IsServer &&
-            clientId != NetworkManager.ServerClientId)
+        // Host sees a remote client disappear.
+        if (IsServer && clientId != NetworkManager.ServerClientId)
         {
-            // This callback is raised because the REMOTE client disappeared
-            // from the host's connection. The host therefore sees the
-            // opponent/remote-player message.
+            localDisconnectHandled = true;
+
             disconnectUIManager.ShowDisconnect(
                 "PLAYER DISCONNECTED",
-                "The other player has left the game."
+                "The other player has disconnected from the game."
             );
 
             return;
         }
 
-
-        // =============================================
-        // CLIENT DETECTS HOST DISCONNECTING
-        // =============================================
-
-        if (IsClient &&
-            clientId == NetworkManager.ServerClientId)
+        // Client sees the host disappear.
+        if (IsClient && clientId == NetworkManager.ServerClientId)
         {
+            localDisconnectHandled = true;
+
             disconnectUIManager.ShowDisconnect(
                 "HOST DISCONNECTED",
                 "The host has disconnected from the game."
