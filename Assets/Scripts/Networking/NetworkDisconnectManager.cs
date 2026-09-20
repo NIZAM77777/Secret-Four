@@ -100,9 +100,12 @@ public class NetworkDisconnectManager
         if (IsServer &&
             clientId != NetworkManager.ServerClientId)
         {
+            // This callback is raised because the REMOTE client disappeared
+            // from the host's connection. The host therefore sees the
+            // opponent/remote-player message.
             disconnectUIManager.ShowDisconnect(
                 "PLAYER DISCONNECTED",
-                "The other player has disconnected."
+                "The other player has left the game."
             );
 
             return;
