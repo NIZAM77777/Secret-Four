@@ -188,6 +188,12 @@ public class GameOverUI : MonoBehaviour
 
         Debug.Log("MAIN MENU BUTTON PRESSED");
 
+        NetworkDisconnectManager disconnectManager =
+            FindFirstObjectByType<NetworkDisconnectManager>();
+
+        if (disconnectManager != null)
+            disconnectManager.NotifyIntentionalLeave();
+
         StartCoroutine(ReturnToMainMenuAfterNetworkShutdown());
     }
 
