@@ -138,7 +138,24 @@ public class PlacementManager : MonoBehaviour
             if (!string.IsNullOrWhiteSpace(selectedSkinId))
                 sprite = SecretFourStoreIntegration.GetSpriteForItem(selectedSkinId);
 
-            if (sprite == null)
+            // In the online room the cosmetic belongs to the network player,
+            // not to the device's current local Store selection. This fallback
+            // is only used when a transient snapshot does not yet contain the
+            // cell skin ID, and therefore must never read the opponent's/local
+            // Store selection by role.
+            if (sprite == null &&
+                IsOnlineGame() &&
+                OnlineMatchPlayerState.Instance != null)
+            {
+                string networkSkinId =
+                    OnlineMatchPlayerState.Instance.GetSkinId(playerType);
+
+                if (!string.IsNullOrWhiteSpace(networkSkinId))
+                    sprite = SecretFourStoreIntegration.GetSpriteForItem(networkSkinId);
+            }
+
+            // Keep the existing local/offline behavior unchanged.
+            if (sprite == null && !IsOnlineGame())
                 sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(playerType);
 
             if (sprite == null && coinConfig != null)
