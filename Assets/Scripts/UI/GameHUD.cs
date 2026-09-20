@@ -36,6 +36,13 @@ public class GameHUD : MonoBehaviour
     private bool hasConfiguredGameMode;
     private GameMode configuredGameMode;
 
+    // Online cosmetics are owned by the network player. Cache the applied
+    // sprite IDs so network/profile updates (including position swaps) do not
+    // repeatedly reapply the same cosmetic UI.
+    private string lastOnlineHostSkinId;
+    private string lastOnlineJoinerSkinId;
+    private bool onlineSkinsInitialized;
+
     private void Start()
     {
         SetupPlayers();
@@ -77,7 +84,6 @@ public class GameHUD : MonoBehaviour
     private void OnOnlineProfileChanged()
     {
         SetupPlayers();
-        SetupPlayerImages();
         Refresh(true);
     }
 
@@ -117,7 +123,7 @@ public class GameHUD : MonoBehaviour
                 playerYNameText.text =
                     OnlineMatchPlayerState.Instance.GetName(rightSide);
 
-            SetupOnlinePlayerImages(leftSide, rightSide);
+            SetupOnlinePlayerImagesIfChanged(leftSide, rightSide);
             return;
         }
 
@@ -159,6 +165,31 @@ public class GameHUD : MonoBehaviour
         }
     }
 
+    private void SetupOnlinePlayerImagesIfChanged(
+        PlayerType leftSide,
+        PlayerType rightSide)
+    {
+        if (OnlineMatchPlayerState.Instance == null)
+            return;
+
+        string hostSkinId =
+            OnlineMatchPlayerState.Instance.GetSkinId(leftSide) ?? string.Empty;
+        string joinerSkinId =
+            OnlineMatchPlayerState.Instance.GetSkinId(rightSide) ?? string.Empty;
+
+        if (onlineSkinsInitialized &&
+            string.Equals(lastOnlineHostSkinId, hostSkinId, System.StringComparison.Ordinal) &&
+            string.Equals(lastOnlineJoinerSkinId, joinerSkinId, System.StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        SetupOnlinePlayerImages(leftSide, rightSide);
+        lastOnlineHostSkinId = hostSkinId;
+        lastOnlineJoinerSkinId = joinerSkinId;
+        onlineSkinsInitialized = true;
+    }
+
     private void SetupPlayerImages()
     {
         if (GameSession.Instance != null &&
@@ -167,7 +198,7 @@ public class GameHUD : MonoBehaviour
             OnlineMatchPlayerState.Instance.IsMatchReady())
         {
             // Keep the online HUD identical on both devices.
-            SetupOnlinePlayerImages(
+            SetupOnlinePlayerImagesIfChanged(
                 PlayerType.X,
                 PlayerType.Y);
 
