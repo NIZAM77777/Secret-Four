@@ -104,8 +104,6 @@ public class NetworkDisconnectManager : NetworkBehaviour
 
         localDisconnectHandled = true;
 
-        bool localIsHost = NetworkManager != null && NetworkManager.IsHost;
-
         if (leavingClientId == NetworkManager.ServerClientId)
         {
             disconnectUIManager.ShowDisconnect(
@@ -119,6 +117,20 @@ public class NetworkDisconnectManager : NetworkBehaviour
                 "PLAYER LEFT THE GAME",
                 "The other player left the game."
             );
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        // A normal application close is treated as an intentional leave when
+        // Unity gives us a chance to notify the remote player. Force-closing
+        // the app or killing it from the recent-apps screen may not invoke
+        // this callback; those cases correctly fall back to disconnect handling.
+        if (NetworkManager != null &&
+            NetworkManager.IsListening &&
+            !intentionalLeaveRequested)
+        {
+            NotifyIntentionalLeave();
         }
     }
 
