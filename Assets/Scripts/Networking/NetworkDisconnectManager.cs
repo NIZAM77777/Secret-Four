@@ -107,14 +107,12 @@ public class NetworkDisconnectManager : NetworkBehaviour
         if (leavingClientId == NetworkManager.ServerClientId)
         {
             disconnectUIManager.ShowDisconnect(
-                "HOST LEFT THE GAME",
                 "The host left the game."
             );
         }
         else
         {
             disconnectUIManager.ShowDisconnect(
-                "PLAYER LEFT THE GAME",
                 "The other player left the game."
             );
         }
@@ -146,7 +144,6 @@ public class NetworkDisconnectManager : NetworkBehaviour
         localDisconnectHandled = true;
 
         disconnectUIManager.ShowDisconnect(
-            "CONNECTION LOST",
             "Your network connection was lost. Please check your internet connection."
         );
     }
@@ -168,7 +165,6 @@ public class NetworkDisconnectManager : NetworkBehaviour
             localDisconnectHandled = true;
 
             disconnectUIManager.ShowDisconnect(
-                "CONNECTION LOST",
                 "Your network connection was lost. Please check your internet connection."
             );
 
@@ -181,7 +177,6 @@ public class NetworkDisconnectManager : NetworkBehaviour
             localDisconnectHandled = true;
 
             disconnectUIManager.ShowDisconnect(
-                "PLAYER DISCONNECTED",
                 "The other player has disconnected from the game."
             );
 
@@ -194,7 +189,6 @@ public class NetworkDisconnectManager : NetworkBehaviour
             localDisconnectHandled = true;
 
             disconnectUIManager.ShowDisconnect(
-                "HOST DISCONNECTED",
                 "The host has disconnected from the game."
             );
         }
