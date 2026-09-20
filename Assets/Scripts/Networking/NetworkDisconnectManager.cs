@@ -19,6 +19,13 @@ public class NetworkDisconnectManager
         NetworkManager.OnClientDisconnectCallback +=
             OnClientDisconnected;
 
+        // Handles a local transport/network failure on this device. This is
+        // different from the remote disconnect callback: the player whose
+        // connection actually failed should see a local "connection lost"
+        // message, while the remaining player sees the opponent message.
+        NetworkManager.OnTransportFailure +=
+            OnLocalTransportFailure;
+
 
         Debug.Log(
             "Network Disconnect Manager started."
@@ -36,7 +43,26 @@ public class NetworkDisconnectManager
         {
             NetworkManager.OnClientDisconnectCallback -=
                 OnClientDisconnected;
+
+            NetworkManager.OnTransportFailure -=
+                OnLocalTransportFailure;
         }
+    }
+
+
+    // =====================================================
+    // LOCAL TRANSPORT FAILURE
+    // =====================================================
+
+    private void OnLocalTransportFailure()
+    {
+        if (disconnectUIManager == null)
+            return;
+
+        disconnectUIManager.ShowDisconnect(
+            "CONNECTION LOST",
+            "Your network connection was lost."
+        );
     }
 
 
@@ -71,7 +97,7 @@ public class NetworkDisconnectManager
         {
             disconnectUIManager.ShowDisconnect(
                 "PLAYER DISCONNECTED",
-                "The other player has left the game."
+                "The other player has disconnected."
             );
 
             return;
@@ -87,7 +113,7 @@ public class NetworkDisconnectManager
         {
             disconnectUIManager.ShowDisconnect(
                 "HOST DISCONNECTED",
-                "The host connection was lost."
+                "The host has disconnected from the game."
             );
         }
     }
