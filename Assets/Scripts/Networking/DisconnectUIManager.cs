@@ -7,7 +7,6 @@ public class DisconnectUIManager : MonoBehaviour
 {
     [Header("Disconnect Panel")]
     [SerializeField] private GameObject disconnectPanel;
-    [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text messageText;
 
     [Header("Scene")]
@@ -16,20 +15,17 @@ public class DisconnectUIManager : MonoBehaviour
     private bool returningToMainMenu;
     private bool disconnectShown;
 
-    public void ShowDisconnect(string title, string message)
+    public void ShowDisconnect(string message)
     {
         if (returningToMainMenu || disconnectShown)
             return;
 
         disconnectShown = true;
 
-        Debug.Log($"DISCONNECT: {title} | {message}");
+        Debug.Log($"DISCONNECT: {message}");
 
         if (disconnectPanel != null)
             disconnectPanel.SetActive(true);
-
-        if (titleText != null)
-            titleText.text = title;
 
         if (messageText != null)
             messageText.text = message;
