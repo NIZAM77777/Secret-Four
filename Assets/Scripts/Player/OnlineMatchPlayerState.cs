@@ -55,7 +55,6 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         JoinerPlayerName.OnValueChanged += OnProfileValueChanged;
         HostSkinId.OnValueChanged += OnProfileValueChanged;
         JoinerSkinId.OnValueChanged += OnProfileValueChanged;
-        HostBoardSkinId.OnValueChanged += OnProfileValueChanged;
         MatchReady.OnValueChanged += OnProfileValueChanged;
 
         if (IsServer)
