@@ -21,8 +21,24 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
             return;
         }
 
-        string selectedSkinId = SecretFourStoreIntegration.GetSelectedPlayerItemId(player);
-        Debug.Log($"Network placement requested: ({x},{y}), player = {player}, skin = {selectedSkinId}");
+        // Online cosmetics come only from the authoritative match profile.
+        // Never read the local Store selection when sending a move for a room.
+        OnlineMatchPlayerState profile = OnlineMatchPlayerState.Instance;
+        if (profile == null || !profile.IsMatchReady())
+        {
+            Debug.Log("Online placement ignored: player profile is not ready.");
+            return;
+        }
+
+        // The network role is immutable: Host = X, Joiner = Y.
+        if (!profile.IsLocalSide(player))
+        {
+            Debug.Log("Online placement ignored: requested role is not the local network role.");
+            return;
+        }
+
+        string selectedSkinId = profile.GetSkinId(player);
+        Debug.Log($"Network placement requested: ({x},{y}), player = {player}, authoritative skin = {selectedSkinId}");
         RequestPlaceCoinRpc(x, y, (int)player, selectedSkinId ?? string.Empty);
     }
 
