@@ -90,11 +90,6 @@ public sealed class NetworkGameState : NetworkBehaviour
     public NetworkList<FixedString64Bytes> BoardSkinIds { get; private set; } =
         new NetworkList<FixedString64Bytes>();
 
-    // Board/cell appearance is a property of the match host (X) player.
-    // It is synchronized once for the room and never read from the joiner's
-    // local Store during online gameplay.
-    public NetworkVariable<FixedString128Bytes> HostBoardSkinId { get; } =
-        new NetworkVariable<FixedString128Bytes>();
 
     public bool IsPresentationPhase =>
         IsPhase(GameState.RevealingDirections) ||
@@ -148,7 +143,6 @@ public sealed class NetworkGameState : NetworkBehaviour
         XHasChosenDirection.OnValueChanged += OnNetworkValueChanged;
         YHasChosenDirection.OnValueChanged += OnNetworkValueChanged;
         RematchReadyMask.OnValueChanged += OnNetworkValueChanged;
-        HostBoardSkinId.OnValueChanged += OnNetworkValueChanged;
         BoardCells.OnListChanged += OnBoardListChanged;
         BoardSkinIds.OnListChanged += OnBoardSkinListChanged;
 
@@ -176,7 +170,6 @@ public sealed class NetworkGameState : NetworkBehaviour
         XHasChosenDirection.OnValueChanged -= OnNetworkValueChanged;
         YHasChosenDirection.OnValueChanged -= OnNetworkValueChanged;
         RematchReadyMask.OnValueChanged -= OnNetworkValueChanged;
-        HostBoardSkinId.OnValueChanged -= OnNetworkValueChanged;
         BoardCells.OnListChanged -= OnBoardListChanged;
         BoardSkinIds.OnListChanged -= OnBoardSkinListChanged;
 
