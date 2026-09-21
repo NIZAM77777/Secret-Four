@@ -38,11 +38,6 @@ public class BoardView : MonoBehaviour
 
     }
 
-    private void OnEnable()
-    {
-        OnlineMatchPlayerState.OnAnyProfileChanged += HandleOnlineProfileChanged;
-    }
-
     private void BindStore()
     {
         MN7StoreManager store = MN7StoreManager.Instance;
