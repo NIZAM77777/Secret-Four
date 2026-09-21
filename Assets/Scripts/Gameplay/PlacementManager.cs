@@ -123,7 +123,6 @@ public class PlacementManager : MonoBehaviour
         GameObject coin = Instantiate(coinPrefab, position, Quaternion.identity, coinParent);
         coin.name = $"{playerType}_Coin_{x}_{y}";
 
-        // Keep the coins visually matched to the reduced mobile board cells.
         if (boardView != null)
             coin.transform.localScale *= boardView.BoardVisualScale;
 
@@ -135,31 +134,40 @@ public class PlacementManager : MonoBehaviour
         {
             Sprite sprite = null;
 
-            if (!string.IsNullOrWhiteSpace(selectedSkinId))
-                sprite = SecretFourStoreIntegration.GetSpriteForItem(selectedSkinId);
-
-            // In the online room the cosmetic belongs to the network player,
-            // not to the device's current local Store selection. This fallback
-            // is only used when a transient snapshot does not yet contain the
-            // cell skin ID, and therefore must never read the opponent's/local
-            // Store selection by role.
-            if (sprite == null &&
-                IsOnlineGame() &&
-                OnlineMatchPlayerState.Instance != null)
+            if (IsOnlineGame())
             {
-                string networkSkinId =
-                    OnlineMatchPlayerState.Instance.GetSkinId(playerType);
+                // Online room rule: visual identity is determined only by the
+                // authoritative network profile or the skin stored on this cell.
+                // Never fall back to this device's Store selection.
+                string authoritativeSkinId = selectedSkinId;
 
-                if (!string.IsNullOrWhiteSpace(networkSkinId))
-                    sprite = SecretFourStoreIntegration.GetSpriteForItem(networkSkinId);
+                if (string.IsNullOrWhiteSpace(authoritativeSkinId) &&
+                    OnlineMatchPlayerState.Instance != null)
+                {
+                    authoritativeSkinId =
+                        OnlineMatchPlayerState.Instance.GetSkinId(playerType);
+                }
+
+                if (!string.IsNullOrWhiteSpace(authoritativeSkinId))
+                    sprite = SecretFourStoreIntegration.GetSpriteForItem(authoritativeSkinId);
+
+                // coinConfig is only a final asset fallback when the authoritative
+                // network profile has no usable skin; local Store state is forbidden.
+                if (sprite == null && coinConfig != null)
+                    sprite = coinConfig.GetSprite(playerType);
             }
+            else
+            {
+                // Preserve existing offline/bot cosmetic behavior.
+                if (!string.IsNullOrWhiteSpace(selectedSkinId))
+                    sprite = SecretFourStoreIntegration.GetSpriteForItem(selectedSkinId);
 
-            // Keep the existing local/offline behavior unchanged.
-            if (sprite == null && !IsOnlineGame())
-                sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(playerType);
+                if (sprite == null)
+                    sprite = SecretFourStoreIntegration.GetSelectedPlayerSprite(playerType);
 
-            if (sprite == null && coinConfig != null)
-                sprite = coinConfig.GetSprite(playerType);
+                if (sprite == null && coinConfig != null)
+                    sprite = coinConfig.GetSprite(playerType);
+            }
 
             coinView.Setup(playerType, sprite);
         }
