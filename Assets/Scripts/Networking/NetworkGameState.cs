@@ -148,6 +148,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         XHasChosenDirection.OnValueChanged += OnNetworkValueChanged;
         YHasChosenDirection.OnValueChanged += OnNetworkValueChanged;
         RematchReadyMask.OnValueChanged += OnNetworkValueChanged;
+        HostBoardSkinId.OnValueChanged += OnNetworkValueChanged;
         BoardCells.OnListChanged += OnBoardListChanged;
         BoardSkinIds.OnListChanged += OnBoardSkinListChanged;
 
@@ -175,6 +176,7 @@ public sealed class NetworkGameState : NetworkBehaviour
         XHasChosenDirection.OnValueChanged -= OnNetworkValueChanged;
         YHasChosenDirection.OnValueChanged -= OnNetworkValueChanged;
         RematchReadyMask.OnValueChanged -= OnNetworkValueChanged;
+        HostBoardSkinId.OnValueChanged -= OnNetworkValueChanged;
         BoardCells.OnListChanged -= OnBoardListChanged;
         BoardSkinIds.OnListChanged -= OnBoardSkinListChanged;
 
