@@ -38,8 +38,18 @@ public class NetworkCoinPlacementManager : NetworkBehaviour
         }
 
         string selectedSkinId = profile.GetSkinId(player);
+
+        // The profile skin is the only allowed source for online gameplay.
+        // Reject a placement when the authoritative role has no assigned skin
+        // and never fall back to the local Store selection.
+        if (string.IsNullOrWhiteSpace(selectedSkinId))
+        {
+            Debug.LogWarning($"Online placement ignored: {player} has no authoritative skin assigned.");
+            return;
+        }
+
         Debug.Log($"Network placement requested: ({x},{y}), player = {player}, authoritative skin = {selectedSkinId}");
-        RequestPlaceCoinRpc(x, y, (int)player, selectedSkinId ?? string.Empty);
+        RequestPlaceCoinRpc(x, y, (int)player, selectedSkinId);
     }
 
     public void RequestPlaceCoin(int x, int y)
