@@ -85,6 +85,12 @@ public class BoardView : MonoBehaviour
 
     private void HandleSelectionChanged(string group, string itemId)
     {
+        // OnlineRoom board appearance is owned by the host and synchronized
+        // through OnlineMatchPlayerState. Never react to local board selection
+        // changes while a network room is active.
+        if (IsOnlineRoom())
+            return;
+
         if (string.Equals(group, SecretFourStoreIntegration.BoardSelectionGroup, System.StringComparison.OrdinalIgnoreCase))
             ApplySelectedBoardSkin();
     }
@@ -146,18 +152,33 @@ public class BoardView : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies the currently selected BOARD item to every board cell.
-    /// The selected item's icon is the cell/board skin used in gameplay.
+    /// Applies the board appearance. Offline/Bot uses the local Store.
+    /// OnlineRoom uses only the authoritative host board skin.
     /// </summary>
     public void ApplySelectedBoardSkin()
     {
-        Sprite selectedBoardSprite = SecretFourStoreIntegration.GetSelectedBoardSprite();
-        if (selectedBoardSprite == null)
+        string boardSkinId = null;
+
+        if (IsOnlineRoom() && OnlineMatchPlayerState.Instance != null)
+            boardSkinId = OnlineMatchPlayerState.Instance.GetBoardSkinId();
+        else
+            boardSkinId = SecretFourStoreIntegration.GetSelectedBoardItemId();
+
+        Sprite boardSprite =
+            SecretFourStoreIntegration.GetSpriteForItem(boardSkinId);
+
+        if (boardSprite == null)
             return;
 
         CellView[] cells = GetComponentsInChildren<CellView>(true);
         foreach (CellView cell in cells)
-            cell.ApplyBoardSprite(selectedBoardSprite);
+            cell.ApplyBoardSprite(boardSprite);
+    }
+
+    private bool IsOnlineRoom()
+    {
+        return GameSession.Instance != null &&
+               GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom;
     }
 
     public Vector3 GetCellWorldPosition(int x, int y)
