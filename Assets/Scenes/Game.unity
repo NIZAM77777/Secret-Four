@@ -1116,7 +1116,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DisconnectUIManager
   disconnectPanel: {fileID: 209062918}
-  titleText: {fileID: 0}
   messageText: {fileID: 415642289}
   mainMenuSceneName: Mainmenu
 --- !u!1 &466721190
@@ -1738,6 +1737,7 @@ MonoBehaviour:
   movementManager: {fileID: 868001400}
   movementRuleResolver: {fileID: 533094709}
   placementManager: {fileID: 1282425387}
+  revealDelay: 2
 --- !u!1 &586857707
 GameObject:
   m_ObjectHideFlags: 0
@@ -2113,6 +2113,7 @@ MonoBehaviour:
   gameResultManager: {fileID: 276811465}
   turnManager: {fileID: 1228661221}
   winGlowManager: {fileID: 603295689}
+  winPanelDelay: 1.5
 --- !u!114 &689930983
 MonoBehaviour:
   m_ObjectHideFlags: 0
