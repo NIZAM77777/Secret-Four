@@ -35,6 +35,19 @@ public class BoardView : MonoBehaviour
 
         if (store?.Selection != null)
             store.Selection.OnSelectionChanged -= HandleSelectionChanged;
+
+        OnlineMatchPlayerState.OnAnyProfileChanged -= HandleOnlineProfileChanged;
+    }
+
+    private void OnEnable()
+    {
+        OnlineMatchPlayerState.OnAnyProfileChanged += HandleOnlineProfileChanged;
+    }
+
+    private void HandleOnlineProfileChanged()
+    {
+        if (IsOnlineRoom())
+            ApplySelectedBoardSkin();
     }
 
     private void BindStore()
