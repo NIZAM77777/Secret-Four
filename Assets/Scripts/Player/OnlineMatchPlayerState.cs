@@ -26,10 +26,6 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
     public NetworkVariable<FixedString128Bytes> JoinerSkinId { get; } =
         new NetworkVariable<FixedString128Bytes>();
 
-    // The host owns the room board appearance. Both devices use this value
-    // in OnlineRoom; neither device reads its own local BOARD selection there.
-    public NetworkVariable<FixedString128Bytes> HostBoardSkinId { get; } =
-        new NetworkVariable<FixedString128Bytes>();
 
     public NetworkVariable<bool> MatchReady { get; } =
         new NetworkVariable<bool>(false);
@@ -60,7 +56,6 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         HostSkinId.OnValueChanged += OnProfileValueChanged;
         JoinerSkinId.OnValueChanged += OnProfileValueChanged;
         HostBoardSkinId.OnValueChanged += OnProfileValueChanged;
-        HostBoardSkinId.OnValueChanged += OnProfileValueChanged;
         MatchReady.OnValueChanged += OnProfileValueChanged;
 
         if (IsServer)
@@ -70,7 +65,6 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
                 GetLocalPlayerNameOrDefault());
 
             ApplyLocalHostSkin();
-            ApplyLocalHostBoardSkin();
             RefreshReadyState();
         }
         else
@@ -151,7 +145,6 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         JoinerPlayerName.OnValueChanged -= OnProfileValueChanged;
         HostSkinId.OnValueChanged -= OnProfileValueChanged;
         JoinerSkinId.OnValueChanged -= OnProfileValueChanged;
-        HostBoardSkinId.OnValueChanged -= OnProfileValueChanged;
         MatchReady.OnValueChanged -= OnProfileValueChanged;
 
         if (Instance == this)
@@ -250,10 +243,6 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
         return PlayerNameManager.GetPlayerName();
     }
 
-    public string GetBoardSkinId()
-    {
-        return HostBoardSkinId.Value.ToString();
-    }
 
     private void ApplyLocalHostSkin()
     {
@@ -264,12 +253,4 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
             new FixedString128Bytes(skinId ?? string.Empty);
     }
 
-    private void ApplyLocalHostBoardSkin()
-    {
-        string boardSkinId =
-            SecretFourStoreIntegration.GetSelectedBoardItemId();
-
-        HostBoardSkinId.Value =
-            new FixedString128Bytes(boardSkinId ?? string.Empty);
-    }
 }
