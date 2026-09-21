@@ -36,18 +36,11 @@ public class BoardView : MonoBehaviour
         if (store?.Selection != null)
             store.Selection.OnSelectionChanged -= HandleSelectionChanged;
 
-        OnlineMatchPlayerState.OnAnyProfileChanged -= HandleOnlineProfileChanged;
     }
 
     private void OnEnable()
     {
         OnlineMatchPlayerState.OnAnyProfileChanged += HandleOnlineProfileChanged;
-    }
-
-    private void HandleOnlineProfileChanged()
-    {
-        if (IsOnlineRoom())
-            ApplySelectedBoardSkin();
     }
 
     private void BindStore()
@@ -98,12 +91,6 @@ public class BoardView : MonoBehaviour
 
     private void HandleSelectionChanged(string group, string itemId)
     {
-        // OnlineRoom board appearance is owned by the host and synchronized
-        // through OnlineMatchPlayerState. Never react to local board selection
-        // changes while a network room is active.
-        if (IsOnlineRoom())
-            return;
-
         if (string.Equals(group, SecretFourStoreIntegration.BoardSelectionGroup, System.StringComparison.OrdinalIgnoreCase))
             ApplySelectedBoardSkin();
     }
@@ -165,33 +152,21 @@ public class BoardView : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies the board appearance. Offline/Bot uses the local Store.
-    /// OnlineRoom uses only the authoritative host board skin.
+    /// Board appearance is local presentation.
+    /// Each device uses its own selected BOARD item, including OnlineRoom.
+    /// Player coin skins are synchronized separately through the network profile.
     /// </summary>
     public void ApplySelectedBoardSkin()
     {
-        string boardSkinId = null;
+        Sprite selectedBoardSprite =
+            SecretFourStoreIntegration.GetSelectedBoardSprite();
 
-        if (IsOnlineRoom() && OnlineMatchPlayerState.Instance != null)
-            boardSkinId = OnlineMatchPlayerState.Instance.GetBoardSkinId();
-        else
-            boardSkinId = SecretFourStoreIntegration.GetSelectedBoardItemId();
-
-        Sprite boardSprite =
-            SecretFourStoreIntegration.GetSpriteForItem(boardSkinId);
-
-        if (boardSprite == null)
+        if (selectedBoardSprite == null)
             return;
 
         CellView[] cells = GetComponentsInChildren<CellView>(true);
         foreach (CellView cell in cells)
-            cell.ApplyBoardSprite(boardSprite);
-    }
-
-    private bool IsOnlineRoom()
-    {
-        return GameSession.Instance != null &&
-               GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom;
+            cell.ApplyBoardSprite(selectedBoardSprite);
     }
 
     public Vector3 GetCellWorldPosition(int x, int y)
