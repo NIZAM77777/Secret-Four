@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &742801534485164392
 RectTransform:
   m_ObjectHideFlags: 0
@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1368443212, guid: e7b2cf3cd28d2934fb68ca17d7b88a3b, type: 3}
+  m_Sprite: {fileID: 4380789623916515115, guid: 30d79a95e7a616c4eb108ae4d7352464, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -146,7 +146,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 822167405, guid: e79e0363a848b154da241030944d3735, type: 3}
+  m_Sprite: {fileID: -2358686759142164845, guid: 30d79a95e7a616c4eb108ae4d7352464, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -219,9 +219,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 0.18}
   selectedColor: {r: 1, g: 1, b: 1, a: 0.85}
   normalTextColor: {r: 1, g: 1, b: 1, a: 1}
-  selectedTextColor: {r: 0, g: 0, b: 0, a: 1}
-  useSelectionScale: 0
-  selectedScale: 1.05
+  selectedTextColor: {r: 1, g: 1, b: 1, a: 1}
+  useSelectionScale: 1
+  selectedScale: 1.15
 --- !u!114 &4647152464115884639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,7 +259,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4007841989112532027
 RectTransform:
   m_ObjectHideFlags: 0
@@ -307,7 +307,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1654714237, guid: d018ddb4677482a4f84d3c4a5fab10b0, type: 3}
+  m_Sprite: {fileID: 6530882480397579575, guid: b55f57e926ba4fb42a459a76bba0b573, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
