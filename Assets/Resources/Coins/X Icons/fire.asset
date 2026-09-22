@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: fire
   m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
   itemId: firex
-  displayName: FIRE X
+  displayName: FIRE
   description: 
   icon: {fileID: 8432833046894688570, guid: a6e8215453e275e4c82c62c3466baeab, type: 3}
   purchaseType: 1

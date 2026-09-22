@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
+  m_Name: goldx
+  m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
+  itemId: gold
+  displayName: GOLD X
+  description: 
+  icon: {fileID: 243318042, guid: 1b42829cdb2280743a5d04622ad02555, type: 3}
+  purchaseType: 1
+  categoryIds:
+  - X Coins
+  selectionGroupId: PLAYER
+  selectable: 1
+  defaultOwned: 0
+  defaultSelected: 0
+  sortPriority: 6
+  customSortWeight: 0
+  requiredAds: 3
+  adPlacementId: store_reward
+  rewards:
+  - itemId: gold
+    itemQuantity: 1
+  ownershipType: 0
