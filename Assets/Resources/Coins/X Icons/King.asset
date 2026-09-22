@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
+  m_Name: King
+  m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
+  itemId: kingx
+  displayName: King
+  description: 
+  icon: {fileID: 445602605301077070, guid: a6e8215453e275e4c82c62c3466baeab, type: 3}
+  purchaseType: 1
+  categoryIds:
+  - X Coins
+  selectionGroupId: PLAYER
+  selectable: 1
+  defaultOwned: 0
+  defaultSelected: 0
+  sortPriority: 3
+  customSortWeight: 0
+  requiredAds: 3
+  adPlacementId: store_reward
+  rewards:
+  - itemId: kingx
+    itemQuantity: 1
+  ownershipType: 0

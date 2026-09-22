@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1655083692cce2489f44cf85aa354c6, type: 3}
+  m_Name: red
+  m_EditorClassIdentifier: MN7Store.Runtime::MN7.Store.MN7ItemData
+  itemId: Board4
+  displayName: Red
+  description: 
+  icon: {fileID: -8995565187821981192, guid: 1665f39991ee58446aa9a356cb934b0e, type: 3}
+  purchaseType: 1
+  categoryIds:
+  - Boards
+  selectionGroupId: BOARD
+  selectable: 1
+  defaultOwned: 0
+  defaultSelected: 0
+  sortPriority: 1
+  customSortWeight: 0
+  requiredAds: 1
+  adPlacementId: store_reward
+  rewards:
+  - itemId: Board4
+    itemQuantity: 1
+  ownershipType: 0
