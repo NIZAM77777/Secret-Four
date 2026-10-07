@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: board1
   displayName: Default Board
   description: 
-  icon: {fileID: -319469171194908686, guid: 708d4dee9a0e0024dac1168119e35b02, type: 3}
+  icon: {fileID: 21300000, guid: 2f8afda2f29305a4f9d98076f53e52b0, type: 3}
   purchaseType: 0
   categoryIds:
   - Boards

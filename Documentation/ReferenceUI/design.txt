@@ -1,0 +1,4 @@
+Catalog checked in all four languages, including formatting placeholders.
+Master/music/effects sliders, mute, reopening and audio mixing passed.
+In-game language updates, Arabic player names, local pause preservation and online settings passed.
+PASS: all design checks.

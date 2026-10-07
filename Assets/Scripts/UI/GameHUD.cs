@@ -19,6 +19,8 @@ public class GameHUD : MonoBehaviour
     [SerializeField] private Sprite playerYDefaultSprite;
 
     [Header("Turn Information")]
+    [Tooltip("Disable to keep the turn labels at their Inspector-authored positions.")]
+    [SerializeField] private bool useLegacyTurnLayout = true;
     [SerializeField] private TMP_Text turnText;
     [SerializeField] private TMP_Text turnPlayerNameText;
 
@@ -270,8 +272,11 @@ public class GameHUD : MonoBehaviour
         {
             turnPlayerNameText.text = GameLocalization.DisplayName(activeName) ?? string.Empty;
             turnPlayerNameText.gameObject.SetActive(activeName != null);
-            turnText.rectTransform.anchoredPosition = new Vector2(activeName == null ? 0 : 155, -55);
-            turnText.rectTransform.sizeDelta = new Vector2(activeName == null ? 810 : 500, 88);
+            if (useLegacyTurnLayout)
+            {
+                turnText.rectTransform.anchoredPosition = new Vector2(activeName == null ? 0 : 155, -55);
+                turnText.rectTransform.sizeDelta = new Vector2(activeName == null ? 810 : 500, 88);
+            }
         }
         switch (turnManager.CurrentState)
         {

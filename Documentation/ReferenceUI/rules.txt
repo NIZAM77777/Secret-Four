@@ -1,0 +1,8 @@
+PASS: collisions, swaps, following, blocked chains, boundaries, Stay, and final single placement.
+PASS: horizontal, vertical, both diagonals, simultaneous wins, configured win length.
+PASS: tactical wins, robust blocking, hidden-direction search, and board immutability.
+PASS: simultaneous visual tracking.
+PASS: 60 seeded full matches across all difficulties. Slowest decision: 20.9 ms.
+PASS: 1797 assertions.
+PASS: Assets/Scenes/Mainmenu.unity, 34 buttons; no missing scripts, broken references, or missing button methods.
+PASS: Assets/Scenes/Game.unity, 21 buttons; no missing scripts, broken references, or missing button methods.

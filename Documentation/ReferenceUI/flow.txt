@@ -1,0 +1,8 @@
+PASS: main menu, bot picker, human setup, rules, settings, room menu, store, and Back navigation.
+Cell sprite: board3_5 texture=board3 rect=(x:1042.00, y:71.00, width:442.00, height:430.00) material=BoardCell shader=Universal Render Pipeline/2D/Sprite-Unlit-Default
+PASS: board input, pause/resume, full local match, win presentation, and Play Again.
+PASS: Easy bot placement, direction, resolution, and protected turn.
+PASS: Medium bot placement, direction, resolution, and protected turn.
+PASS: Hard bot placement, direction, resolution, and protected turn.
+PASS: simultaneous four-in-a-row draw through the live match flow.
+PASS: return to the main menu after a completed match.

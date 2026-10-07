@@ -855,3 +855,98 @@ MonoBehaviour:
     french: "Faites d\xE9filer pour lire toutes les r\xE8gles"
     arabic: "\u0645\u0631\u0631 \u0644\u0642\u0631\u0627\u0621\u0629 \u062C\u0645\u064A\u0639
       \u0627\u0644\u0642\u0648\u0627\u0639\u062F"
+  - key: ui.placeToChoose
+    english: Place a coin to choose your move
+    spanish: Coloca una ficha para elegir tu movimiento
+    french: "Placez un pion pour choisir votre d\xE9placement"
+    arabic: "\u0636\u0639 \u0642\u0637\u0639\u0629 \u0644\u0627\u062E\u062A\u064A\u0627\u0631
+      \u062D\u0631\u0643\u062A\u0643"
+  - key: ui.brand
+    english: SECRET FOUR
+    spanish: SECRET FOUR
+    french: SECRET FOUR
+    arabic: "\u0633\u064A\u0643\u0631\u064A\u062A \u0641\u0648\u0631"
+  - key: ui.placeHint
+    english: Tap any empty cell
+    spanish: "Toca una casilla vac\xEDa"
+    french: Touchez une case vide
+    arabic: "\u0627\u0636\u063A\u0637 \u0639\u0644\u0649 \u0623\u064A \u062E\u0627\u0646\u0629
+      \u0641\u0627\u0631\u063A\u0629"
+  - key: ui.chooseHint
+    english: Choose a secret direction
+    spanish: "Elige una direcci\xF3n secreta"
+    french: "Choisissez une direction secr\xE8te"
+    arabic: "\u0627\u062E\u062A\u0631 \u0627\u062A\u062C\u0627\u0647\u0627\u064B
+      \u0633\u0631\u064A\u0627\u064B"
+  - key: ui.revealHint
+    english: Both moves are revealed together
+    spanish: Ambos movimientos se revelan juntos
+    french: "Les deux coups sont r\xE9v\xE9l\xE9s ensemble"
+    arabic: "\u062A\u064F\u0643\u0634\u0641 \u0627\u0644\u062D\u0631\u0643\u062A\u0627\u0646
+      \u0645\u0639\u0627\u064B"
+  - key: ui.place
+    english: PLACE
+    spanish: COLOCAR
+    french: PLACER
+    arabic: "\u0636\u0639"
+  - key: ui.choose
+    english: CHOOSE
+    spanish: ELEGIR
+    french: CHOISIR
+    arabic: "\u0627\u062E\u062A\u0631"
+  - key: ui.reveal
+    english: REVEAL
+    spanish: REVELAR
+    french: "R\xC9V\xC9LER"
+    arabic: "\u0627\u0643\u0634\u0641"
+  - key: ui.victoryHint
+    english: Four in a row. Well played.
+    spanish: "Cuatro en l\xEDnea. Bien jugado."
+    french: "Quatre \xE0 la suite. Bien jou\xE9."
+    arabic: "\u0623\u0631\u0628\u0639 \u0642\u0637\u0639 \u0645\u062A\u0635\u0644\u0629.
+      \u0623\u062D\u0633\u0646\u062A \u0627\u0644\u0644\u0639\u0628."
+  - key: ui.drawHint
+    english: Evenly matched. Ready for another round?
+    spanish: "Empate. \xBFOtra ronda?"
+    french: "\xC0 \xE9galit\xE9. Une autre partie ?"
+    arabic: "\u062A\u0639\u0627\u062F\u0644. \u0647\u0644 \u0623\u0646\u062A \u0645\u0633\u062A\u0639\u062F
+      \u0644\u062C\u0648\u0644\u0629 \u0623\u062E\u0631\u0649\u061F"
+  - key: ui.ready
+    english: Your room is ready
+    spanish: "Tu sala est\xE1 lista"
+    french: "Votre salon est pr\xEAt"
+    arabic: "\u063A\u0631\u0641\u062A\u0643 \u062C\u0627\u0647\u0632\u0629"
+  - key: ui.roomInfo
+    english: The match begins when your friend joins
+    spanish: La partida comienza cuando se una tu amigo
+    french: La partie commence quand votre ami arrive
+    arabic: "\u062A\u0628\u062F\u0623 \u0627\u0644\u0645\u0628\u0627\u0631\u0627\u0629
+      \u0639\u0646\u062F\u0645\u0627 \u064A\u0646\u0636\u0645 \u0635\u062F\u064A\u0642\u0643"
+  - key: ui.loadingHint
+    english: Getting everything ready
+    spanish: Preparando todo
+    french: "Pr\xE9paration en cours"
+    arabic: "\u062C\u0627\u0631\u064D \u062A\u062C\u0647\u064A\u0632 \u0643\u0644
+      \u0634\u064A\u0621"
+  - key: ui.codeLength
+    english: 6 characters
+    spanish: 6 caracteres
+    french: "6 caract\xE8res"
+    arabic: "\u0666 \u0623\u062D\u0631\u0641"
+  - key: ui.invite
+    english: Invite a friend with a room code
+    spanish: "Invita con un c\xF3digo de sala"
+    french: Invitez un ami avec un code
+    arabic: "\u0627\u062F\u0639\u064F \u0635\u062F\u064A\u0642\u0627\u064B \u0628\u0627\u0633\u062A\u062E\u062F\u0627\u0645
+      \u0631\u0645\u0632 \u0627\u0644\u063A\u0631\u0641\u0629"
+  - key: ui.joinHint
+    english: Enter a code to play together
+    spanish: "Introduce un c\xF3digo para jugar"
+    french: Saisissez un code pour jouer ensemble
+    arabic: "\u0623\u062F\u062E\u0644 \u0631\u0645\u0632\u0627\u064B \u0644\u0644\u0639\u0628
+      \u0645\u0639\u0627\u064B"
+  - key: ui.player
+    english: PLAYER
+    spanish: JUGADOR
+    french: JOUEUR
+    arabic: "\u0627\u0644\u0644\u0627\u0639\u0628"
