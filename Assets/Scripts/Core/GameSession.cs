@@ -53,12 +53,12 @@ public class GameSession : MonoBehaviour
         Player1Name =
             string.IsNullOrWhiteSpace(player1Name)
                 ? "Player 1"
-                : player1Name.Trim();
+                : PlayerNameManager.Normalize(player1Name);
 
         Player2Name =
             string.IsNullOrWhiteSpace(player2Name)
                 ? "Player 2"
-                : player2Name.Trim();
+                : PlayerNameManager.Normalize(player2Name, "Player 2");
 
         LocalOnlineSkinId = localSkinId;
     }

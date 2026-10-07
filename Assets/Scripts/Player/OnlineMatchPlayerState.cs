@@ -168,9 +168,11 @@ public sealed class OnlineMatchPlayerState : NetworkBehaviour
             JoinerPlayerClientId.Value != senderId)
             return;
 
+        if (!SecretFourStoreIntegration.IsValidPlayerSkin(skinId, PlayerType.Y) ||
+            System.Text.Encoding.UTF8.GetByteCount(skinId ?? "") > 60) return;
         JoinerPlayerClientId.Value = senderId;
         JoinerPlayerName.Value = new FixedString64Bytes(
-            string.IsNullOrWhiteSpace(playerName) ? "Player 2" : playerName.Trim());
+            PlayerNameManager.Normalize(playerName, "Player 2"));
         JoinerSkinId.Value = new FixedString128Bytes(skinId ?? string.Empty);
         JoinerReady.Value = true;
         RefreshReadyState();

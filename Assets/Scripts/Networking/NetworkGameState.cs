@@ -103,6 +103,8 @@ public sealed class NetworkGameState : NetworkBehaviour
     private DirectionButtonController directionButtonController;
 
     private int lastAppliedRevision = -1;
+    private int lastAppliedMatchId = -1;
+    private MovementManager movementManager;
     private bool applyScheduled;
     private bool serverInitialized;
 
@@ -110,9 +112,7 @@ public sealed class NetworkGameState : NetworkBehaviour
     // When the server immediately advances into the next placement phase,
     // do not let that state snapshot rebuild/destroy the animated coin
     // objects in the same transition and cause a visible jump.
-    private GameState lastAppliedClientState =
-        GameState.WaitingForPlayerXPlacement;
-    private bool hasAppliedClientState;
+
 
     private void Awake()
     {
@@ -127,6 +127,7 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        lastAppliedMatchId = MatchId.Value;
         currentState.OnValueChanged += OnNetworkValueChanged;
         WinnerState.OnValueChanged += OnNetworkValueChanged;
         StateRevision.OnValueChanged += OnNetworkValueChanged;
@@ -280,12 +281,8 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     public bool IsPlayerAllowed(ulong clientId, PlayerType player)
     {
-        if (NetworkManager.Singleton == null)
-            return false;
-
-        return player == PlayerType.X
-            ? clientId == NetworkManager.ServerClientId
-            : player == PlayerType.Y && clientId != NetworkManager.ServerClientId;
+        OnlineMatchPlayerState profile = OnlineMatchPlayerState.Instance;
+        return profile != null && profile.IsClientAssigned(clientId) && profile.GetSideForClient(clientId) == player;
     }
 
     public bool CanRequestDirection(PlayerType player)
@@ -351,8 +348,9 @@ public sealed class NetworkGameState : NetworkBehaviour
         YPositionX.Value = yAction.position.x;
         YPositionY.Value = yAction.position.y;
 
-        XDirection.Value = (int)xAction.direction;
-        YDirection.Value = (int)yAction.direction;
+        bool reveal = xAction.hasChosenDirection && (yAction.hasChosenDirection || boardManager.CurrentBoard.IsFull());
+        XDirection.Value = (int)(reveal ? xAction.direction : MoveDirection.Stay);
+        YDirection.Value = (int)(reveal ? yAction.direction : MoveDirection.Stay);
 
         XHasPlaced.Value = xAction.hasPlaced;
         YHasPlaced.Value = yAction.hasPlaced;
@@ -457,8 +455,11 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         WinnerState.Value = NoWinner;
         RematchReadyMask.Value = 0;
-        lastAppliedClientState = GameState.WaitingForPlayerXPlacement;
-        hasAppliedClientState = false;
+
+        XPositionX.Value = XPositionY.Value = YPositionX.Value = YPositionY.Value = -1;
+        XHasPlaced.Value = YHasPlaced.Value = false;
+        XHasChosenDirection.Value = YHasChosenDirection.Value = false;
+        XDirection.Value = YDirection.Value = (int)MoveDirection.Stay;
         MoveId.Value = 0;
         MatchId.Value++;
         currentState.Value = (int)GameState.WaitingForPlayerXPlacement;
@@ -507,8 +508,9 @@ public sealed class NetworkGameState : NetworkBehaviour
         YPositionX.Value = yAction.position.x;
         YPositionY.Value = yAction.position.y;
 
-        XDirection.Value = (int)xAction.direction;
-        YDirection.Value = (int)yAction.direction;
+        bool reveal = xAction.hasChosenDirection && (yAction.hasChosenDirection || boardManager.CurrentBoard.IsFull());
+        XDirection.Value = (int)(reveal ? xAction.direction : MoveDirection.Stay);
+        YDirection.Value = (int)(reveal ? yAction.direction : MoveDirection.Stay);
 
         XHasPlaced.Value = xAction.hasPlaced;
         YHasPlaced.Value = yAction.hasPlaced;
@@ -602,6 +604,11 @@ public sealed class NetworkGameState : NetworkBehaviour
 
         EnsureBoardLists();
 
+        if (!boardManager.CurrentBoard.IsInsideBoard(yStart.x, yStart.y))
+        {
+            MoveStoredSkin(xStart.x, xStart.y, xDestination.x, xDestination.y);
+            return;
+        }
         int xStartIndex = GetIndex(xStart.x, xStart.y);
         int xDestinationIndex = GetIndex(xDestination.x, xDestination.y);
         int yStartIndex = GetIndex(yStart.x, yStart.y);
@@ -682,88 +689,44 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     private void ApplyAuthoritativeStateToClient()
     {
-        if (IsServer)
-            return;
-
+        if (IsServer || !IsSpawned) return;
         boardManager ??= FindFirstObjectByType<BoardManager>();
         turnManager ??= FindFirstObjectByType<TurnManager>();
         placementManager ??= FindFirstObjectByType<PlacementManager>();
         gameResultManager ??= FindFirstObjectByType<GameResultManager>();
-
-        if (boardManager == null || boardManager.CurrentBoard == null || turnManager == null)
-            return;
-
-        if (lastAppliedRevision == StateRevision.Value)
-            return;
-
+        movementManager ??= FindFirstObjectByType<MovementManager>();
+        if (boardManager == null || boardManager.CurrentBoard == null || turnManager == null) return;
+        if (lastAppliedMatchId != MatchId.Value)
+        {
+            movementManager?.ResetNetworkMovementState();
+            FindFirstObjectByType<NetworkMovementManager>()?.ResetNetworkMoveState();
+            lastAppliedMatchId = MatchId.Value;
+            lastAppliedRevision = -1;
+        }
+        // Let an in-flight animation finish before a newer snapshot replaces its coins or turn.
+        if (movementManager != null && movementManager.IsMovementInProgress) return;
+        if (lastAppliedRevision == StateRevision.Value) return;
         lastAppliedRevision = StateRevision.Value;
-
         boardManager.ApplySnapshot(BoardCells, BoardSkinIds);
-
-        turnManager.ApplyAuthoritativeState(
-            (GameState)currentState.Value,
-            new Vector2Int(XPositionX.Value, XPositionY.Value),
-            new Vector2Int(YPositionX.Value, YPositionY.Value),
-            (MoveDirection)XDirection.Value,
-            (MoveDirection)YDirection.Value,
-            XHasPlaced.Value,
-            YHasPlaced.Value,
-            XHasChosenDirection.Value,
-            YHasChosenDirection.Value);
-
+        turnManager.ApplyAuthoritativeState((GameState)currentState.Value,
+            new Vector2Int(XPositionX.Value, XPositionY.Value), new Vector2Int(YPositionX.Value, YPositionY.Value),
+            (MoveDirection)XDirection.Value, (MoveDirection)YDirection.Value,
+            XHasPlaced.Value, YHasPlaced.Value, XHasChosenDirection.Value, YHasChosenDirection.Value);
+        placementManager?.RebuildFromNetworkState(BoardCells, BoardSkinIds,
+            new Vector2Int(XPositionX.Value, XPositionY.Value), new Vector2Int(YPositionX.Value, YPositionY.Value),
+            XHasPlaced.Value, YHasPlaced.Value);
         int winner = WinnerState.Value;
-
         if (gameResultManager != null)
         {
-                if (winner == WinnerX)
-                gameResultManager.SetWinner(PlayerType.X);
-            else if (winner == WinnerY)
-                gameResultManager.SetWinner(PlayerType.Y);
-            else if (winner == DrawResult)
-                gameResultManager.SetDraw();
-            else if (winner == NoWinner && gameResultManager.HasResult)
-                gameResultManager.ResetResult();
+            if (winner == WinnerX || winner == WinnerY)
+            {
+                FindFirstObjectByType<WinConditionChecker>()?.HasWinner(out _);
+                gameResultManager.SetWinner(winner == WinnerX ? PlayerType.X : PlayerType.Y);
+            }
+            else if (winner == DrawResult) gameResultManager.SetDraw();
+            else if (gameResultManager.HasResult) gameResultManager.ResetResult();
         }
-
-        GameState state = (GameState)currentState.Value;
-        bool safeToRebuildVisuals =
-            state == GameState.WaitingForPlayerXPlacement ||
-            state == GameState.WaitingForPlayerYPlacement ||
-            state == GameState.WaitingForPlayerXDirection ||
-            state == GameState.WaitingForPlayerYDirection;
-
-        // During a normal no-result move, MovementManager has already animated
-        // the existing coin objects to their final positions before the host
-        // advances the authoritative state into the next round. Rebuilding the
-        // same board here would Destroy/Instantiate those objects and can make
-        // the final movement frame visually jump. Keep the existing presentation
-        // for this one transition; the next ordinary safe-state update can still
-        // rebuild from the authoritative snapshot when needed.
-        bool comingDirectlyFromPresentation =
-            hasAppliedClientState &&
-            (lastAppliedClientState == GameState.RevealingDirections ||
-             lastAppliedClientState == GameState.Moving ||
-             lastAppliedClientState == GameState.CheckingResult);
-
-        bool skipRebuildAfterMovement =
-            safeToRebuildVisuals && comingDirectlyFromPresentation;
-
-        if (safeToRebuildVisuals &&
-            !skipRebuildAfterMovement &&
-            placementManager != null)
-        {
-            placementManager.RebuildFromNetworkState(
-                BoardCells,
-                BoardSkinIds,
-                new Vector2Int(XPositionX.Value, XPositionY.Value),
-                new Vector2Int(YPositionX.Value, YPositionY.Value),
-                XHasPlaced.Value,
-                YHasPlaced.Value);
-        }
-
         directionButtonController?.RefreshForCurrentTurn();
-        lastAppliedClientState = state;
-        hasAppliedClientState = true;
     }
 
     private byte GetCellCode(BoardCell cell)
@@ -778,7 +741,7 @@ public sealed class NetworkGameState : NetworkBehaviour
 
     private int GetIndex(int x, int y)
     {
-        if (boardManager?.CurrentBoard == null)
+        if (boardManager?.CurrentBoard == null || !boardManager.CurrentBoard.IsInsideBoard(x, y))
             return -1;
 
         return x * boardManager.CurrentBoard.Height + y;

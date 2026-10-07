@@ -1,29 +1,21 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Services.Core;
 using Unity.Services.Authentication;
-using System;
 
 public class UGSManager : MonoBehaviour
 {
-    private async void Start()
+    private static Task initialization;
+    public static Task EnsureReady()
     {
-        try
-        {
-            // Initialize Unity Gaming Services
-            await UnityServices.InitializeAsync();
-
-            // Sign in anonymously if not already signed in
-            if (!AuthenticationService.Instance.IsSignedIn)
-            {
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            }
-
-            Debug.Log("Unity Services Ready!");
-            Debug.Log("Player ID: " + AuthenticationService.Instance.PlayerId);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("UGS Initialization Failed: " + e.Message);
-        }
+        if (initialization == null || initialization.IsFaulted || initialization.IsCanceled)
+            initialization = Initialize();
+        return initialization;
     }
+    private static async Task Initialize()
+    {
+        if (UnityServices.State != ServicesInitializationState.Initialized) await UnityServices.InitializeAsync();
+        if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
+    }
+    // Services are initialized on demand when opening an online room.
 }

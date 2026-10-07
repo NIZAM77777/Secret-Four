@@ -27,6 +27,8 @@ public class MatchManager : MonoBehaviour
         // 1. Reset Game Result
         // --------------------------------
 
+        FindFirstObjectByType<BotController>()?.ResetBot();
+        FindFirstObjectByType<MovementManager>()?.ResetNetworkMovementState();
         gameResultManager.ResetResult();
 
 

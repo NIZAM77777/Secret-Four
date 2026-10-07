@@ -66,29 +66,7 @@ public class MainMenuManager : MonoBehaviour
             howToPlayPanel.SetActive(false);
     }
 
-    private void ShowMainMenu()
-    {
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(true);
-
-        if (humanSetupPanel != null)
-            humanSetupPanel.SetActive(false);
-
-        if (botPanel != null)
-            botPanel.SetActive(false);
-
-        if (playInRoomMenuPanel != null)
-            playInRoomMenuPanel.SetActive(false);
-
-        if (storePanel != null)
-            storePanel.SetActive(false);
-
-        if (settingsPanel != null)
-            settingsPanel.SetActive(false);
-
-        if (howToPlayPanel != null)
-            howToPlayPanel.SetActive(false);
-    }
+    private void ShowMainMenu() => CloseAllPanels();
 
     // =========================
     // STORE
@@ -96,20 +74,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void OpenStore()
     {
-        ShowMainMenu();
-
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
-
-        if (storePanel == null)
-        {
-            Debug.LogError(
-                "[Secret Four] Cannot open Store: StorePanel is not assigned."
-            );
-            return;
-        }
-
-        storePanel.SetActive(true);
+        ShowPanel(storePanel);
     }
 
     public void CloseStore()
@@ -126,22 +91,7 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     public void OpenSettings()
     {
-        ShowMainMenu();
-
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
-
-        if (settingsPanel == null)
-        {
-            Debug.LogError(
-                "[Secret Four] Cannot open Settings: SettingsPanel is not assigned."
-            );
-            return;
-        }
-
-        settingsPanel.SetActive(true);
-
-        Debug.Log("[Secret Four] Settings opened.");
+        ShowPanel(settingsPanel);
     }
 
     /// <summary>
@@ -163,22 +113,7 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     public void OpenHowToPlay()
     {
-        ShowMainMenu();
-
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
-
-        if (howToPlayPanel == null)
-        {
-            Debug.LogError(
-                "[Secret Four] Cannot open How To Play: HowToPlayPanel is not assigned."
-            );
-            return;
-        }
-
-        howToPlayPanel.SetActive(true);
-
-        Debug.Log("[Secret Four] How To Play opened.");
+        ShowPanel(howToPlayPanel);
     }
 
     /// <summary>
@@ -197,9 +132,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void OpenBotPanel()
     {
-        mainMenuPanel.SetActive(false);
-        humanSetupPanel.SetActive(false);
-        botPanel.SetActive(true);
+        ShowPanel(botPanel);
     }
 
     public void BackFromBotPanel()
@@ -241,8 +174,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void OpenHumanSetup()
     {
-        mainMenuPanel.SetActive(false);
-        humanSetupPanel.SetActive(true);
+        ShowPanel(humanSetupPanel);
 
         if (humanSetupManager != null)
             humanSetupManager.ResetPlayerNames();
@@ -276,10 +208,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void PlayInRoom()
     {
-        mainMenuPanel.SetActive(false);
-        playInRoomMenuPanel.SetActive(true);
-
-        Debug.Log("Play In Room menu opened.");
+        ShowPanel(playInRoomMenuPanel);
     }
 
     public void BackFromPlayInRoom()
@@ -303,6 +232,14 @@ public class MainMenuManager : MonoBehaviour
     // =========================
     // SCENE LOADING
     // =========================
+
+    private void ShowPanel(GameObject panel)
+    {
+        ShowMainMenu();
+        if (panel == null) return;
+        mainMenuPanel.SetActive(false);
+        panel.SetActive(true);
+    }
 
     private void LoadGameScene()
     {

@@ -9,13 +9,17 @@ public class Board
 
     public int Width => width;
     public int Height => height;
+    public int WinLength { get; }
 
     public Board(
         int width,
-        int height)
+        int height, int winLength = 4)
     {
+        if (width < 1 || height < 1 || winLength < 1)
+            throw new System.ArgumentOutOfRangeException(nameof(width), "Board dimensions and win length must be positive.");
         this.width = width;
         this.height = height;
+        WinLength = winLength;
 
         cells =
             new BoardCell[
@@ -198,6 +202,15 @@ public class Board
         }
 
         return true;
+    }
+
+    public Board Copy()
+    {
+        var copy = new Board(width, height, WinLength);
+        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
+            if (!cells[x, y].IsEmpty) copy.TryPlace(x, y, cells[x, y].Occupant.Value);
+        return copy;
     }
 
     public void DebugPrintBoard()

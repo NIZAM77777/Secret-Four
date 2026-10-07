@@ -4,7 +4,6 @@ using Unity.Netcode;
 public class NetworkDirectionManager : NetworkBehaviour
 {
     [Header("References")]
-    [SerializeField] private DirectionSelector directionSelector;
     [SerializeField] private TurnManager turnManager;
     [SerializeField] private NetworkMovementManager networkMovementManager;
     [SerializeField] private BoardManager boardManager;
@@ -76,6 +75,8 @@ public class NetworkDirectionManager : NetworkBehaviour
         action.hasChosenDirection = true;
 
         turnManager.DirectionChosen(player);
+        if (player == PlayerType.X && boardManager.CurrentBoard.IsFull())
+            turnManager.SetState(GameState.RevealingDirections);
 
         NetworkGameState state = NetworkGameState.Instance;
         if (state != null)
@@ -115,65 +116,18 @@ public class NetworkDirectionManager : NetworkBehaviour
                directionValue == (int)MoveDirection.Stay;
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    private void DirectionAcceptedRpc(int playerValue)
-    {
-        PlayerType player = (PlayerType)playerValue;
-        Debug.Log($"{player} direction accepted by host.");
-    }
 
     private bool IsDirectionValid(PlayerType player, MoveDirection direction)
     {
-        if (boardManager == null)
-            return false;
-
-        Board board = boardManager.CurrentBoard;
-        if (board == null)
-            return false;
-
         PlayerAction action = turnManager.GetAction(player);
-        Vector2Int position = action.position;
-
-        if (direction == MoveDirection.Stay)
-            return true;
-
-        Vector2Int destination = GetDestination(position, direction);
-        return CanMoveTo(board, destination, player);
+        PlayerAction other = turnManager.GetAction(player == PlayerType.X ? PlayerType.Y : PlayerType.X);
+        return action.hasPlaced && SecretFourRules.CanChooseDirection(boardManager.CurrentBoard, action.position,
+            direction, other.hasPlaced ? other.position : (Vector2Int?)null);
     }
 
-    private bool CanMoveTo(Board board, Vector2Int destination, PlayerType player)
-    {
-        if (!board.IsInsideBoard(destination.x, destination.y))
-            return false;
 
-        if (board.IsEmpty(destination.x, destination.y))
-            return true;
 
-        PlayerType otherPlayer =
-            player == PlayerType.X ? PlayerType.Y : PlayerType.X;
 
-        PlayerAction otherAction = turnManager.GetAction(otherPlayer);
-
-        return otherAction.hasPlaced &&
-               destination == otherAction.position;
-    }
-
-    private Vector2Int GetDestination(Vector2Int position, MoveDirection direction)
-    {
-        switch (direction)
-        {
-            case MoveDirection.Up:
-                return new Vector2Int(position.x, position.y + 1);
-            case MoveDirection.Down:
-                return new Vector2Int(position.x, position.y - 1);
-            case MoveDirection.Left:
-                return new Vector2Int(position.x - 1, position.y);
-            case MoveDirection.Right:
-                return new Vector2Int(position.x + 1, position.y);
-            default:
-                return position;
-        }
-    }
 
     private PlayerType GetCurrentDirectionPlayer()
     {
@@ -190,14 +144,6 @@ public class NetworkDirectionManager : NetworkBehaviour
             : PlayerType.Y;
     }
 
-    private bool IsPlayerAllowed(ulong senderId, PlayerType player)
-    {
-        if (player == PlayerType.X)
-            return senderId == NetworkManager.ServerClientId;
-
-        if (player == PlayerType.Y)
-            return senderId != NetworkManager.ServerClientId;
-
-        return false;
-    }
+    private bool IsPlayerAllowed(ulong senderId, PlayerType player) =>
+        NetworkGameState.Instance != null && NetworkGameState.Instance.IsPlayerAllowed(senderId, player);
 }

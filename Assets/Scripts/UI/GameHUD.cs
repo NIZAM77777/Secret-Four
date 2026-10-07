@@ -277,8 +277,10 @@ public class GameHUD : MonoBehaviour
             // as player-facing turn messages.
             case GameState.RevealingDirections:
             case GameState.Moving:
+                turnText.text = $"X: {turnManager.PlayerXAction.direction.ToString().ToUpperInvariant()}    Y: {turnManager.PlayerYAction.direction.ToString().ToUpperInvariant()}";
+                break;
             case GameState.CheckingResult:
-                turnText.text = "";
+                turnText.text = "Checking board...";
                 break;
             case GameState.Won:
                 turnText.text = "Game Over";
@@ -296,7 +298,7 @@ public class GameHUD : MonoBehaviour
     {
         GameState state = turnManager.CurrentState;
 
-        PlayerType activeSide =
+        PlayerType? activeSide =
             state == GameState.WaitingForPlayerXPlacement ||
             state == GameState.WaitingForPlayerXDirection
                 ? PlayerType.X

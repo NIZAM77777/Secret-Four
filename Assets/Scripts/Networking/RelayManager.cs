@@ -1,261 +1,84 @@
 using System;
 using System.Threading.Tasks;
-
 using UnityEngine;
-
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-
-using Unity.Services.Core;
-using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
-//using Unity.Services.Relay.Utilities;
-
 
 public class RelayManager : MonoBehaviour
 {
-    [Header("Relay Settings")]
-
-    [SerializeField]
-    private int maxConnections = 1;
-
-
-    // =========================================
-    // CREATE ROOM
-    // =========================================
+    private const int MaxConnections = 1;
+    private int operation;
+    public string LastError { get; private set; }
 
     public async Task<string> CreateRelayRoom()
     {
+        int request = ++operation;
+        LastError = null;
         try
         {
-            if (NetworkManager.Singleton.IsListening)
-            {
-                Debug.LogWarning(
-                    "Network is already running."
-                );
-
-                return null;
-            }
-
-
-            if (UnityServices.State !=
-                ServicesInitializationState.Initialized)
-            {
-                await UnityServices.InitializeAsync();
-            }
-
-
-            if (!AuthenticationService.Instance.IsSignedIn)
-            {
-                await AuthenticationService.Instance
-                    .SignInAnonymouslyAsync();
-            }
-
-
-            Debug.Log(
-                "Creating Relay room..."
-            );
-
-
-            Allocation allocation =
-                await RelayService.Instance
-                    .CreateAllocationAsync(
-                        maxConnections
-                    );
-
-
-            UnityTransport transport =
-                NetworkManager.Singleton
-                    .GetComponent<UnityTransport>();
-
-
-            transport.SetRelayServerData(
-                AllocationUtils.ToRelayServerData(
-                    allocation,
-                    "dtls"
-                )
-            );
-
-
-            string joinCode =
-                await RelayService.Instance
-                    .GetJoinCodeAsync(
-                        allocation.AllocationId
-                    );
-
-
-            bool success =
-                NetworkManager.Singleton
-                    .StartHost();
-
-
-            if (!success)
-            {
-                Debug.LogError(
-                    "Failed to start Host."
-                );
-
-                return null;
-            }
-
-
-            Debug.Log(
-                "Relay Room Created!"
-            );
-
-            Debug.Log(
-                "ROOM CODE: " + joinCode
-            );
-
-
-            return joinCode;
+            NetworkManager network = NetworkManager.Singleton;
+            if (network == null || network.IsListening || network.ShutdownInProgress) throw new InvalidOperationException("A room is already active. Leave it before creating another.");
+            await UGSManager.EnsureReady();
+            if (this == null || request != operation) return null;
+            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(MaxConnections);
+            if (this == null || request != operation) return null;
+            string code = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+            if (this == null || request != operation || network == null) return null;
+            network.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, "dtls"));
+            if (!network.StartHost()) throw new InvalidOperationException("Could not start the room. Please try again.");
+            return code;
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            Debug.LogError(
-                "Relay Create Error: " +
-                e.Message
-            );
-
+            if (this != null && request == operation) LastError = "Could not create a room. Check your connection and try again.";
+            Debug.LogWarning("Relay create failed: " + exception.Message);
             return null;
         }
     }
-
-
-    // =========================================
-    // JOIN ROOM
-    // =========================================
-
-    public async Task<bool> JoinRelayRoom(
-        string joinCode)
+    public async Task<bool> JoinRelayRoom(string joinCode)
     {
+        int request = ++operation;
+        LastError = null;
+        NetworkManager network = NetworkManager.Singleton;
         try
         {
-            if (NetworkManager.Singleton.IsListening)
+            if (network == null || network.IsListening || network.ShutdownInProgress) throw new InvalidOperationException("A connection is already active.");
+            if (string.IsNullOrWhiteSpace(joinCode)) return false;
+            await UGSManager.EnsureReady();
+            if (this == null || request != operation) return false;
+            JoinAllocation allocation = await RelayService.Instance.JoinAllocationAsync(joinCode.Trim().ToUpperInvariant());
+            if (this == null || request != operation || network == null) return false;
+            network.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, "dtls"));
+            if (!network.StartClient()) throw new InvalidOperationException("Could not start the connection.");
+            float deadline = Time.realtimeSinceStartup + 15f;
+            while (network != null && network.IsListening && !network.IsConnectedClient && Time.realtimeSinceStartup < deadline)
             {
-                Debug.LogWarning(
-                    "Network is already running."
-                );
-
-                return false;
+                if (this == null || request != operation) return false;
+                await Task.Delay(50);
             }
-
-
-            if (string.IsNullOrWhiteSpace(joinCode))
-            {
-                Debug.LogError(
-                    "Room code is empty."
-                );
-
-                return false;
-            }
-
-
-            // Clean the room code
-            joinCode = joinCode
-                .Trim()
-                .ToUpper();
-
-
-            if (UnityServices.State !=
-                ServicesInitializationState.Initialized)
-            {
-                await UnityServices.InitializeAsync();
-            }
-
-
-            if (!AuthenticationService.Instance.IsSignedIn)
-            {
-                await AuthenticationService.Instance
-                    .SignInAnonymouslyAsync();
-            }
-
-
-            Debug.Log(
-                "Joining Relay Room: " +
-                joinCode
-            );
-
-
-            JoinAllocation joinAllocation =
-                await RelayService.Instance
-                    .JoinAllocationAsync(
-                        joinCode
-                    );
-
-
-            UnityTransport transport =
-                NetworkManager.Singleton
-                    .GetComponent<UnityTransport>();
-
-
-            transport.SetRelayServerData(
-                AllocationUtils.ToRelayServerData(
-                    joinAllocation,
-                    "dtls"
-                )
-            );
-
-
-            bool success =
-                NetworkManager.Singleton
-                    .StartClient();
-
-
-            if (!success)
-            {
-                Debug.LogError(
-                    "Failed to start Client."
-                );
-
-                return false;
-            }
-
-
-            Debug.Log(
-                "CLIENT STARTED SUCCESSFULLY!"
-            );
-
-            Debug.Log(
-                "Joined Room: " +
-                joinCode
-            );
-
-
-            return true;
+            if (network != null && network.IsConnectedClient) return true;
+            throw new TimeoutException("The host did not respond.");
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            Debug.LogError(
-                "Relay Join Error: " +
-                e.Message
-            );
-
+            if (this != null && request == operation)
+            {
+                LastError = "Could not join. Check the code, room availability, and your connection.";
+                if (network != null && network.IsListening) network.Shutdown(true);
+            }
+            Debug.LogWarning("Relay join failed: " + exception.Message);
             return false;
         }
     }
-
     public async Task CancelRelayRoom()
     {
-        if (NetworkManager.Singleton == null)
-            return;
-
-        if (NetworkManager.Singleton.IsListening)
-        {
-            Debug.Log("Closing Relay Room...");
-
-            NetworkManager.Singleton.Shutdown(true);
-
-            // Wait until shutdown is completely finished
-            while (NetworkManager.Singleton != null &&
-                   (NetworkManager.Singleton.IsListening ||
-                    NetworkManager.Singleton.ShutdownInProgress))
-            {
-                await Task.Yield();
-            }
-
-            Debug.Log("Relay Room Closed Successfully!");
-        }
+        operation++;
+        NetworkManager network = NetworkManager.Singleton;
+        if (network == null) return;
+        if (network.IsListening) network.Shutdown(true);
+        while (network != null && (network.IsListening || network.ShutdownInProgress)) await Task.Yield();
     }
+    private void OnDestroy() { operation++; }
 }

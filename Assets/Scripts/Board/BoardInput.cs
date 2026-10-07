@@ -1,177 +1,36 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class BoardInput : MonoBehaviour
 {
-    [Header("References")]
-
-    [SerializeField]
-    private Camera mainCamera;
-
-    [SerializeField]
-    private BoardView boardView;
-
-    [SerializeField]
-    private PauseManager pauseManager;
-
-    [SerializeField]
-    private PlacementManager placementManager;
-
-
-    private void Awake()
-    {
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-        }
-    }
-
-
+    [SerializeField] private Camera mainCamera;
+    [SerializeField] private BoardView boardView;
+    [SerializeField] private PauseManager pauseManager;
+    [SerializeField] private PlacementManager placementManager;
+    private readonly List<RaycastResult> hits = new List<RaycastResult>();
+    private void Awake() { if (mainCamera == null) mainCamera = Camera.main; }
     private void Update()
     {
-        // ==========================================
-        // BLOCK INPUT WHEN PAUSED
-        // ==========================================
-
-        if (pauseManager != null)
-        {
-            if (
-                pauseManager.IsPaused() ||
-                pauseManager.IsInputBlocked()
-            )
-            {
-                return;
-            }
-        }
-
-
-        // ==========================================
-        // ANDROID TOUCH
-        // ==========================================
-
-        if (
-            Touchscreen.current != null &&
-            Touchscreen.current.primaryTouch.press
-                .wasPressedThisFrame
-        )
-        {
-            Vector2 touchPosition =
-                Touchscreen.current.primaryTouch.position
-                    .ReadValue();
-
-            TrySelectBoardCell(
-                touchPosition
-            );
-
-            return;
-        }
-
-
-        // ==========================================
-        // UNITY EDITOR MOUSE
-        // ==========================================
-
-#if UNITY_EDITOR
-
-        if (
-            Mouse.current != null &&
-            Mouse.current.leftButton
-                .wasPressedThisFrame
-        )
-        {
-            Vector2 mousePosition =
-                Mouse.current.position
-                    .ReadValue();
-
-            TrySelectBoardCell(
-                mousePosition
-            );
-        }
-
-#endif
+        if (Time.timeScale == 0 || (pauseManager != null && (pauseManager.IsPaused() || pauseManager.IsInputBlocked()))) return;
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+            TrySelectBoardCell(Touchscreen.current.primaryTouch.position.ReadValue());
+        else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            TrySelectBoardCell(Mouse.current.position.ReadValue());
     }
-
-
-    // ==========================================
-    // SELECT BOARD CELL
-    // ==========================================
-
-    private void TrySelectBoardCell(
-        Vector2 screenPosition)
+    private void TrySelectBoardCell(Vector2 screenPosition)
     {
-        if (
-            mainCamera == null ||
-            boardView == null ||
-            placementManager == null
-        )
+        if (mainCamera == null || boardView == null || placementManager == null) return;
+        if (EventSystem.current != null)
         {
-            Debug.LogError(
-                "BoardInput: Missing references."
-            );
-
-            return;
+            hits.Clear();
+            EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current) { position = screenPosition }, hits);
+            foreach (RaycastResult hit in hits)
+                if (hit.module is GraphicRaycaster) return;
         }
-
-
-        // ==========================================
-        // SAFETY CHECK
-        // ==========================================
-
-        if (pauseManager != null)
-        {
-            if (
-                pauseManager.IsPaused() ||
-                pauseManager.IsInputBlocked()
-            )
-            {
-                return;
-            }
-        }
-
-
-        // ==========================================
-        // SCREEN → WORLD
-        // ==========================================
-
-        Vector3 worldPosition =
-            mainCamera.ScreenToWorldPoint(
-                new Vector3(
-                    screenPosition.x,
-                    screenPosition.y,
-                    -mainCamera.transform.position.z
-                )
-            );
-
-        worldPosition.z = 0f;
-
-
-        // ==========================================
-        // WORLD → BOARD CELL
-        // ==========================================
-
-        if (
-            !boardView.TryGetCellCoordinates(
-                worldPosition,
-                out int x,
-                out int y
-            )
-        )
-        {
-            return;
-        }
-
-        Debug.Log(
-            $"BOARD TOUCH → Cell ({x}, {y})"
-        );
-
-
-        // ==========================================
-        // PLACE COIN
-        // ==========================================
-
-        placementManager.TryPlaceCoin(
-            x,
-            y
-        );
+        Vector3 world = mainCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, -mainCamera.transform.position.z));
+        if (boardView.TryGetCellCoordinates(world, out int x, out int y)) placementManager.TryPlaceCoin(x, y);
     }
 }

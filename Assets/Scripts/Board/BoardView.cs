@@ -17,7 +17,18 @@ public class BoardView : MonoBehaviour
 
     [SerializeField] private GameObject cellPrefab;
 
-    public float BoardVisualScale => Mathf.Max(0.01f, boardScale);
+    public float BoardVisualScale
+    {
+        get
+        {
+            Camera camera = Camera.main;
+            float scale = Mathf.Max(0.01f, boardScale);
+            if (camera != null && camera.orthographic && boardManager != null && boardManager.CurrentBoard != null)
+                scale = Mathf.Min(scale, (camera.orthographicSize * 2 * camera.aspect - 0.4f) /
+                    (boardManager.CurrentBoard.Width * Mathf.Max(0.01f, cellSize)));
+            return Mathf.Max(0.01f, scale);
+        }
+    }
 
     private float EffectiveCellSize => Mathf.Max(0.01f, cellSize * BoardVisualScale);
 

@@ -47,6 +47,10 @@ namespace MN7.Store
         {
             store.OnStoreInitialized -= HandleStoreInitialized;
 
+#if !UNITY_ANDROID && !UNITY_IOS
+            Debug.Log("[MN7 Store] Rewarded ads require an Android or iOS build target.");
+            return;
+#else
             if (adMobConfig == null)
             {
                 Debug.LogError("[MN7 Store] AdMob Config is not assigned while Rewarded Ads are enabled.");
@@ -61,6 +65,7 @@ namespace MN7.Store
                 return;
 
             provider.Initialize();
+#endif
         }
 
         private static bool ValidateConfig(MN7StoreManager store, MN7AdMobConfig config)

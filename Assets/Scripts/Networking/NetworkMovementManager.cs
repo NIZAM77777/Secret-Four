@@ -14,6 +14,8 @@ public class NetworkMovementManager : NetworkBehaviour
 
     private bool movementResolved;
     private int activeMoveId = -1;
+    private int lastReceivedMatchId = -1;
+    private int lastReceivedMoveId = -1;
 
     public bool IsMoveActive => movementResolved;
 
@@ -43,7 +45,7 @@ public class NetworkMovementManager : NetworkBehaviour
         }
 
         if (!turnManager.PlayerXAction.hasChosenDirection ||
-            !turnManager.PlayerYAction.hasChosenDirection)
+            (turnManager.PlayerYAction.hasPlaced && !turnManager.PlayerYAction.hasChosenDirection))
         {
             Debug.LogWarning("Both directions are not ready.");
             return;
@@ -74,6 +76,7 @@ public class NetworkMovementManager : NetworkBehaviour
         // The resolution is calculated exactly once by the server.
         // Clients only receive this immutable result for presentation.
         SendResolutionClientRpc(
+            state != null ? state.MatchId.Value : 0,
             activeMoveId,
             GetMovementResultData(resolution.playerXResult),
             GetMovementResultData(resolution.playerYResult),
@@ -83,18 +86,16 @@ public class NetworkMovementManager : NetworkBehaviour
 
     [Rpc(SendTo.ClientsAndHost)]
     private void SendResolutionClientRpc(
-        int moveId,
+        int matchId, int moveId,
         MovementResultData xData,
         MovementResultData yData,
         int xCollision,
         int yCollision)
     {
-        if (moveId != activeMoveId && activeMoveId != -1)
-        {
-            Debug.Log($"Ignoring stale movement result {moveId}; active move is {activeMoveId}.");
-            return;
-        }
-
+        if (NetworkGameState.Instance != null && matchId < NetworkGameState.Instance.MatchId.Value) return;
+        if (matchId < lastReceivedMatchId || (matchId == lastReceivedMatchId && moveId <= lastReceivedMoveId)) return;
+        lastReceivedMatchId = matchId;
+        lastReceivedMoveId = moveId;
         activeMoveId = moveId;
 
         MovementResult xResult = CreateMovementResult(xData);
@@ -113,6 +114,14 @@ public class NetworkMovementManager : NetworkBehaviour
         {
             Debug.LogError("Movement references missing.");
             return;
+        }
+
+        if (!IsServer)
+        {
+            placementManager.EnsureNetworkCoin(xResult.startPosition, PlayerType.X);
+            if (yResult.startPosition.x >= 0) placementManager.EnsureNetworkCoin(yResult.startPosition, PlayerType.Y);
+            turnManager.PlayerXAction.direction = xResult.direction;
+            turnManager.PlayerYAction.direction = yResult.direction;
         }
 
         movementManager.ApplyNetworkResolution(
@@ -146,9 +155,7 @@ public class NetworkMovementManager : NetworkBehaviour
 
     public void ResetNetworkMoveState()
     {
-        if (!IsServer)
-            return;
-
+        StopAllCoroutines();
         movementResolved = false;
         activeMoveId = -1;
     }

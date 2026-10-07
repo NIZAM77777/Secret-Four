@@ -35,7 +35,8 @@ public class BoardManager : MonoBehaviour
 
         board = new Board(
             gameConfig.boardWidth,
-            gameConfig.boardHeight
+            gameConfig.boardHeight,
+            gameConfig.winLength
         );
 
         Debug.Log(

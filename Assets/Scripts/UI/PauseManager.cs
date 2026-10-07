@@ -53,7 +53,7 @@ public class PauseManager : MonoBehaviour
 
     public void PauseGame()
     {
-        if (isPaused || returningToMainMenu)
+        if (IsOnlineRoom() || isPaused || returningToMainMenu)
             return;
 
         isPaused = true;
@@ -85,8 +85,8 @@ public class PauseManager : MonoBehaviour
     {
         yield return null;
 
-        while (Mouse.current != null &&
-               Mouse.current.leftButton.isPressed)
+        while ((Mouse.current != null && Mouse.current.leftButton.isPressed) ||
+               (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed))
         {
             yield return null;
         }

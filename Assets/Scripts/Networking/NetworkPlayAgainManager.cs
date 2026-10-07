@@ -86,7 +86,7 @@ public class NetworkPlayAgainManager : NetworkBehaviour
         {
             GameOverUI ui = FindFirstObjectByType<GameOverUI>();
             if (ui != null)
-                ui.SetWaitingForOpponent(true);
+                ui.SetWaitingForOpponent((mask & (IsHost ? 1 : 2)) != 0);
         }
     }
 

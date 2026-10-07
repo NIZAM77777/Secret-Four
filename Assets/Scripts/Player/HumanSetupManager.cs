@@ -19,7 +19,9 @@ public class HumanSetupManager : MonoBehaviour
 
     public void ResetPlayerNames()
     {
-        player1Input.text = "Player 1";
+        player1Input.characterLimit = 12;
+        player2Input.characterLimit = 12;
+        player1Input.text = PlayerNameManager.GetPlayerName();
 
         player2Input.text = "Player 2";
     }

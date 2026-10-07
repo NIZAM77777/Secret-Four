@@ -7,11 +7,8 @@ public class NetworkGameResultManager : NetworkBehaviour
     [SerializeField] private WinConditionChecker winConditionChecker;
     [SerializeField] private GameResultManager gameResultManager;
     [SerializeField] private TurnManager turnManager;
-    [SerializeField] private WinGlowManager winGlowManager;
 
-    [Header("Online Result Presentation")]
-    [SerializeField] private float winPanelDelay = 1.5f;
-    private Coroutine onlineResultPresentationCoroutine;
+
 
     public bool CheckGameResultOnHost()
     {
@@ -35,22 +32,15 @@ public class NetworkGameResultManager : NetworkBehaviour
         {
             Debug.Log($"HOST: Winner is {winner}");
 
-            // Set the authoritative result immediately so both clients know
-            // who won. The existing GameResultManager also starts its generic
-            // panel coroutine; the online room uses this explicit presentation
-            // path to guarantee the panel cannot cover the winning glow too soon.
             gameResultManager.SetWinner(winner);
-
-            if (winGlowManager != null)
-                winGlowManager.GlowWinningCoins();
 
             NetworkGameState.Instance?.SetWinner(winner);
             NetworkGameState.Instance?.CaptureFromServer();
-            QueueOnlineWinnerPanel(winner);
+
             return true;
         }
 
-        if (winConditionChecker.IsBoardFull())
+        if (winConditionChecker.HasSimultaneousWin || winConditionChecker.IsBoardFull())
         {
             Debug.Log("HOST: Game is a draw.");
 
@@ -64,34 +54,9 @@ public class NetworkGameResultManager : NetworkBehaviour
         return false;
     }
 
-    private void QueueOnlineWinnerPanel(PlayerType winner)
-    {
-        if (onlineResultPresentationCoroutine != null)
-            StopCoroutine(onlineResultPresentationCoroutine);
 
-        onlineResultPresentationCoroutine =
-            StartCoroutine(ShowOnlineWinnerPanelAfterDelay(winner));
-    }
 
-    private System.Collections.IEnumerator ShowOnlineWinnerPanelAfterDelay(PlayerType winner)
-    {
-        yield return new WaitForSeconds(winPanelDelay);
 
-        // GameResultManager.SetWinner() already schedules the panel. Prevent
-        // this explicit online presentation from opening a second time while
-        // preserving its existing result state and glow behavior.
-        if (gameResultManager != null &&
-            gameResultManager.HasResult &&
-            GameSession.Instance != null &&
-            GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom)
-        {
-            GameOverUI ui = FindFirstObjectByType<GameOverUI>();
-            if (ui != null)
-                ui.ShowWinner(winner);
-        }
-
-        onlineResultPresentationCoroutine = null;
-    }
 
     public void ResolveAfterAuthoritativeMovement()
     {

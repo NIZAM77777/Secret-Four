@@ -42,7 +42,10 @@ public class PlacementManager : MonoBehaviour
 
     public void TryPlaceCoin(int x, int y)
     {
-        PlayerType player = GetCurrentPlacementPlayer();
+        PlayerType player = IsOnlineGame() && NetworkGameState.Instance != null
+            ? (NetworkGameState.Instance.IsLocalPlayerSide(PlayerType.X) ? PlayerType.X : PlayerType.Y)
+            : GetCurrentPlacementPlayer();
+        if (!turnManager.CanLocalHumanAct(player) || Time.timeScale == 0) return;
 
         if (IsOnlineGame())
         {
@@ -113,7 +116,7 @@ public class PlacementManager : MonoBehaviour
 
         Debug.Log($"{player} placed at ({x}, {y})");
         turnManager.PlayerPlaced(player);
-        directionButtonController.UpdateDirectionButtons(player);
+        directionButtonController.RefreshForCurrentTurn();
         return true;
     }
 
@@ -185,12 +188,8 @@ public class PlacementManager : MonoBehaviour
 
     public void ClearAllCoins()
     {
-        if (coinParent == null)
-            return;
-
-        for (int i = coinParent.childCount - 1; i >= 0; i--)
-            Destroy(coinParent.GetChild(i).gameObject);
-
+        foreach (GameObject coin in new HashSet<GameObject>(coinVisuals.Values))
+            if (coin != null) Destroy(coin);
         coinVisuals.Clear();
         PlayerXCoin = null;
         PlayerYCoin = null;
@@ -233,14 +232,14 @@ public class PlacementManager : MonoBehaviour
     public void UpdateCoinPositions(MovementResolution resolution, GameObject xCoin, GameObject yCoin)
     {
         Vector2Int xOld = resolution.playerXResult.startPosition;
-        Vector2Int xNew = resolution.playerXResult.destination;
-        if (xOld != xNew && xCoin != null)
-            UpdateCoinPosition(xOld, xNew, xCoin);
-
         Vector2Int yOld = resolution.playerYResult.startPosition;
-        Vector2Int yNew = resolution.playerYResult.destination;
-        if (yOld != yNew && yCoin != null)
-            UpdateCoinPosition(yOld, yNew, yCoin);
+        Vector2Int xNew = SecretFourRules.FinalPosition(resolution.playerXResult, resolution.playerXCollision);
+        Vector2Int yNew = SecretFourRules.FinalPosition(resolution.playerYResult, resolution.playerYCollision);
+        // Remove both old entries before adding either destination, including swaps and following moves.
+        if (xCoin != null) coinVisuals.Remove(xOld);
+        if (yCoin != null) coinVisuals.Remove(yOld);
+        if (xCoin != null) coinVisuals[xNew] = xCoin;
+        if (yCoin != null) coinVisuals[yNew] = yCoin;
     }
 
     public IEnumerable<GameObject> GetAllCoins()
@@ -252,6 +251,20 @@ public class PlacementManager : MonoBehaviour
     /// Rebuilds the local visual cache from the authoritative network board state.
     /// This is presentation only; the network state remains the source of truth.
     /// </summary>
+    public void EnsureNetworkCoin(Vector2Int position, PlayerType player)
+    {
+        if (!boardManager.CurrentBoard.IsInsideBoard(position.x, position.y)) return;
+        GameObject coin = GetCoinAtPosition(position);
+        if (coin == null)
+        {
+            string skin = OnlineMatchPlayerState.Instance != null ? OnlineMatchPlayerState.Instance.GetSkinId(player) : null;
+            CreateCoinVisual(position.x, position.y, player, skin);
+            coin = GetCoinAtPosition(position);
+        }
+        if (player == PlayerType.X) PlayerXCoin = coin;
+        else PlayerYCoin = coin;
+    }
+
     public void RebuildFromNetworkState(
         NetworkList<byte> boardCells,
         NetworkList<FixedString64Bytes> skinIds,
@@ -311,5 +324,7 @@ public class PlacementManager : MonoBehaviour
                 }
             }
         }
+        PlayerXCoin = xHasPlaced ? GetCoinAtPosition(xPosition) : null;
+        PlayerYCoin = yHasPlaced ? GetCoinAtPosition(yPosition) : null;
     }
 }

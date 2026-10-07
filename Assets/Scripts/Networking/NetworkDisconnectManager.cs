@@ -47,8 +47,8 @@ public class NetworkDisconnectManager : NetworkBehaviour
         RequestIntentionalLeaveServerRpc();
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestIntentionalLeaveServerRpc(ServerRpcParams rpcParams = default)
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void RequestIntentionalLeaveServerRpc(RpcParams rpcParams = default)
     {
         if (!IsServer)
             return;

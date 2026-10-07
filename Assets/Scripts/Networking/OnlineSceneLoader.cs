@@ -12,6 +12,7 @@ public class OnlineSceneLoader : MonoBehaviour
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void Start()
@@ -28,8 +29,14 @@ public class OnlineSceneLoader : MonoBehaviour
         networkManager.OnClientDisconnectCallback += OnClientDisconnected;
     }
 
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == gameSceneName) Destroy(gameObject);
+    }
+
     private void OnDestroy()
     {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
         NetworkManager networkManager = NetworkManager.Singleton;
 
         if (networkManager == null)

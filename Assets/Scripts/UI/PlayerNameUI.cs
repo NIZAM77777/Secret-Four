@@ -8,6 +8,7 @@ public class PlayerNameUI : MonoBehaviour
 
     private void Start()
     {
+        playerNameInput.characterLimit = 12;
         LoadName();
     }
 

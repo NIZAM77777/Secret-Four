@@ -23,6 +23,11 @@ public class TurnManager : MonoBehaviour
         );
     }
 
+    public bool CanLocalHumanAct(PlayerType player)
+    {
+        return GameSession.Instance == null || GameSession.Instance.CurrentGameMode != GameMode.Bot || player == PlayerType.X;
+    }
+
     public bool CanPlaceCoin(PlayerType player)
     {
         if (player == PlayerType.X)

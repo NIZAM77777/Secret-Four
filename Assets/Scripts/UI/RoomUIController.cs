@@ -44,6 +44,8 @@ public class RoomUIController : MonoBehaviour
     private GameObject creatingRoomPanel;
 
     private bool isCreatingRoom;
+    private bool isJoiningRoom;
+    private int requestVersion;
 
 
     private void Awake()
@@ -73,12 +75,13 @@ public class RoomUIController : MonoBehaviour
     public async void CreateRoom()
     {
         // Prevent multiple button presses
-        if (isCreatingRoom)
+        if (isCreatingRoom || isJoiningRoom)
         {
             return;
         }
 
         isCreatingRoom = true;
+        int request = ++requestVersion;
 
 
         // Show Creating Room panel
@@ -88,15 +91,14 @@ public class RoomUIController : MonoBehaviour
         }
 
 
-        string joinCode =
-            await relayManager.CreateRelayRoom();
+        string joinCode = await relayManager.CreateRelayRoom();
+        if (this == null || request != requestVersion) return;
 
 
         if (string.IsNullOrEmpty(joinCode))
         {
-            Debug.LogError(
-                "Failed to create room."
-            );
+            Debug.LogWarning("Failed to create room.");
+            ShowRoomError(relayManager.LastError);
 
 
             // Hide loading panel
@@ -155,6 +157,15 @@ public class RoomUIController : MonoBehaviour
     // JOIN ROOM CODE VALIDATION
     // =========================================
 
+    private void ShowRoomError(string message)
+    {
+        // Reuse the existing room-code panel so a failed create has a visible message and Back button.
+        if (creatingRoomPanel != null) creatingRoomPanel.SetActive(false);
+        playInRoomMenuPanel.SetActive(false);
+        createRoomPanel.SetActive(true);
+        if (roomCodeText != null) roomCodeText.text = message ?? "Room unavailable. Please try again.";
+    }
+
     private void OnRoomCodeChanged(string value)
     {
         // A new code means the previous error is no longer relevant.
@@ -175,7 +186,7 @@ public class RoomUIController : MonoBehaviour
             roomCodeInput != null &&
             !string.IsNullOrWhiteSpace(roomCodeInput.text);
 
-        joinRoomButton.interactable = hasRoomCode;
+        joinRoomButton.interactable = hasRoomCode && !isJoiningRoom;
     }
 
 
@@ -209,6 +220,7 @@ public class RoomUIController : MonoBehaviour
 
     public async void JoinRoom()
     {
+        if (isJoiningRoom || isCreatingRoom) return;
         string joinCode =
             roomCodeInput.text;
 
@@ -233,9 +245,8 @@ public class RoomUIController : MonoBehaviour
         }
 
 
-        Debug.Log(
-            "Attempting to join room..."
-        );
+        isJoiningRoom = true;
+        int request = ++requestVersion;
 
 
         bool success =
@@ -244,13 +255,15 @@ public class RoomUIController : MonoBehaviour
             );
 
 
+        if (this == null || request != requestVersion) return;
+        isJoiningRoom = false;
         if (!success)
         {
             Debug.LogError(
                 "Failed to join room."
             );
 
-            ShowJoinRoomMessage("Incorrect room code.");
+            ShowJoinRoomMessage(relayManager.LastError ?? "Could not join the room. Please try again.");
 
             // Keep the button available so the player can correct the code.
             UpdateJoinButtonState();
@@ -281,7 +294,10 @@ public class RoomUIController : MonoBehaviour
 
     public async void BackFromCreateRoom()
     {
+        requestVersion++;
+        isCreatingRoom = false;
         await relayManager.CancelRelayRoom();
+        if (this == null) return;
 
         createRoomPanel.SetActive(false);
 
@@ -293,8 +309,12 @@ public class RoomUIController : MonoBehaviour
     // BACK FROM JOIN ROOM
     // =========================================
 
-    public void BackFromJoinRoom()
+    public async void BackFromJoinRoom()
     {
+        requestVersion++;
+        isJoiningRoom = false;
+        await relayManager.CancelRelayRoom();
+        if (this == null) return;
         ClearJoinRoomMessage();
 
         joinRoomPanel.SetActive(false);
