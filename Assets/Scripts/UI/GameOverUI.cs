@@ -1,3 +1,4 @@
+using SecretFour.Localization;
 using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
@@ -14,6 +15,7 @@ public class GameOverUI : MonoBehaviour
 
     [SerializeField]
     private TMP_Text resultTitle;
+    [SerializeField] private TMP_Text winnerNameText;
 
     [SerializeField]
     private MatchManager matchManager;
@@ -33,6 +35,16 @@ public class GameOverUI : MonoBehaviour
 
 
     private bool returningToMainMenu;
+    private PlayerType? shownWinner;
+    private bool waitingForOpponent;
+    private void OnEnable() => GameLocalization.Changed += RefreshText;
+    private void OnDisable() => GameLocalization.Changed -= RefreshText;
+    private void RefreshText()
+    {
+        if (resultTitle == null) return;
+        resultTitle.text = waitingForOpponent ? GameLocalization.Text("game.rematchWaiting") : shownWinner.HasValue ? GameLocalization.Text("game.winner") : GameLocalization.Text("game.draw");
+        if (winnerNameText != null) winnerNameText.text = !waitingForOpponent && shownWinner.HasValue ? GameLocalization.DisplayName(GetPlayerName(shownWinner.Value)) : string.Empty;
+    }
 
 
     private void Start()
@@ -44,23 +56,21 @@ public class GameOverUI : MonoBehaviour
 
     public void SetWaitingForOpponent(bool waiting)
     {
-        if (!waiting || !IsOnlineGame())
-            return;
-
-        if (resultTitle != null)
-            resultTitle.text = "WAITING FOR OPPONENT...";
+        waitingForOpponent = waiting && IsOnlineGame();
+        RefreshText();
     }
 
 
     public void ShowWinner(PlayerType winner)
     {
+        shownWinner = winner;
+        waitingForOpponent = false;
         if (panel != null)
             panel.SetActive(true);
 
-        string winnerName = GetPlayerName(winner);
 
         if (resultTitle != null)
-            resultTitle.text = $"{winnerName} WINS!";
+            RefreshText();
 
         SetupWinnerImage(winner);
     }
@@ -68,11 +78,13 @@ public class GameOverUI : MonoBehaviour
 
     public void ShowDraw()
     {
+        shownWinner = null;
+        waitingForOpponent = false;
         if (panel != null)
             panel.SetActive(true);
 
         if (resultTitle != null)
-            resultTitle.text = "DRAW!";
+            RefreshText();
 
         if (winnerImage != null)
             winnerImage.gameObject.SetActive(false);

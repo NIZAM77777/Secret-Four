@@ -1,3 +1,4 @@
+using SecretFour.Localization;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -19,6 +20,7 @@ public class GameHUD : MonoBehaviour
 
     [Header("Turn Information")]
     [SerializeField] private TMP_Text turnText;
+    [SerializeField] private TMP_Text turnPlayerNameText;
 
     [Header("References")]
     [SerializeField] private TurnManager turnManager;
@@ -67,6 +69,7 @@ public class GameHUD : MonoBehaviour
 
     private void OnEnable()
     {
+        GameLocalization.Changed += OnLanguageChanged;
         if (MN7StoreManager.Instance?.Selection != null)
             MN7StoreManager.Instance.Selection.OnSelectionChanged += OnStoreSelectionChanged;
 
@@ -75,11 +78,14 @@ public class GameHUD : MonoBehaviour
 
     private void OnDisable()
     {
+        GameLocalization.Changed -= OnLanguageChanged;
         if (MN7StoreManager.Instance?.Selection != null)
             MN7StoreManager.Instance.Selection.OnSelectionChanged -= OnStoreSelectionChanged;
 
         OnlineMatchPlayerState.OnAnyProfileChanged -= OnOnlineProfileChanged;
     }
+
+    private void OnLanguageChanged() { SetupBotDifficulty(); OnOnlineProfileChanged(); }
 
     private void OnOnlineProfileChanged()
     {
@@ -100,8 +106,8 @@ public class GameHUD : MonoBehaviour
     {
         if (GameSession.Instance == null)
         {
-            if (playerXNameText != null) playerXNameText.text = "Player 1";
-            if (playerYNameText != null) playerYNameText.text = "Player 2";
+            if (playerXNameText != null) playerXNameText.text = GameLocalization.Text("player.one");
+            if (playerYNameText != null) playerYNameText.text = GameLocalization.Text("player.two");
             return;
         }
 
@@ -117,21 +123,21 @@ public class GameHUD : MonoBehaviour
 
             if (playerXNameText != null)
                 playerXNameText.text =
-                    OnlineMatchPlayerState.Instance.GetName(leftSide);
+                    GameLocalization.DisplayName(OnlineMatchPlayerState.Instance.GetName(leftSide));
 
             if (playerYNameText != null)
                 playerYNameText.text =
-                    OnlineMatchPlayerState.Instance.GetName(rightSide);
+                    GameLocalization.DisplayName(OnlineMatchPlayerState.Instance.GetName(rightSide));
 
             SetupOnlinePlayerImagesIfChanged(leftSide, rightSide);
             return;
         }
 
         if (playerXNameText != null)
-            playerXNameText.text = GameSession.Instance.Player1Name;
+            playerXNameText.text = GameLocalization.DisplayName(GameSession.Instance.Player1Name);
 
         if (playerYNameText != null)
-            playerYNameText.text = GameSession.Instance.Player2Name;
+            playerYNameText.text = GameLocalization.DisplayName(GameSession.Instance.Player2Name);
     }
 
     private void SetupOnlinePlayerImages(
@@ -258,35 +264,44 @@ public class GameHUD : MonoBehaviour
         if (turnText == null)
             return;
 
+        string activeName = turnManager.CurrentState == GameState.WaitingForPlayerXPlacement || turnManager.CurrentState == GameState.WaitingForPlayerXDirection ? GetPlayerXName() :
+            turnManager.CurrentState == GameState.WaitingForPlayerYPlacement || turnManager.CurrentState == GameState.WaitingForPlayerYDirection ? GetPlayerYName() : null;
+        if (turnPlayerNameText != null)
+        {
+            turnPlayerNameText.text = GameLocalization.DisplayName(activeName) ?? string.Empty;
+            turnPlayerNameText.gameObject.SetActive(activeName != null);
+            turnText.rectTransform.anchoredPosition = new Vector2(activeName == null ? 0 : 155, -55);
+            turnText.rectTransform.sizeDelta = new Vector2(activeName == null ? 810 : 500, 88);
+        }
         switch (turnManager.CurrentState)
         {
             case GameState.WaitingForPlayerXPlacement:
-                turnText.text = $"{GetPlayerXName()}'s Turn";
+                turnText.text = GameLocalization.Text("game.turn");
                 break;
             case GameState.WaitingForPlayerXDirection:
-                turnText.text = $"{GetPlayerXName()} — Choose Direction";
+                turnText.text = GameLocalization.Text("game.direction");
                 break;
             case GameState.WaitingForPlayerYPlacement:
-                turnText.text = $"{GetPlayerYName()}'s Turn";
+                turnText.text = GameLocalization.Text("game.turn");
                 break;
             case GameState.WaitingForPlayerYDirection:
-                turnText.text = $"{GetPlayerYName()} — Choose Direction";
+                turnText.text = GameLocalization.Text("game.direction");
                 break;
             // These are internal resolution phases. They remain part of
             // the authoritative game state, but are intentionally not exposed
             // as player-facing turn messages.
             case GameState.RevealingDirections:
             case GameState.Moving:
-                turnText.text = $"X: {turnManager.PlayerXAction.direction.ToString().ToUpperInvariant()}    Y: {turnManager.PlayerYAction.direction.ToString().ToUpperInvariant()}";
+                turnText.text = GameLocalization.Format("game.reveal", GameLocalization.Text("direction." + turnManager.PlayerXAction.direction.ToString().ToLowerInvariant()), GameLocalization.Text("direction." + turnManager.PlayerYAction.direction.ToString().ToLowerInvariant()));
                 break;
             case GameState.CheckingResult:
-                turnText.text = "Checking board...";
+                turnText.text = GameLocalization.Text("game.checking");
                 break;
             case GameState.Won:
-                turnText.text = "Game Over";
+                turnText.text = GameLocalization.Text("game.over");
                 break;
             case GameState.Draw:
-                turnText.text = "Draw";
+                turnText.text = GameLocalization.Text("game.draw");
                 break;
             default:
                 turnText.text = "";
@@ -305,7 +320,7 @@ public class GameHUD : MonoBehaviour
                 : state == GameState.WaitingForPlayerYPlacement ||
                   state == GameState.WaitingForPlayerYDirection
                     ? PlayerType.Y
-                    : PlayerType.X;
+                    : (PlayerType?)null;
 
         if (GameSession.Instance != null &&
             GameSession.Instance.CurrentGameMode == GameMode.OnlineRoom &&
@@ -437,16 +452,16 @@ public class GameHUD : MonoBehaviour
         switch (difficulty)
         {
             case BotDifficulty.Easy:
-                botDifficultyText.text = "Easy";
+                botDifficultyText.text = GameLocalization.Text("bot.easy");
                 break;
             case BotDifficulty.Medium:
-                botDifficultyText.text = "Medium";
+                botDifficultyText.text = GameLocalization.Text("bot.medium");
                 break;
             case BotDifficulty.Hard:
-                botDifficultyText.text = "Hard";
+                botDifficultyText.text = GameLocalization.Text("bot.hard");
                 break;
             default:
-                botDifficultyText.text = "Bot";
+                botDifficultyText.text = GameLocalization.Text("player.bot");
                 break;
         }
     }

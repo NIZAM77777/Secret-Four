@@ -1,3 +1,4 @@
+using SecretFour.Localization;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -21,6 +22,8 @@ public class RoomUIController : MonoBehaviour
 
     [SerializeField]
     private TMP_Text roomCodeText;
+    [SerializeField] private GameObject roomShareHint;
+    [SerializeField] private GameObject roomWaitingHint;
 
 
     [Header("Join Room UI")]
@@ -46,6 +49,14 @@ public class RoomUIController : MonoBehaviour
     private bool isCreatingRoom;
     private bool isJoiningRoom;
     private int requestVersion;
+    private string createErrorKey, joinErrorKey;
+    private void OnEnable() => GameLocalization.Changed += RefreshMessages;
+    private void OnDisable() => GameLocalization.Changed -= RefreshMessages;
+    private void RefreshMessages()
+    {
+        if (createErrorKey != null && roomCodeText != null) roomCodeText.text = GameLocalization.Text(createErrorKey);
+        if (joinErrorKey != null && joinRoomMessage != null) joinRoomMessage.text = GameLocalization.Text(joinErrorKey);
+    }
 
 
     private void Awake()
@@ -127,6 +138,9 @@ public class RoomUIController : MonoBehaviour
         createRoomPanel.SetActive(true);
 
 
+        createErrorKey = null;
+        if (roomShareHint != null) roomShareHint.SetActive(true);
+        if (roomWaitingHint != null) roomWaitingHint.SetActive(true);
         roomCodeText.text = joinCode;
 
 
@@ -163,7 +177,10 @@ public class RoomUIController : MonoBehaviour
         if (creatingRoomPanel != null) creatingRoomPanel.SetActive(false);
         playInRoomMenuPanel.SetActive(false);
         createRoomPanel.SetActive(true);
-        if (roomCodeText != null) roomCodeText.text = message ?? "Room unavailable. Please try again.";
+        if (roomShareHint != null) roomShareHint.SetActive(false);
+        if (roomWaitingHint != null) roomWaitingHint.SetActive(false);
+        createErrorKey = message ?? "room.createError";
+        RefreshMessages();
     }
 
     private void OnRoomCodeChanged(string value)
@@ -197,7 +214,8 @@ public class RoomUIController : MonoBehaviour
             return;
         }
 
-        joinRoomMessage.text = message;
+        joinErrorKey = message ?? "room.joinError";
+        RefreshMessages();
         joinRoomMessage.gameObject.SetActive(true);
     }
 
@@ -209,6 +227,7 @@ public class RoomUIController : MonoBehaviour
             return;
         }
 
+        joinErrorKey = null;
         joinRoomMessage.text = "";
         joinRoomMessage.gameObject.SetActive(false);
     }
@@ -263,7 +282,7 @@ public class RoomUIController : MonoBehaviour
                 "Failed to join room."
             );
 
-            ShowJoinRoomMessage(relayManager.LastError ?? "Could not join the room. Please try again.");
+            ShowJoinRoomMessage(relayManager.LastError ?? "room.joinError");
 
             // Keep the button available so the player can correct the code.
             UpdateJoinButtonState();

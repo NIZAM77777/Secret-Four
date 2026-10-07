@@ -1,0 +1,6 @@
+Tool mode: built-in image generation tool, image edit.
+Source image: Assets/Art/Panels/gamebg.png
+Output image: Assets/Art/Panels/MenuBackdrop.png
+
+Final prompt:
+Use case: precise-object-edit. Edit target: the attached portrait Secret Four game menu background. Prepare a clean text-free background so all wording can be rendered as editable Unity text. Remove ALL printed typography and wordmarks: the large SECRET FOUR lettering, both MN7 studio logos, all small English taglines, book-cover lettering, and version number. Seamlessly fill the removed text with the existing dark navy, marble, blurred environment beneath it. KEEP the gold crown at top-center and the thin gold decorative divider below the former large title. KEEP the X and Y symbols embossed on the red and blue game coins: these are game-piece symbols, not labels. Preserve the portrait composition, lighting, perspective, board, coins, plant, books, golden crown, colors and material textures as closely as possible. Do not add any new text, buttons, objects, or ornamental elements. The empty upper title area and empty lower menu area must remain suitable for editable text and UI overlays. Output the same portrait aspect ratio as the input.

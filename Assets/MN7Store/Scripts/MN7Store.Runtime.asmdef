@@ -2,7 +2,8 @@
   "name": "MN7Store.Runtime",
   "rootNamespace": "MN7.Store",
   "references": [
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "SecretFour.Localization"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

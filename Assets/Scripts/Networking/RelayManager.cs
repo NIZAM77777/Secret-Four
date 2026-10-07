@@ -32,7 +32,7 @@ public class RelayManager : MonoBehaviour
         }
         catch (Exception exception)
         {
-            if (this != null && request == operation) LastError = "Could not create a room. Check your connection and try again.";
+            if (this != null && request == operation) LastError = "room.createError";
             Debug.LogWarning("Relay create failed: " + exception.Message);
             return null;
         }
@@ -65,7 +65,7 @@ public class RelayManager : MonoBehaviour
         {
             if (this != null && request == operation)
             {
-                LastError = "Could not join. Check the code, room availability, and your connection.";
+                LastError = "room.joinError";
                 if (network != null && network.IsListening) network.Shutdown(true);
             }
             Debug.LogWarning("Relay join failed: " + exception.Message);

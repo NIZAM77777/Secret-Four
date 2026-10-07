@@ -1,3 +1,4 @@
+using SecretFour.Localization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +26,9 @@ namespace MN7.Store
 
         private Vector3 baseScale = Vector3.one;
         private MN7StoreCategoryData category;
+        private void OnEnable() { GameLocalization.Changed += RefreshName; RefreshName(); }
+        private void OnDisable() => GameLocalization.Changed -= RefreshName;
+        private void RefreshName() { if (nameText != null) nameText.text = category == null ? string.Empty : GameLocalization.Text("store.category." + category.categoryId, category.displayName); }
 
         public Button Button => button;
         public string CategoryId => category == null ? string.Empty : category.categoryId;
@@ -46,8 +50,7 @@ namespace MN7.Store
                     button.onClick.AddListener(onClick);
             }
 
-            if (nameText != null)
-                nameText.text = data == null ? string.Empty : data.displayName;
+            RefreshName();
 
             SetSelected(false);
         }

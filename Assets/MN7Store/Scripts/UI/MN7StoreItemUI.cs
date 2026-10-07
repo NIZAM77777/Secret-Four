@@ -1,3 +1,4 @@
+using SecretFour.Localization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,6 +41,7 @@ namespace MN7.Store
 
         private void OnEnable()
         {
+            GameLocalization.Changed += Refresh;
             MN7StoreManager store = MN7StoreManager.Instance;
             if (store == null) return;
 
@@ -63,6 +65,7 @@ namespace MN7.Store
 
         private void OnDisable()
         {
+            GameLocalization.Changed -= Refresh;
             MN7StoreManager store = MN7StoreManager.Instance;
             if (store == null) return;
 
@@ -111,8 +114,8 @@ namespace MN7.Store
                 icon.enabled = itemData.icon != null;
             }
 
-            if (nameText != null) nameText.text = itemData.displayName;
-            if (descriptionText != null) descriptionText.text = itemData.description;
+            if (nameText != null) nameText.text = GameLocalization.Text("store.item." + itemData.itemId, itemData.displayName);
+            if (descriptionText != null) descriptionText.text = GameLocalization.Text("store.description." + itemData.itemId, itemData.description);
 
             UpdateStateUI();
         }
@@ -146,14 +149,14 @@ namespace MN7.Store
 
             if (owned)
             {
-                if (statusText != null) statusText.text = "OWNED";
+                if (statusText != null) statusText.text = GameLocalization.Text("store.owned");
                 return;
             }
 
             if (itemData.purchaseType == MN7PurchaseType.Free)
             {
                 actionSet?.ShowBuy();
-                if (priceText != null) priceText.text = "FREE";
+                if (priceText != null) priceText.text = GameLocalization.Text("store.free");
                 return;
             }
 
@@ -166,14 +169,14 @@ namespace MN7.Store
                 }
                 else if (statusText != null)
                 {
-                    statusText.text = "AD UNAVAILABLE";
+                    statusText.text = GameLocalization.Text("store.adUnavailable");
                 }
 
                 return;
             }
 
             if (statusText != null)
-                statusText.text = "UNAVAILABLE";
+                statusText.text = GameLocalization.Text("store.unavailable");
         }
 
         private void UpdateAdText(MN7StoreManager store)
@@ -183,8 +186,8 @@ namespace MN7.Store
 
             int progress = store.AdProgress.GetProgress(itemData.itemId);
             statusText.text = itemData.requiredAds > 1
-                ? $"ADS {progress}/{itemData.requiredAds}"
-                : "WATCH AD";
+                ? GameLocalization.Format("store.adProgress", progress, itemData.requiredAds)
+                : string.Empty;
         }
 
         public void Buy()
@@ -234,9 +237,9 @@ namespace MN7.Store
 
             statusText.text = result switch
             {
-                MN7AdResult.NotReady => "AD NOT READY",
-                MN7AdResult.Skipped => "AD SKIPPED",
-                _ => "AD FAILED"
+                MN7AdResult.NotReady => GameLocalization.Text("store.adNotReady"),
+                MN7AdResult.Skipped => GameLocalization.Text("store.adSkipped"),
+                _ => GameLocalization.Text("store.adFailed")
             };
         }
 

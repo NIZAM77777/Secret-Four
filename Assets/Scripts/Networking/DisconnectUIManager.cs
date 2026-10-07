@@ -1,3 +1,4 @@
+using SecretFour.Localization;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +15,10 @@ public class DisconnectUIManager : MonoBehaviour
 
     private bool returningToMainMenu;
     private bool disconnectShown;
+    private string messageKey;
+    private void OnEnable() => GameLocalization.Changed += RefreshMessage;
+    private void OnDisable() => GameLocalization.Changed -= RefreshMessage;
+    private void RefreshMessage() { if (messageText != null && messageKey != null) messageText.text = GameLocalization.Text(messageKey); }
 
     public void ShowDisconnect(string message)
     {
@@ -28,7 +33,8 @@ public class DisconnectUIManager : MonoBehaviour
             disconnectPanel.SetActive(true);
 
         if (messageText != null)
-            messageText.text = message;
+            messageText.text = GameLocalization.Text(message);
+        messageKey = message;
     }
 
     /// <summary>

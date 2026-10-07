@@ -1,0 +1,857 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03899311c87409e50a4d95aa3a67a4c7, type: 3}
+  m_Name: GameTextCatalog
+  m_EditorClassIdentifier: SecretFour.Localization::SecretFour.Localization.GameTextCatalog
+  latinFont: {fileID: 11400000, guid: d4cdaec276f851449ab55a42463282be, type: 2}
+  arabicFont: {fileID: 11400000, guid: f128895e313322c4d803b860c61b5bf6, type: 2}
+  titleFont: {fileID: 11400000, guid: 586aeef7d6f94cd49a2db966d590a724, type: 2}
+  entries:
+  - key: game.title
+    english: 'SECRET
+
+      FOUR'
+    spanish: 'SECRET
+
+      FOUR'
+    french: 'SECRET
+
+      FOUR'
+    arabic: 'SECRET
+
+      FOUR'
+  - key: game.brand
+    english: MN7 STUDIOS
+    spanish: MN7 STUDIOS
+    french: MN7 STUDIOS
+    arabic: MN7 STUDIOS
+  - key: game.tagline
+    english: Plan. Move. Outsmart.
+    spanish: Planea. Mueve. Sorprende.
+    french: "Pr\xE9parez. Jouez. Surprenez."
+    arabic: "\u062E\u0637\u0637. \u062A\u062D\u0631\u0643. \u062A\u0641\u0648\u0642."
+  - key: game.footer
+    english: Four moves ahead
+    spanish: Cuatro movimientos por delante
+    french: "Quatre coups d\u2019avance"
+    arabic: "\u0623\u0631\u0628\u0639 \u062D\u0631\u0643\u0627\u062A \u0625\u0644\u0649
+      \u0627\u0644\u0623\u0645\u0627\u0645"
+  - key: menu.play
+    english: Two players
+    spanish: Dos jugadores
+    french: Deux joueurs
+    arabic: "\u0644\u0627\u0639\u0628\u0627\u0646"
+  - key: menu.bot
+    english: Play with AI
+    spanish: Jugar con IA
+    french: "Jouer contre l\u2019IA"
+    arabic: "\u0627\u0644\u0639\u0628 \u0636\u062F \u0627\u0644\u0643\u0645\u0628\u064A\u0648\u062A\u0631"
+  - key: menu.room
+    english: Online room
+    spanish: "Sala en l\xEDnea"
+    french: Salon en ligne
+    arabic: "\u063A\u0631\u0641\u0629 \u0639\u0628\u0631 \u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A"
+  - key: menu.store
+    english: Store
+    spanish: Tienda
+    french: Boutique
+    arabic: "\u0627\u0644\u0645\u062A\u062C\u0631"
+  - key: menu.rules
+    english: How to play
+    spanish: "C\xF3mo jugar"
+    french: Comment jouer
+    arabic: "\u0637\u0631\u064A\u0642\u0629 \u0627\u0644\u0644\u0639\u0628"
+  - key: menu.exit
+    english: Exit game
+    spanish: Salir del juego
+    french: Quitter le jeu
+    arabic: "\u0627\u0644\u062E\u0631\u0648\u062C \u0645\u0646 \u0627\u0644\u0644\u0639\u0628\u0629"
+  - key: common.back
+    english: Back
+    spanish: Volver
+    french: Retour
+    arabic: "\u0631\u062C\u0648\u0639"
+  - key: common.close
+    english: Close
+    spanish: Cerrar
+    french: Fermer
+    arabic: "\u0625\u063A\u0644\u0627\u0642"
+  - key: common.save
+    english: Save
+    spanish: Guardar
+    french: Enregistrer
+    arabic: "\u062D\u0641\u0638"
+  - key: common.start
+    english: Start game
+    spanish: Iniciar partida
+    french: Commencer
+    arabic: "\u0627\u0628\u062F\u0623 \u0627\u0644\u0644\u0639\u0628"
+  - key: common.cancel
+    english: Cancel
+    spanish: Cancelar
+    french: Annuler
+    arabic: "\u0625\u0644\u063A\u0627\u0621"
+  - key: common.menu
+    english: Main menu
+    spanish: "Men\xFA principal"
+    french: Menu principal
+    arabic: "\u0627\u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629"
+  - key: common.resume
+    english: Resume
+    spanish: Continuar
+    french: Reprendre
+    arabic: "\u0645\u062A\u0627\u0628\u0639\u0629"
+  - key: common.restart
+    english: Restart
+    spanish: Reiniciar
+    french: Recommencer
+    arabic: "\u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0628\u062F\u0621"
+  - key: common.again
+    english: Play again
+    spanish: Volver a jugar
+    french: Rejouer
+    arabic: "\u0627\u0644\u0639\u0628 \u0645\u062C\u062F\u062F\u0627"
+  - key: settings.title
+    english: Settings
+    spanish: Ajustes
+    french: "Param\xE8tres"
+    arabic: "\u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A"
+  - key: settings.subtitle
+    english: Make yourself at home
+    spanish: Juega a tu manera
+    french: "Jouez \xE0 votre fa\xE7on"
+    arabic: "\u0627\u0644\u0639\u0628 \u0639\u0644\u0649 \u0637\u0631\u064A\u0642\u062A\u0643"
+  - key: settings.profile
+    english: PROFILE
+    spanish: PERFIL
+    french: PROFIL
+    arabic: "\u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062E\u0635\u064A"
+  - key: settings.name
+    english: Player name
+    spanish: Nombre del jugador
+    french: Nom du joueur
+    arabic: "\u0627\u0633\u0645 \u0627\u0644\u0644\u0627\u0639\u0628"
+  - key: settings.nameHint
+    english: Enter your name
+    spanish: Escribe tu nombre
+    french: Saisissez votre nom
+    arabic: "\u0623\u062F\u062E\u0644 \u0627\u0633\u0645\u0643"
+  - key: settings.language
+    english: LANGUAGE
+    spanish: IDIOMA
+    french: LANGUE
+    arabic: "\u0627\u0644\u0644\u063A\u0629"
+  - key: settings.audio
+    english: AUDIO
+    spanish: SONIDO
+    french: AUDIO
+    arabic: "\u0627\u0644\u0635\u0648\u062A"
+  - key: settings.master
+    english: Master volume
+    spanish: Volumen general
+    french: "Volume g\xE9n\xE9ral"
+    arabic: "\u0645\u0633\u062A\u0648\u0649 \u0627\u0644\u0635\u0648\u062A \u0627\u0644\u0639\u0627\u0645"
+  - key: settings.music
+    english: Music
+    spanish: "M\xFAsica"
+    french: Musique
+    arabic: "\u0627\u0644\u0645\u0648\u0633\u064A\u0642\u0649"
+  - key: settings.effects
+    english: Sound effects
+    spanish: Efectos de sonido
+    french: Effets sonores
+    arabic: "\u0627\u0644\u0645\u0624\u062B\u0631\u0627\u062A \u0627\u0644\u0635\u0648\u062A\u064A\u0629"
+  - key: settings.mute
+    english: Mute all
+    spanish: Silenciar todo
+    french: Tout couper
+    arabic: "\u0643\u062A\u0645 \u0643\u0644 \u0627\u0644\u0623\u0635\u0648\u0627\u062A"
+  - key: settings.unmute
+    english: Unmute
+    spanish: Activar sonido
+    french: "R\xE9tablir le son"
+    arabic: "\u062A\u0634\u063A\u064A\u0644 \u0627\u0644\u0635\u0648\u062A"
+  - key: settings.saved
+    english: Changes save automatically
+    spanish: "Los cambios se guardan autom\xE1ticamente"
+    french: "Les modifications sont enregistr\xE9es automatiquement"
+    arabic: "\u064A\u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u062A\u063A\u064A\u064A\u0631\u0627\u062A
+      \u062A\u0644\u0642\u0627\u0626\u064A\u0627"
+  - key: settings.nameSaved
+    english: Name saved
+    spanish: Nombre guardado
+    french: "Nom enregistr\xE9"
+    arabic: "\u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u0627\u0633\u0645"
+  - key: setup.title
+    english: Two players
+    spanish: Dos jugadores
+    french: Deux joueurs
+    arabic: "\u0644\u0627\u0639\u0628\u0627\u0646"
+  - key: setup.subtitle
+    english: One device. Two secret plans.
+    spanish: Un dispositivo. Dos planes secretos.
+    french: "Un appareil. Deux strat\xE9gies secr\xE8tes."
+    arabic: "\u062C\u0647\u0627\u0632 \u0648\u0627\u062D\u062F \u0648\u062E\u0637\u062A\u0627\u0646
+      \u0633\u0631\u064A\u062A\u0627\u0646."
+  - key: player.one
+    english: Player 1
+    spanish: Jugador 1
+    french: Joueur 1
+    arabic: "\u0627\u0644\u0644\u0627\u0639\u0628 1"
+  - key: player.two
+    english: Player 2
+    spanish: Jugador 2
+    french: Joueur 2
+    arabic: "\u0627\u0644\u0644\u0627\u0639\u0628 2"
+  - key: player.bot
+    english: AI
+    spanish: IA
+    french: IA
+    arabic: "\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064A"
+  - key: bot.title
+    english: Choose your challenge
+    spanish: "Elige tu desaf\xEDo"
+    french: "Choisissez votre d\xE9fi"
+    arabic: "\u0627\u062E\u062A\u0631 \u0627\u0644\u062A\u062D\u062F\u064A"
+  - key: bot.subtitle
+    english: Practice your next winning move
+    spanish: "Practica tu pr\xF3xima jugada ganadora"
+    french: "Pr\xE9parez votre prochain coup gagnant"
+    arabic: "\u062A\u062F\u0631\u0628 \u0639\u0644\u0649 \u062D\u0631\u0643\u062A\u0643
+      \u0627\u0644\u0631\u0627\u0628\u062D\u0629 \u0627\u0644\u062A\u0627\u0644\u064A\u0629"
+  - key: bot.easy
+    english: Easy
+    spanish: "F\xE1cil"
+    french: Facile
+    arabic: "\u0633\u0647\u0644"
+  - key: bot.medium
+    english: Medium
+    spanish: Medio
+    french: Moyen
+    arabic: "\u0645\u062A\u0648\u0633\u0637"
+  - key: bot.hard
+    english: Hard
+    spanish: "Dif\xEDcil"
+    french: Difficile
+    arabic: "\u0635\u0639\u0628"
+  - key: bot.easyHint
+    english: Learn the rhythm
+    spanish: Aprende el ritmo
+    french: "D\xE9couvrez le jeu"
+    arabic: "\u062A\u0639\u0644\u0645 \u0623\u0633\u0627\u0633\u064A\u0627\u062A
+      \u0627\u0644\u0644\u0639\u0628"
+  - key: bot.mediumHint
+    english: Think one move ahead
+    spanish: Piensa una jugada por delante
+    french: Anticipez le prochain coup
+    arabic: "\u0641\u0643\u0631 \u0641\u064A \u0627\u0644\u062D\u0631\u0643\u0629
+      \u0627\u0644\u062A\u0627\u0644\u064A\u0629"
+  - key: bot.hardHint
+    english: Every choice matters
+    spanish: "Cada decisi\xF3n cuenta"
+    french: Chaque choix compte
+    arabic: "\u0643\u0644 \u0627\u062E\u062A\u064A\u0627\u0631 \u0645\u0647\u0645"
+  - key: room.title
+    english: Play together online
+    spanish: "Juega en l\xEDnea"
+    french: Jouez ensemble en ligne
+    arabic: "\u0627\u0644\u0639\u0628\u0627 \u0645\u0639\u0627 \u0639\u0628\u0631
+      \u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A"
+  - key: room.subtitle
+    english: Create a room or join a friend
+    spanish: "Crea una sala o \xFAnete a un amigo"
+    french: "Cr\xE9ez un salon ou rejoignez un ami"
+    arabic: "\u0623\u0646\u0634\u0626 \u063A\u0631\u0641\u0629 \u0623\u0648 \u0627\u0646\u0636\u0645
+      \u0625\u0644\u0649 \u0635\u062F\u064A\u0642"
+  - key: room.create
+    english: Create room
+    spanish: Crear sala
+    french: "Cr\xE9er un salon"
+    arabic: "\u0625\u0646\u0634\u0627\u0621 \u063A\u0631\u0641\u0629"
+  - key: room.join
+    english: Join room
+    spanish: Unirse a una sala
+    french: Rejoindre un salon
+    arabic: "\u0627\u0644\u0627\u0646\u0636\u0645\u0627\u0645 \u0625\u0644\u0649
+      \u063A\u0631\u0641\u0629"
+  - key: room.code
+    english: Room code
+    spanish: "C\xF3digo de sala"
+    french: Code du salon
+    arabic: "\u0631\u0645\u0632 \u0627\u0644\u063A\u0631\u0641\u0629"
+  - key: room.codeHint
+    english: Enter room code
+    spanish: "Introduce el c\xF3digo"
+    french: Saisissez le code
+    arabic: "\u0623\u062F\u062E\u0644 \u0631\u0645\u0632 \u0627\u0644\u063A\u0631\u0641\u0629"
+  - key: room.share
+    english: Share this code with your friend
+    spanish: "Comparte este c\xF3digo con tu amigo"
+    french: Partagez ce code avec votre ami
+    arabic: "\u0634\u0627\u0631\u0643 \u0647\u0630\u0627 \u0627\u0644\u0631\u0645\u0632
+      \u0645\u0639 \u0635\u062F\u064A\u0642\u0643"
+  - key: room.waiting
+    english: "Waiting for the other player\u2026"
+    spanish: "Esperando al otro jugador\u2026"
+    french: "En attente de l\u2019autre joueur\u2026"
+    arabic: "\u0641\u064A \u0627\u0646\u062A\u0638\u0627\u0631 \u0627\u0644\u0644\u0627\u0639\u0628
+      \u0627\u0644\u0622\u062E\u0631\u2026"
+  - key: room.creating
+    english: "Creating your room\u2026"
+    spanish: "Creando tu sala\u2026"
+    french: "Cr\xE9ation de votre salon\u2026"
+    arabic: "\u062C\u0627\u0631 \u0625\u0646\u0634\u0627\u0621 \u063A\u0631\u0641\u062A\u0643\u2026"
+  - key: room.createError
+    english: Could not create a room. Check your connection and try again.
+    spanish: "No se pudo crear la sala. Comprueba tu conexi\xF3n e int\xE9ntalo de
+      nuevo."
+    french: "Impossible de cr\xE9er le salon. V\xE9rifiez votre connexion et r\xE9essayez."
+    arabic: "\u062A\u0639\u0630\u0631 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u063A\u0631\u0641\u0629.
+      \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643
+      \u0648\u062D\u0627\u0648\u0644 \u0645\u062C\u062F\u062F\u0627."
+  - key: room.joinError
+    english: Could not join. Check the room code and your connection.
+    spanish: "No se pudo entrar. Comprueba el c\xF3digo y tu conexi\xF3n."
+    french: "Impossible de rejoindre le salon. V\xE9rifiez le code et votre connexion."
+    arabic: "\u062A\u0639\u0630\u0631 \u0627\u0644\u0627\u0646\u0636\u0645\u0627\u0645.
+      \u062A\u062D\u0642\u0642 \u0645\u0646 \u0631\u0645\u0632 \u0627\u0644\u063A\u0631\u0641\u0629
+      \u0648\u0627\u062A\u0635\u0627\u0644\u0643."
+  - key: game.turn
+    english: Place a coin
+    spanish: Coloca una ficha
+    french: Placez un pion
+    arabic: "\u0636\u0639 \u0642\u0637\u0639\u0629"
+  - key: game.direction
+    english: Choose a direction
+    spanish: "Elige una direcci\xF3n"
+    french: Choisissez une direction
+    arabic: "\u0627\u062E\u062A\u0631 \u0627\u062A\u062C\u0627\u0647\u0627"
+  - key: game.reveal
+    english: "X: {0}   \u2022   Y: {1}"
+    spanish: "X: {0}   \u2022   Y: {1}"
+    french: "X : {0}   \u2022   Y : {1}"
+    arabic: "X: {0}   \u2022   Y: {1}"
+  - key: game.checking
+    english: "Checking the board\u2026"
+    spanish: "Revisando el tablero\u2026"
+    french: "V\xE9rification du plateau\u2026"
+    arabic: "\u062C\u0627\u0631 \u0641\u062D\u0635 \u0627\u0644\u0644\u0648\u062D\u0629\u2026"
+  - key: game.over
+    english: Game over
+    spanish: Fin de la partida
+    french: "Partie termin\xE9e"
+    arabic: "\u0627\u0646\u062A\u0647\u062A \u0627\u0644\u0645\u0628\u0627\u0631\u0627\u0629"
+  - key: game.draw
+    english: Draw
+    spanish: Empate
+    french: "\xC9galit\xE9"
+    arabic: "\u062A\u0639\u0627\u062F\u0644"
+  - key: game.winner
+    english: Victory!
+    spanish: "\xA1Victoria!"
+    french: Victoire !
+    arabic: "\u0641\u0648\u0632!"
+  - key: game.paused
+    english: Paused
+    spanish: En pausa
+    french: En pause
+    arabic: "\u0625\u064A\u0642\u0627\u0641 \u0645\u0624\u0642\u062A"
+  - key: game.pausedHint
+    english: Take your time. Your next move can wait.
+    spanish: "T\xF3mate tu tiempo. Tu pr\xF3xima jugada puede esperar."
+    french: Prenez votre temps. Le prochain coup peut attendre.
+    arabic: "\u062E\u0630 \u0648\u0642\u062A\u0643. \u064A\u0645\u0643\u0646 \u0644\u062D\u0631\u0643\u062A\u0643
+      \u0627\u0644\u062A\u0627\u0644\u064A\u0629 \u0623\u0646 \u062A\u0646\u062A\u0638\u0631."
+  - key: game.rematchWaiting
+    english: "Waiting for your opponent\u2026"
+    spanish: "Esperando a tu oponente\u2026"
+    french: "En attente de votre adversaire\u2026"
+    arabic: "\u0641\u064A \u0627\u0646\u062A\u0638\u0627\u0631 \u0645\u0646\u0627\u0641\u0633\u0643\u2026"
+  - key: direction.up
+    english: Up
+    spanish: Arriba
+    french: Haut
+    arabic: "\u0623\u0639\u0644\u0649"
+  - key: direction.down
+    english: Down
+    spanish: Abajo
+    french: Bas
+    arabic: "\u0623\u0633\u0641\u0644"
+  - key: direction.left
+    english: Left
+    spanish: Izquierda
+    french: Gauche
+    arabic: "\u064A\u0633\u0627\u0631"
+  - key: direction.right
+    english: Right
+    spanish: Derecha
+    french: Droite
+    arabic: "\u064A\u0645\u064A\u0646"
+  - key: direction.stay
+    english: Stay
+    spanish: Quedarse
+    french: Rester
+    arabic: "\u062B\u0628\u0627\u062A"
+  - key: disconnect.title
+    english: Connection ended
+    spanish: "Conexi\xF3n finalizada"
+    french: "Connexion termin\xE9e"
+    arabic: "\u0627\u0646\u062A\u0647\u0649 \u0627\u0644\u0627\u062A\u0635\u0627\u0644"
+  - key: disconnect.hostLeft
+    english: The host left the game.
+    spanish: "El anfitri\xF3n sali\xF3 de la partida."
+    french: "L\u2019h\xF4te a quitt\xE9 la partie."
+    arabic: "\u063A\u0627\u062F\u0631 \u0627\u0644\u0645\u0636\u064A\u0641 \u0627\u0644\u0645\u0628\u0627\u0631\u0627\u0629."
+  - key: disconnect.playerLeft
+    english: The other player left the game.
+    spanish: "El otro jugador sali\xF3 de la partida."
+    french: "L\u2019autre joueur a quitt\xE9 la partie."
+    arabic: "\u063A\u0627\u062F\u0631 \u0627\u0644\u0644\u0627\u0639\u0628 \u0627\u0644\u0622\u062E\u0631
+      \u0627\u0644\u0645\u0628\u0627\u0631\u0627\u0629."
+  - key: disconnect.lost
+    english: Connection lost. Check your internet connection.
+    spanish: "Se perdi\xF3 la conexi\xF3n. Comprueba tu conexi\xF3n a internet."
+    french: "Connexion perdue. V\xE9rifiez votre connexion Internet."
+    arabic: "\u0627\u0646\u0642\u0637\u0639 \u0627\u0644\u0627\u062A\u0635\u0627\u0644.
+      \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643
+      \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A."
+  - key: store.subtitle
+    english: A fresh look for your next match
+    spanish: "Un nuevo estilo para tu pr\xF3xima partida"
+    french: Un nouveau style pour votre prochaine partie
+    arabic: "\u0645\u0638\u0647\u0631 \u062C\u062F\u064A\u062F \u0644\u0645\u0628\u0627\u0631\u0627\u062A\u0643
+      \u0627\u0644\u0642\u0627\u062F\u0645\u0629"
+  - key: store.category.X Coins
+    english: X coins
+    spanish: Fichas X
+    french: Pions X
+    arabic: "\u0642\u0637\u0639 X"
+  - key: store.category.Y Coins
+    english: Y coins
+    spanish: Fichas Y
+    french: Pions Y
+    arabic: "\u0642\u0637\u0639 Y"
+  - key: store.category.Boards
+    english: Boards
+    spanish: Tableros
+    french: Plateaux
+    arabic: "\u0627\u0644\u0644\u0648\u062D\u0627\u062A"
+  - key: store.owned
+    english: Owned
+    spanish: En propiedad
+    french: "Poss\xE9d\xE9"
+    arabic: "\u0645\u0645\u0644\u0648\u0643"
+  - key: store.free
+    english: Free
+    spanish: Gratis
+    french: Gratuit
+    arabic: "\u0645\u062C\u0627\u0646\u064A"
+  - key: store.claim
+    english: Get
+    spanish: Obtener
+    french: Obtenir
+    arabic: "\u0627\u062D\u0635\u0644 \u0639\u0644\u064A\u0647"
+  - key: store.select
+    english: Use
+    spanish: Usar
+    french: Utiliser
+    arabic: "\u0627\u0633\u062A\u062E\u062F\u0627\u0645"
+  - key: store.selected
+    english: Selected
+    spanish: Seleccionado
+    french: "S\xE9lectionn\xE9"
+    arabic: "\u0645\u062D\u062F\u062F"
+  - key: store.watch
+    english: Watch ad
+    spanish: Ver anuncio
+    french: "Voir une publicit\xE9"
+    arabic: "\u0634\u0627\u0647\u062F \u0625\u0639\u0644\u0627\u0646\u0627"
+  - key: store.adUnavailable
+    english: Ad unavailable
+    spanish: Anuncio no disponible
+    french: "Publicit\xE9 indisponible"
+    arabic: "\u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D"
+  - key: store.unavailable
+    english: Unavailable
+    spanish: No disponible
+    french: Indisponible
+    arabic: "\u063A\u064A\u0631 \u0645\u062A\u0627\u062D"
+  - key: store.adProgress
+    english: Ads {0}/{1}
+    spanish: Anuncios {0}/{1}
+    french: "Publicit\xE9s {0}/{1}"
+    arabic: "\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A {0} \u0645\u0646
+      {1}"
+  - key: store.adNotReady
+    english: Ad not ready. Try again shortly.
+    spanish: "Anuncio no listo. Int\xE9ntalo en un momento."
+    french: "Publicit\xE9 non pr\xEAte. R\xE9essayez dans un instant."
+    arabic: "\u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u063A\u064A\u0631 \u062C\u0627\u0647\u0632.
+      \u062D\u0627\u0648\u0644 \u0628\u0639\u062F \u0642\u0644\u064A\u0644."
+  - key: store.adSkipped
+    english: Ad skipped
+    spanish: Anuncio omitido
+    french: "Publicit\xE9 ignor\xE9e"
+    arabic: "\u062A\u0645 \u062A\u062E\u0637\u064A \u0627\u0644\u0625\u0639\u0644\u0627\u0646"
+  - key: store.adFailed
+    english: Ad failed. Please try again.
+    spanish: "El anuncio fall\xF3. Int\xE9ntalo de nuevo."
+    french: "\xC9chec de la publicit\xE9. Veuillez r\xE9essayer."
+    arabic: "\u062A\u0639\u0630\u0631 \u0639\u0631\u0636 \u0627\u0644\u0625\u0639\u0644\u0627\u0646.
+      \u062D\u0627\u0648\u0644 \u0645\u062C\u062F\u062F\u0627."
+  - key: rules.body
+    english: '<b>CONNECT FOUR</b>
+
+      Make a line of four coins horizontally,
+      vertically, or diagonally.
+
+
+      <b>1. PLACE</b>
+
+      X places a coin on
+      an empty cell and secretly chooses a direction. Then Y does the same.
+
+
+      <b>2.
+      CHOOSE</b>
+
+      Move one cell up, down, left, or right, or choose Stay. Only
+      the two new coins move.
+
+
+      <b>3. REVEAL</b>
+
+      Both directions are
+      revealed and the coins move together.
+
+
+      <b>COLLISIONS</b>
+
+      If both
+      aim for the same cell, both return to their starting cells. A blocked coin
+      stays put. Swapping places is allowed when both coins can move.
+
+
+      <b>WIN
+      OR DRAW</b>
+
+      Four in a row after movement wins. Simultaneous wins, or
+      a full board with no winner, are a draw.
+
+
+      In local play, pass the device
+      after choosing your secret direction.'
+    spanish: "<b>CONECTA CUATRO</b>\nForma una l\xEDnea de cuatro fichas horizontal,
+      vertical o diagonal.\n\n<b>1. COLOCA</b>\nX coloca una ficha en una casilla
+      vac\xEDa y elige una direcci\xF3n en secreto. Despu\xE9s, Y hace lo mismo.\n\n<b>2.
+      ELIGE</b>\nMu\xE9vete una casilla arriba, abajo, a la izquierda o a la derecha,
+      o elige Quedarse. Solo se mueven las dos fichas nuevas.\n\n<b>3. REVELA</b>\nSe
+      revelan ambas direcciones y las fichas se mueven a la vez.\n\n<b>COLISIONES</b>\nSi
+      ambas van a la misma casilla, vuelven al inicio. Una ficha bloqueada se queda
+      donde est\xE1. Se pueden intercambiar posiciones si ambas pueden moverse.\n\n<b>VICTORIA
+      O EMPATE</b>\nGana quien conecte cuatro tras el movimiento. Si ambos ganan
+      a la vez, o el tablero se llena sin ganador, hay empate.\n\nEn una partida
+      local, pasa el dispositivo tras elegir tu direcci\xF3n secreta."
+    french: "<b>ALIGNEZ QUATRE PIONS</b>\nFormez une ligne de quatre pions horizontalement,
+      verticalement ou en diagonale.\n\n<b>1. PLACEZ</b>\nX place un pion sur une
+      case vide et choisit secr\xE8tement une direction. Puis Y fait de m\xEAme.\n\n<b>2.
+      CHOISISSEZ</b>\nAvancez d\u2019une case en haut, en bas, \xE0 gauche ou \xE0
+      droite, ou choisissez Rester. Seuls les deux nouveaux pions bougent.\n\n<b>3.
+      R\xC9V\xC9LEZ</b>\nLes deux directions sont r\xE9v\xE9l\xE9es et les pions
+      bougent ensemble.\n\n<b>COLLISIONS</b>\nS\u2019ils visent la m\xEAme case,
+      les deux pions reviennent au d\xE9part. Un pion bloqu\xE9 reste sur place.
+      Ils peuvent \xE9changer leurs places si les deux peuvent bouger.\n\n<b>VICTOIRE
+      OU \xC9GALIT\xC9</b>\nQuatre pions align\xE9s apr\xE8s le d\xE9placement donnent
+      la victoire. Deux victoires simultan\xE9es, ou un plateau plein sans vainqueur,
+      donnent une \xE9galit\xE9.\n\nEn partie locale, passez l\u2019appareil apr\xE8s
+      avoir choisi votre direction secr\xE8te."
+    arabic: "<b>\u0635\u0644 \u0623\u0631\u0628\u0639 \u0642\u0637\u0639</b>\n\u0643\u0648\u0646
+      \u062E\u0637\u0627 \u0645\u0646 \u0623\u0631\u0628\u0639 \u0642\u0637\u0639
+      \u0623\u0641\u0642\u064A\u0627 \u0623\u0648 \u0639\u0645\u0648\u062F\u064A\u0627
+      \u0623\u0648 \u0642\u0637\u0631\u064A\u0627.\n\n<b>1. \u0636\u0639 \u0627\u0644\u0642\u0637\u0639\u0629</b>\n\u064A\u0636\u0639
+      X \u0642\u0637\u0639\u0629 \u0641\u064A \u062E\u0627\u0646\u0629 \u0641\u0627\u0631\u063A\u0629
+      \u0648\u064A\u062E\u062A\u0627\u0631 \u0627\u062A\u062C\u0627\u0647\u0627 \u0633\u0631\u0627.
+      \u062B\u0645 \u064A\u0641\u0639\u0644 Y \u0627\u0644\u0634\u064A\u0621 \u0646\u0641\u0633\u0647.\n\n<b>2.
+      \u0627\u062E\u062A\u0631 \u0627\u0644\u0627\u062A\u062C\u0627\u0647</b>\n\u062A\u062D\u0631\u0643
+      \u062E\u0627\u0646\u0629 \u0648\u0627\u062D\u062F\u0629 \u0625\u0644\u0649
+      \u0627\u0644\u0623\u0639\u0644\u0649 \u0623\u0648 \u0627\u0644\u0623\u0633\u0641\u0644
+      \u0623\u0648 \u0627\u0644\u064A\u0633\u0627\u0631 \u0623\u0648 \u0627\u0644\u064A\u0645\u064A\u0646\u060C
+      \u0623\u0648 \u0627\u062E\u062A\u0631 \u0627\u0644\u062B\u0628\u0627\u062A.
+      \u062A\u062A\u062D\u0631\u0643 \u0627\u0644\u0642\u0637\u0639\u062A\u0627\u0646
+      \u0627\u0644\u062C\u062F\u064A\u062F\u062A\u0627\u0646 \u0641\u0642\u0637.\n\n<b>3.
+      \u0627\u0643\u0634\u0641 \u0627\u0644\u0627\u062E\u062A\u064A\u0627\u0631</b>\n\u064A\u0638\u0647\u0631
+      \u0627\u0644\u0627\u062A\u062C\u0627\u0647\u0627\u0646 \u0648\u062A\u062A\u062D\u0631\u0643
+      \u0627\u0644\u0642\u0637\u0639\u062A\u0627\u0646 \u0645\u0639\u0627.\n\n<b>\u0627\u0644\u062A\u0635\u0627\u062F\u0645</b>\n\u0625\u0630\u0627
+      \u0627\u062A\u062C\u0647\u062A \u0627\u0644\u0642\u0637\u0639\u062A\u0627\u0646
+      \u0625\u0644\u0649 \u0627\u0644\u062E\u0627\u0646\u0629 \u0646\u0641\u0633\u0647\u0627\u060C
+      \u062A\u0639\u0648\u062F \u0643\u0644 \u0645\u0646\u0647\u0645\u0627 \u0625\u0644\u0649
+      \u0646\u0642\u0637\u0629 \u0627\u0644\u0628\u062F\u0627\u064A\u0629. \u062A\u0628\u0642\u0649
+      \u0627\u0644\u0642\u0637\u0639\u0629 \u0627\u0644\u0645\u062D\u062C\u0648\u0628\u0629
+      \u0641\u064A \u0645\u0643\u0627\u0646\u0647\u0627. \u064A\u0633\u0645\u062D
+      \u0628\u062A\u0628\u0627\u062F\u0644 \u0627\u0644\u0645\u0643\u0627\u0646\u064A\u0646
+      \u0639\u0646\u062F\u0645\u0627 \u062A\u0633\u062A\u0637\u064A\u0639 \u0627\u0644\u0642\u0637\u0639\u062A\u0627\u0646
+      \u0627\u0644\u062A\u062D\u0631\u0643.\n\n<b>\u0627\u0644\u0641\u0648\u0632
+      \u0623\u0648 \u0627\u0644\u062A\u0639\u0627\u062F\u0644</b>\n\u064A\u0641\u0648\u0632
+      \u0645\u0646 \u064A\u0635\u0644 \u0623\u0631\u0628\u0639 \u0642\u0637\u0639
+      \u0628\u0639\u062F \u0627\u0644\u062D\u0631\u0643\u0629. \u064A\u062D\u062F\u062B
+      \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u0625\u0630\u0627 \u0641\u0627\u0632
+      \u0627\u0644\u0644\u0627\u0639\u0628\u0627\u0646 \u0645\u0639\u0627 \u0623\u0648
+      \u0627\u0645\u062A\u0644\u0623\u062A \u0627\u0644\u0644\u0648\u062D\u0629 \u062F\u0648\u0646
+      \u0641\u0627\u0626\u0632.\n\n\u0641\u064A \u0627\u0644\u0644\u0639\u0628 \u0627\u0644\u0645\u062D\u0644\u064A\u060C
+      \u0645\u0631\u0631 \u0627\u0644\u062C\u0647\u0627\u0632 \u0628\u0639\u062F
+      \u0627\u062E\u062A\u064A\u0627\u0631 \u0627\u062A\u062C\u0627\u0647\u0643 \u0627\u0644\u0633\u0631\u064A."
+  - key: store.item.board5
+    english: Blue star
+    spanish: Estrella azul
+    french: "\xC9toile bleue"
+    arabic: "\u0646\u062C\u0645\u0629 \u0632\u0631\u0642\u0627\u0621"
+  - key: store.item.brick
+    english: Brick
+    spanish: Ladrillo
+    french: Brique
+    arabic: "\u0637\u0648\u0628"
+  - key: store.item.rock
+    english: Stone
+    spanish: Piedra
+    french: Pierre
+    arabic: "\u062D\u062C\u0631"
+  - key: store.item.crystal
+    english: Crystal
+    spanish: Cristal
+    french: Cristal
+    arabic: "\u0628\u0644\u0648\u0631"
+  - key: store.item.board1
+    english: Classic board
+    spanish: "Tablero cl\xE1sico"
+    french: Plateau classique
+    arabic: "\u0644\u0648\u062D\u0629 \u0643\u0644\u0627\u0633\u064A\u0643\u064A\u0629"
+  - key: store.item.fire
+    english: Fire
+    spanish: Fuego
+    french: Feu
+    arabic: "\u0646\u0627\u0631"
+  - key: store.item.fire1
+    english: Lava
+    spanish: Lava
+    french: Lave
+    arabic: "\u062D\u0645\u0645"
+  - key: store.item.board2
+    english: Gold
+    spanish: Dorado
+    french: Or
+    arabic: "\u0630\u0647\u0628\u064A"
+  - key: store.item.grass
+    english: Grass
+    spanish: Hierba
+    french: Herbe
+    arabic: "\u0639\u0634\u0628"
+  - key: store.item.turf
+    english: Meadow
+    spanish: Pradera
+    french: Prairie
+    arabic: "\u0645\u0631\u062C"
+  - key: store.item.board3
+    english: Green
+    spanish: Verde
+    french: Vert
+    arabic: "\u0623\u062E\u0636\u0631"
+  - key: store.item.Board4
+    english: Red
+    spanish: Rojo
+    french: Rouge
+    arabic: "\u0623\u062D\u0645\u0631"
+  - key: store.item.soil
+    english: Earth
+    spanish: Tierra
+    french: Terre
+    arabic: "\u062A\u0631\u0627\u0628"
+  - key: store.item.water
+    english: Water
+    spanish: Agua
+    french: Eau
+    arabic: "\u0645\u0627\u0621"
+  - key: store.item.fill
+    english: Drop
+    spanish: Gota
+    french: Goutte
+    arabic: "\u0642\u0637\u0631\u0629"
+  - key: store.item.wood
+    english: Box
+    spanish: Caja
+    french: "Bo\xEEte"
+    arabic: "\u0635\u0646\u062F\u0648\u0642"
+  - key: store.item.box
+    english: Wood
+    spanish: Madera
+    french: Bois
+    arabic: "\u062E\u0634\u0628"
+  - key: store.item.premium2
+    english: Crystal
+    spanish: Cristal
+    french: Cristal
+    arabic: "\u0628\u0644\u0648\u0631"
+  - key: store.item.done
+    english: Red crystal
+    spanish: Cristal rojo
+    french: Cristal rouge
+    arabic: "\u0628\u0644\u0648\u0631 \u0623\u062D\u0645\u0631"
+  - key: store.item.coin1
+    english: Classic X
+    spanish: "Cl\xE1sico X"
+    french: Classique X
+    arabic: "\u0643\u0644\u0627\u0633\u064A\u0643\u064A X"
+  - key: store.item.premium1
+    english: Fire X
+    spanish: Fuego X
+    french: Feu X
+    arabic: "\u0646\u0627\u0631 X"
+  - key: store.item.firex
+    english: Fire
+    spanish: Fuego
+    french: Feu
+    arabic: "\u0646\u0627\u0631"
+  - key: store.item.gold
+    english: Gold X
+    spanish: Dorado X
+    french: Or X
+    arabic: "\u0630\u0647\u0628\u064A X"
+  - key: store.item.icex
+    english: Ice X
+    spanish: Hielo X
+    french: Glace X
+    arabic: "\u062C\u0644\u064A\u062F X"
+  - key: store.item.kingx
+    english: King
+    spanish: Rey
+    french: Roi
+    arabic: "\u0645\u0644\u0643"
+  - key: store.item.premium4
+    english: Leaf X
+    spanish: Hoja X
+    french: Feuille X
+    arabic: "\u0648\u0631\u0642\u0629 X"
+  - key: store.item.red
+    english: Red
+    spanish: Rojo
+    french: Rouge
+    arabic: "\u0623\u062D\u0645\u0631"
+  - key: store.item.premium3
+    english: Space X
+    spanish: Espacio X
+    french: Espace X
+    arabic: "\u0641\u0636\u0627\u0621 X"
+  - key: store.item.x11
+    english: Black X
+    spanish: Negro X
+    french: Noir X
+    arabic: "\u0623\u0633\u0648\u062F X"
+  - key: store.item.x10
+    english: Bubble X
+    spanish: Burbuja X
+    french: Bulle X
+    arabic: "\u0641\u0642\u0627\u0639\u0629 X"
+  - key: store.item.blue
+    english: Blue
+    spanish: Azul
+    french: Bleu
+    arabic: "\u0623\u0632\u0631\u0642"
+  - key: store.item.xc
+    english: Blue crystal
+    spanish: Cristal azul
+    french: Cristal bleu
+    arabic: "\u0628\u0644\u0648\u0631 \u0623\u0632\u0631\u0642"
+  - key: store.item.coin2
+    english: Classic Y
+    spanish: "Cl\xE1sico Y"
+    french: Classique Y
+    arabic: "\u0643\u0644\u0627\u0633\u064A\u0643\u064A Y"
+  - key: store.item.y2
+    english: Fire Y
+    spanish: Fuego Y
+    french: Feu Y
+    arabic: "\u0646\u0627\u0631 Y"
+  - key: store.item.y3
+    english: Gold Y
+    spanish: Dorado Y
+    french: Or Y
+    arabic: "\u0630\u0647\u0628\u064A Y"
+  - key: store.item.y4
+    english: Ice Y
+    spanish: Hielo Y
+    french: Glace Y
+    arabic: "\u062C\u0644\u064A\u062F Y"
+  - key: store.item.y1
+    english: Leaf Y
+    spanish: Hoja Y
+    french: Feuille Y
+    arabic: "\u0648\u0631\u0642\u0629 Y"
+  - key: store.item.y5
+    english: Special
+    spanish: Especial
+    french: "Sp\xE9cial"
+    arabic: "\u0645\u0645\u064A\u0632"
+  - key: store.item.y16
+    english: Black Y
+    spanish: Negro Y
+    french: Noir Y
+    arabic: "\u0623\u0633\u0648\u062F Y"
+  - key: store.item.y12
+    english: Bubble Y
+    spanish: Burbuja Y
+    french: Bulle Y
+    arabic: "\u0641\u0642\u0627\u0639\u0629 Y"
+  - key: store.item.firey
+    english: Fire Y
+    spanish: Fuego Y
+    french: Feu Y
+    arabic: "\u0646\u0627\u0631 Y"
+  - key: store.item.icey
+    english: Ice Y
+    spanish: Hielo Y
+    french: Glace Y
+    arabic: "\u062C\u0644\u064A\u062F Y"
+  - key: store.item.kingy
+    english: King Y
+    spanish: Rey Y
+    french: Roi Y
+    arabic: "\u0645\u0644\u0643 Y"
+  - key: language.0
+    english: English
+    spanish: English
+    french: English
+    arabic: English
+  - key: language.1
+    english: "Espa\xF1ol"
+    spanish: "Espa\xF1ol"
+    french: "Espa\xF1ol"
+    arabic: "Espa\xF1ol"
+  - key: language.2
+    english: "Fran\xE7ais"
+    spanish: "Fran\xE7ais"
+    french: "Fran\xE7ais"
+    arabic: "Fran\xE7ais"
+  - key: language.3
+    english: "\u0627\u0644\u0639\u0631\u0628\u064A\u0629"
+    spanish: "\u0627\u0644\u0639\u0631\u0628\u064A\u0629"
+    french: "\u0627\u0644\u0639\u0631\u0628\u064A\u0629"
+    arabic: "\u0627\u0644\u0639\u0631\u0628\u064A\u0629"
+  - key: store.category.__ALL__
+    english: All
+    spanish: Todo
+    french: Tout
+    arabic: "\u0627\u0644\u0643\u0644"
+  - key: rules.scroll
+    english: Scroll to read all the rules
+    spanish: Desliza para leer todas las reglas
+    french: "Faites d\xE9filer pour lire toutes les r\xE8gles"
+    arabic: "\u0645\u0631\u0631 \u0644\u0642\u0631\u0627\u0621\u0629 \u062C\u0645\u064A\u0639
+      \u0627\u0644\u0642\u0648\u0627\u0639\u062F"
