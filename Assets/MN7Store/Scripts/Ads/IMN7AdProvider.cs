@@ -10,5 +10,9 @@ namespace MN7.Store
             string placementId,
             Action<MN7AdResult> onCompleted
         );
+
+        void SetBannerVisible(bool visible);
+
+        bool TryShowInterstitial(Action onFinished);
     }
 }
