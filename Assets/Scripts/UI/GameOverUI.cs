@@ -1,3 +1,4 @@
+using MN7.Store;
 using SecretFour.Localization;
 using System.Collections;
 using UnityEngine;
@@ -73,6 +74,7 @@ public class GameOverUI : MonoBehaviour
             RefreshText();
 
         SetupWinnerImage(winner);
+        MN7AdMobBootstrap.Instance?.OnResultScreenShown();
     }
 
 
@@ -88,6 +90,8 @@ public class GameOverUI : MonoBehaviour
 
         if (winnerImage != null)
             winnerImage.gameObject.SetActive(false);
+
+        MN7AdMobBootstrap.Instance?.OnResultScreenShown();
     }
 
 
@@ -156,6 +160,8 @@ public class GameOverUI : MonoBehaviour
     {
         if (panel != null)
             panel.SetActive(false);
+
+        MN7AdMobBootstrap.Instance?.OnResultScreenHidden();
     }
 
 
