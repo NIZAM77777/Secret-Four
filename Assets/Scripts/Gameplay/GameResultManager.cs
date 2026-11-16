@@ -1,3 +1,4 @@
+using MN7.Store;
 using System.Collections;
 using UnityEngine;
 
@@ -47,6 +48,8 @@ public class GameResultManager : MonoBehaviour
 
         IsDraw = false;
 
+        MN7AdMobBootstrap.Instance?.RegisterCompletedMatch();
+
 
         turnManager.SetState(
             GameState.Won
@@ -91,6 +94,8 @@ public class GameResultManager : MonoBehaviour
         HasResult = true;
 
         IsDraw = true;
+
+        MN7AdMobBootstrap.Instance?.RegisterCompletedMatch();
 
 
         turnManager.SetState(
