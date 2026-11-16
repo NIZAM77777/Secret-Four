@@ -22,7 +22,19 @@ namespace MN7.Store
     )]
     public class MN7AdMobConfig : ScriptableObject
     {
-        [Header("AdMob Placements")]
+        [Header("Banner")]
+        public string androidBannerAdUnitId;
+        public string iosBannerAdUnitId;
+
+        [Header("Interstitial")]
+        public string androidInterstitialAdUnitId;
+        public string iosInterstitialAdUnitId;
+
+        [Min(1)]
+        [Tooltip("Show one interstitial after this many completed matches. It is displayed only at the result screen and only when an ad is ready.")]
+        public int interstitialEveryCompletedMatches = 2;
+
+        [Header("Rewarded Ad Placements")]
         public List<MN7AdMobPlacement> rewardedPlacements = new();
     }
 }
