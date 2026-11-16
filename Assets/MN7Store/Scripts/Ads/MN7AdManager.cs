@@ -7,43 +7,22 @@ namespace MN7.Store
     {
         private IMN7AdProvider provider;
 
-        //==================================================
-        // PROVIDER
-        //==================================================
-
         public void SetProvider(IMN7AdProvider adProvider)
         {
             provider = adProvider;
-
-            Debug.Log(
-                "[MN7 Store] Ad provider registered."
-            );
+            Debug.Log("[MN7 Store] Ad provider registered.");
         }
 
-        //==================================================
-        // READY
-        //==================================================
-
-        public bool IsRewardedAdReady(
-            string placementId)
+        public bool IsRewardedAdReady(string placementId)
         {
             if (provider == null)
             {
-                Debug.LogWarning(
-                    "[MN7 Store] No ad provider registered."
-                );
-
+                Debug.LogWarning("[MN7 Store] No ad provider registered.");
                 return false;
             }
 
-            return provider.IsRewardedAdReady(
-                placementId
-            );
+            return provider.IsRewardedAdReady(placementId);
         }
-
-        //==================================================
-        // SHOW
-        //==================================================
 
         public void ShowRewardedAd(
             string placementId,
@@ -51,21 +30,28 @@ namespace MN7.Store
         {
             if (provider == null)
             {
-                Debug.LogWarning(
-                    "[MN7 Store] No ad provider registered."
-                );
-
-                onCompleted?.Invoke(
-                    MN7AdResult.NotReady
-                );
-
+                Debug.LogWarning("[MN7 Store] No ad provider registered.");
+                onCompleted?.Invoke(MN7AdResult.NotReady);
                 return;
             }
 
-            provider.ShowRewardedAd(
-                placementId,
-                onCompleted
-            );
+            provider.ShowRewardedAd(placementId, onCompleted);
+        }
+
+        public void SetBannerVisible(bool visible)
+        {
+            provider?.SetBannerVisible(visible);
+        }
+
+        public bool TryShowInterstitial(Action onFinished = null)
+        {
+            if (provider == null)
+            {
+                Debug.LogWarning("[MN7 Store] No ad provider registered for interstitial.");
+                return false;
+            }
+
+            return provider.TryShowInterstitial(onFinished);
         }
     }
 }
