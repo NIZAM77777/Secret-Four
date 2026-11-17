@@ -142,6 +142,7 @@ public class RoomUIController : MonoBehaviour
         if (roomShareHint != null) roomShareHint.SetActive(true);
         if (roomWaitingHint != null) roomWaitingHint.SetActive(true);
         roomCodeText.text = joinCode;
+        GameAudio.Play("notify");
 
 
         isCreatingRoom = false;
@@ -180,6 +181,7 @@ public class RoomUIController : MonoBehaviour
         if (roomShareHint != null) roomShareHint.SetActive(false);
         if (roomWaitingHint != null) roomWaitingHint.SetActive(false);
         createErrorKey = message ?? "room.createError";
+        GameAudio.Play("error");
         RefreshMessages();
     }
 
@@ -215,6 +217,7 @@ public class RoomUIController : MonoBehaviour
         }
 
         joinErrorKey = message ?? "room.joinError";
+        GameAudio.Play("error");
         RefreshMessages();
         joinRoomMessage.gameObject.SetActive(true);
     }

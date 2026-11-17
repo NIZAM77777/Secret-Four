@@ -222,16 +222,29 @@ namespace MN7.Store
             if (itemData == null || !itemData.selectable)
                 return;
 
-            MN7StoreManager.Instance?.Selection?.SelectItem(itemData.itemId);
+            MN7StoreManager store = MN7StoreManager.Instance;
+            bool alreadySelected = store?.Selection != null && store.Selection.IsSelected(itemData);
+            store?.Selection?.SelectItem(itemData.itemId);
+            if (!alreadySelected)
+                GameAudio.Play("select");
         }
 
         private void HandleAdResult(MN7AdResult result)
         {
             if (result == MN7AdResult.Completed)
             {
+                // The final ad unlocks the item ("unlock" plays from HandlePurchaseSuccessful);
+                // earlier ads only add progress toward it.
+                MN7StoreManager store = MN7StoreManager.Instance;
+                bool owned = store?.Inventory != null && itemData != null && store.Inventory.IsOwned(itemData.itemId);
+                if (!owned)
+                    GameAudio.Play("reward");
                 Refresh();
                 return;
             }
+
+            if (result != MN7AdResult.Skipped)
+                GameAudio.Play("error");
 
             if (statusText == null) return;
 
@@ -266,7 +279,11 @@ namespace MN7.Store
         {
             if (item != null && itemData != null &&
                 string.Equals(item.itemId, itemData.itemId, System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (isActiveAndEnabled)
+                    GameAudio.Play("unlock");
                 Refresh();
+            }
         }
 
         private void HandlePurchaseFailed(MN7ItemData item)

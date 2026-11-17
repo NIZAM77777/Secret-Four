@@ -74,7 +74,26 @@ public class GameOverUI : MonoBehaviour
             RefreshText();
 
         SetupWinnerImage(winner);
+        GameAudio.Play(LocalPlayerWon(winner) ? "win" : "lose");
         MN7AdMobBootstrap.Instance?.OnResultScreenShown();
+    }
+
+    /// <summary>
+    /// Two players on one phone always hear the victory sound. Against the bot the human plays X.
+    /// Online, it depends on which side this device controls.
+    /// </summary>
+    private static bool LocalPlayerWon(PlayerType winner)
+    {
+        GameSession session = GameSession.Instance;
+        if (session == null)
+            return true;
+
+        return session.CurrentGameMode switch
+        {
+            GameMode.Bot => winner == PlayerType.X,
+            GameMode.OnlineRoom => winner == session.LocalOnlinePlayerType,
+            _ => true
+        };
     }
 
 
@@ -91,6 +110,7 @@ public class GameOverUI : MonoBehaviour
         if (winnerImage != null)
             winnerImage.gameObject.SetActive(false);
 
+        GameAudio.Play("draw");
         MN7AdMobBootstrap.Instance?.OnResultScreenShown();
     }
 

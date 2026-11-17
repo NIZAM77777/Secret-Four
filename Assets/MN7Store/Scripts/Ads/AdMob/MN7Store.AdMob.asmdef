@@ -2,7 +2,8 @@
   "name": "MN7Store.AdMob",
   "rootNamespace": "MN7.Store",
   "references": [
-    "MN7Store.Runtime"
+    "MN7Store.Runtime",
+    "SecretFour.Localization"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

@@ -32,6 +32,8 @@ public class DisconnectUIManager : MonoBehaviour
         if (disconnectPanel != null)
             disconnectPanel.SetActive(true);
 
+        GameAudio.Play("error");
+
         if (messageText != null)
             messageText.text = GameLocalization.Text(message);
         messageKey = message;

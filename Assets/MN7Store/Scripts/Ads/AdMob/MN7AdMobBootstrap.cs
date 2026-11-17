@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using SecretFour.Localization;
 
 namespace MN7.Store
 {
@@ -16,7 +17,26 @@ namespace MN7.Store
     {
         private const string CompletedMatchCounterKey = "MN7.SecretFour.AdMob.CompletedMatchesSinceInterstitial";
 
+        private const float BannerHeightDp = 50f; // AdSize.Banner
+        private const float RetryIntervalSeconds = 30f;
+
         public static MN7AdMobBootstrap Instance { get; private set; }
+
+        /// <summary>While true (splash screen), the banner is kept hidden. Layout space is still reserved.</summary>
+        public static bool BannerHeldBySplash { get; private set; }
+
+        public static void SetBannerHeldBySplash(bool held)
+        {
+            BannerHeldBySplash = held;
+            if (Instance != null)
+                Instance.UpdateBannerVisibility();
+        }
+
+        /// <summary>True when the user's region requires a "Privacy options" button (GDPR).</summary>
+        public bool IsPrivacyOptionsRequired => provider != null && provider.IsPrivacyOptionsRequired;
+
+        /// <summary>Hook this to a "Privacy options" button in Settings.</summary>
+        public void ShowPrivacyOptions() => provider?.ShowPrivacyOptions();
 
         [Header("Configuration")]
         [SerializeField] private MN7AdMobConfig adMobConfig;
@@ -28,6 +48,7 @@ namespace MN7.Store
         private bool initializationStarted;
         private bool subscribedToStoreEvents;
         private int completedMatchesSinceInterstitial;
+        private bool adsActive;
 
         private void Awake()
         {
@@ -46,6 +67,13 @@ namespace MN7.Store
 
             isMainMenuScene = SceneManager.GetActiveScene().name == "Mainmenu";
             SceneManager.sceneLoaded += HandleSceneLoaded;
+
+#if UNITY_ANDROID || UNITY_IOS
+            // Reserve the banner area from the very first frame so the menu never jumps
+            // when the banner arrives a moment later.
+            adsActive = adMobConfig != null;
+            UpdateReservedBannerSpace();
+#endif
         }
 
         private IEnumerator Start()
@@ -84,6 +112,8 @@ namespace MN7.Store
                 store.OnStoreInitializationFailed -= HandleStoreInitializationFailed;
             }
 
+            CancelInvoke(nameof(RetryFailedAdLoads));
+            SafeAreaLayout.SetBottomReservedPixels(0f);
             provider?.Dispose();
             Instance = null;
         }
@@ -114,6 +144,8 @@ namespace MN7.Store
             if (!ValidateConfig(store, adMobConfig))
             {
                 Debug.LogError("[MN7 AdMob] Configuration validation failed. No ads will be requested.");
+                adsActive = false;
+                UpdateReservedBannerSpace();
                 return;
             }
 
@@ -125,12 +157,15 @@ namespace MN7.Store
                 Debug.LogError("[MN7 AdMob] MN7 Ad Manager is missing.");
                 provider.Dispose();
                 provider = null;
+                adsActive = false;
+                UpdateReservedBannerSpace();
                 return;
             }
 
             store.Ads.SetProvider(provider);
             provider.Initialize();
             UpdateBannerVisibility();
+            InvokeRepeating(nameof(RetryFailedAdLoads), RetryIntervalSeconds, RetryIntervalSeconds);
 #else
             Debug.Log("[MN7 AdMob] Ads are configured for Android/iOS only.");
 #endif
@@ -240,6 +275,7 @@ namespace MN7.Store
         {
             isMainMenuScene = string.Equals(scene.name, "Mainmenu", StringComparison.OrdinalIgnoreCase);
             isResultScreenVisible = false;
+            provider?.HandleSceneChanged();
             UpdateBannerVisibility();
         }
 
@@ -260,9 +296,57 @@ namespace MN7.Store
         {
             bool shouldShowBanner =
                 (isMainMenuScene || isResultScreenVisible) &&
-                !isInterstitialShowing;
+                !isInterstitialShowing &&
+                !BannerHeldBySplash;
 
             provider?.SetBannerVisible(shouldShowBanner);
+            UpdateReservedBannerSpace();
+        }
+
+        private void RetryFailedAdLoads() => provider?.RetryFailedLoads();
+
+        /// <summary>
+        /// Tells panels that opted in (SafeAreaLayout.reserveAdBanner, used by the main menu and store)
+        /// how much bottom space the banner occupies, so buttons are never covered by it.
+        /// </summary>
+        private void UpdateReservedBannerSpace()
+        {
+            if (!adsActive)
+            {
+                SafeAreaLayout.SetBottomReservedPixels(0f);
+                return;
+            }
+
+            // AdSize.Banner is always 50 dp tall, so this is exact on every device and never
+            // touches the banner object itself.
+            SafeAreaLayout.SetBottomReservedPixels(Mathf.Ceil(BannerHeightDp * GetDisplayDensity()));
+        }
+
+        private static float cachedDensity;
+
+        private static float GetDisplayDensity()
+        {
+            if (cachedDensity > 0f)
+                return cachedDensity;
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            try
+            {
+                using AndroidJavaClass player = new("com.unity3d.player.UnityPlayer");
+                using AndroidJavaObject activity = player.GetStatic<AndroidJavaObject>("currentActivity");
+                using AndroidJavaObject resources = activity.Call<AndroidJavaObject>("getResources");
+                using AndroidJavaObject metrics = resources.Call<AndroidJavaObject>("getDisplayMetrics");
+                cachedDensity = metrics.Get<float>("density");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"[MN7 AdMob] Could not read display density: {exception.Message}");
+            }
+#endif
+            if (cachedDensity <= 0f)
+                cachedDensity = Screen.dpi > 0f ? Screen.dpi / 160f : 2.75f;
+
+            return cachedDensity;
         }
 
         //==================================================

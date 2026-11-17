@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using GoogleMobileAds.Api;
 using GoogleMobileAds.Common;
+using GoogleMobileAds.Ump.Api;
+using SecretFour.Localization;
 
 namespace MN7.Store
 {
@@ -21,8 +23,29 @@ namespace MN7.Store
         private InterstitialAd interstitialAd;
 
         private bool initialized;
+        private bool sdkInitializationStarted;
         private bool bannerRequestedVisible;
         private bool interstitialLoadInProgress;
+        private bool bannerLoadFailed;
+
+        /// <summary>
+        /// Unity Editor only: Google's placeholder banner is a GameObject inside the current scene,
+        /// so Unity destroys it on every scene change. Rebuild it instead of touching the destroyed one.
+        /// On phones the banner is native (not a scene object) and this does nothing.
+        /// </summary>
+        public void HandleSceneChanged()
+        {
+#if UNITY_EDITOR
+            if (bannerView == null)
+                return;
+
+            try { bannerView.Destroy(); }
+            catch (Exception) { /* placeholder already destroyed with the old scene */ }
+
+            bannerView = null;
+            bannerLoadFailed = false;
+#endif
+        }
 
         public event Action OnInterstitialLoaded;
 
@@ -41,6 +64,75 @@ namespace MN7.Store
                 Debug.LogError("[MN7 AdMob] Configuration asset is missing.");
                 return;
             }
+
+            GatherConsentThenInitialize();
+        }
+
+        /// <summary>
+        /// Google's User Messaging Platform (UMP): shows the GDPR/US-state consent form when the
+        /// user's region requires it, then initializes ads. Required by Google for EEA/UK/CH users.
+        /// The message itself is configured in AdMob > Privacy &amp; messaging.
+        /// </summary>
+        private void GatherConsentThenInitialize()
+        {
+            // A user who consented in an earlier session can start loading ads immediately.
+            if (ConsentInformation.CanRequestAds())
+                InitializeSdk();
+
+            ConsentInformation.Update(new ConsentRequestParameters(), updateError =>
+            {
+                MobileAdsEventExecutor.ExecuteInUpdate(() =>
+                {
+                    if (updateError != null)
+                    {
+                        Debug.LogWarning($"[MN7 AdMob] Consent info update failed: {updateError.Message}");
+                        if (ConsentInformation.CanRequestAds())
+                            InitializeSdk();
+                        return;
+                    }
+
+                    ConsentForm.LoadAndShowConsentFormIfRequired(formError =>
+                    {
+                        MobileAdsEventExecutor.ExecuteInUpdate(() =>
+                        {
+                            if (formError != null)
+                                Debug.LogWarning($"[MN7 AdMob] Consent form error: {formError.Message}");
+
+                            if (ConsentInformation.CanRequestAds())
+                                InitializeSdk();
+                            else
+                                Debug.Log("[MN7 AdMob] Consent not given; ads will not be requested.");
+                        });
+                    });
+                });
+            });
+        }
+
+        /// <summary>True when the user's region requires a "Privacy options" entry point in the app.</summary>
+        public bool IsPrivacyOptionsRequired =>
+            ConsentInformation.PrivacyOptionsRequirementStatus == PrivacyOptionsRequirementStatus.Required;
+
+        /// <summary>Re-opens the consent form so the user can change their choice.</summary>
+        public void ShowPrivacyOptions()
+        {
+            ConsentForm.ShowPrivacyOptionsForm(error =>
+            {
+                MobileAdsEventExecutor.ExecuteInUpdate(() =>
+                {
+                    if (error != null)
+                        Debug.LogWarning($"[MN7 AdMob] Privacy options form error: {error.Message}");
+                    else if (ConsentInformation.CanRequestAds())
+                        InitializeSdk();
+                });
+            });
+        }
+
+        private void InitializeSdk()
+        {
+            if (sdkInitializationStarted)
+                return;
+
+            sdkInitializationStarted = true;
 
             MobileAds.Initialize(status =>
             {
@@ -105,6 +197,7 @@ namespace MN7.Store
             {
                 MobileAdsEventExecutor.ExecuteInUpdate(() =>
                 {
+                    bannerLoadFailed = false;
                     if (bannerRequestedVisible)
                         bannerView?.Show();
                     else
@@ -118,6 +211,7 @@ namespace MN7.Store
             {
                 MobileAdsEventExecutor.ExecuteInUpdate(() =>
                 {
+                    bannerLoadFailed = true;
                     Debug.LogWarning($"[MN7 AdMob] Banner ad failed to load: {error}");
                 });
             };
@@ -135,6 +229,26 @@ namespace MN7.Store
 #else
             return null;
 #endif
+        }
+
+        /// <summary>
+        /// Periodic safety net: re-requests any ad that failed to load (no fill, offline start, etc.).
+        /// Each loader is a no-op when its ad is already loaded or loading.
+        /// </summary>
+        public void RetryFailedLoads()
+        {
+            if (!initialized)
+                return;
+
+            if (bannerView != null && bannerLoadFailed && bannerRequestedVisible)
+            {
+                bannerLoadFailed = false;
+                bannerView.LoadAd(new AdRequest());
+                Debug.Log("[MN7 AdMob] Retrying banner ad.");
+            }
+
+            LoadInterstitialAd();
+            LoadAllRewardedAds();
         }
 
         //==================================================
@@ -208,6 +322,7 @@ namespace MN7.Store
                     return;
 
                 finishHandled = true;
+                GameAudio.SetAdPlaying(false);
                 adToShow.Destroy();
                 onFinished?.Invoke();
                 LoadInterstitialAd();
@@ -230,6 +345,7 @@ namespace MN7.Store
             try
             {
                 Debug.Log("[MN7 AdMob] Showing result-screen interstitial.");
+                GameAudio.SetAdPlaying(true);
                 adToShow.Show();
                 return true;
             }
@@ -381,6 +497,7 @@ namespace MN7.Store
                 MobileAdsEventExecutor.ExecuteInUpdate(() =>
                 {
                     Debug.Log($"[MN7 AdMob] Rewarded ad closed: {placementId}");
+                    GameAudio.SetAdPlaying(false);
 
                     if (rewardedAds.TryGetValue(placementId, out RewardedAd current) && current == ad)
                         rewardedAds.Remove(placementId);
@@ -398,6 +515,7 @@ namespace MN7.Store
                 MobileAdsEventExecutor.ExecuteInUpdate(() =>
                 {
                     Debug.LogWarning($"[MN7 AdMob] Rewarded ad failed to show: {placementId} - {error}");
+                    GameAudio.SetAdPlaying(false);
 
                     if (rewardedAds.TryGetValue(placementId, out RewardedAd current) && current == ad)
                         rewardedAds.Remove(placementId);
@@ -408,6 +526,7 @@ namespace MN7.Store
                 });
             };
 
+            GameAudio.SetAdPlaying(true);
             ad.Show(reward =>
             {
                 MobileAdsEventExecutor.ExecuteInUpdate(() =>
